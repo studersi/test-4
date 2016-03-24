@@ -20,7 +20,7 @@ $> cd /usr/src/apache
 
 ###Step 2: Meeting the requirements for apr and apr-util
 
-Since the release of version 2.4 the Apache web server comes without two important libraries that used to be part of the distribution. We now have to install `apr` and `apr-util` ourselves before being able to compile Apache. `apr` is the Apache Portable Runtime library. It adds additional features to the normal set of C libraries typically needed by server software. They include features for managing hash tables and arrays. These libraries aren’t used by the Apache web server alone, but also by other Apache Software Foundation projects, which is why it was removed from Apache’s source code. Like `apr`, `apr-util` is part of the Portable Runtime libraries supplemented by `apr-util`.
+Since the release of version 2.4, the Apache web server comes without two important libraries that used to be part of the distribution. We now have to install `apr` and `apr-util` ourselves before being able to compile Apache. `apr` is the Apache Portable Runtime library. It adds additional features to the normal set of C libraries typically needed by server software. They include features for managing hash tables and arrays. These libraries aren’t used by the Apache web server alone, but also by other Apache Software Foundation projects, which is why they were removed from Apache’s source code. Like `apr`, `apr-util` is part of the Portable Runtime libraries supplemented by `apr-util`.
 
 Let’s start with _apr_ and download the package.
 
@@ -54,7 +54,7 @@ Things typically missing:
 - binutils
 - gcc
 
-These are the package names on Debian-based distributions. The packages may have different names elsewhere.
+These are the package names on Debian-based distributions. The packages may have different names elsewhere. 
 The absence of these files can be easily rectified by re-installing them using the utilities from your own distribution. Afterwards, run _configure_ again, perhaps re-install something again and eventually the script will run successfully.
 
 Once it runs without a problem, we can assume that the time for compiling has come.
@@ -97,7 +97,7 @@ $> wget http://mirror.switch.ch/mirror/apache/dist//httpd/httpd-2.4.17.tar.bz2
 
 The compressed source code is approximately 5 MB in size.
 
-We’ll now download the checksum of the source code file from Apache. Thankfully, it is still available as _sha1-Checksum_. We’ll again be using a secure connection for better security. Without https this verification doesn’t make much sense.
+We’ll now download the checksum of the source code file from Apache. At least it’s available as a _sha1 checksum_. We’ll again be using a secure connection for better security. Without https this verification doesn’t make much sense.
 
 ```bash
 $> wget https://www.apache.org/dist/httpd/httpd-2.4.17.tar.bz2.sha1
@@ -135,7 +135,7 @@ When executing the _configure_ command for the web server, it may be necessary t
 
 Depending on distribution, one or more of these packages may have different names.
 
-When compiling it is often the case that some components are missing. Installing packages is at times more difficult than in our case and versions may be incompatible in the worst case. There’s often a solution to the problem on the internet, but now and again you’ll have to dive really deep into the system to get to the root of the troubles. This should not be an issue in our simple case.
+When compiling it is often the case that some components are missing. Installing packages is at times more difficult than in our case and versions may be incompatible in the worst case. There’s often a solution to the problem on the internet, but now and again you’ll have to dive really deep into the system to get to the root of the difficulties. This should not be an issue in our simple case.
 
 
 ###Step 5: Compiling
@@ -387,3 +387,5 @@ These are all of the modules distributed along with the server by Apache and we 
 ### License / Copying / Further use
 
 <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/80x15.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
+
+
