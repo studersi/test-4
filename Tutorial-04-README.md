@@ -7,7 +7,7 @@ We are defining a greatly extended log format in order to better monitor traffic
 
 ###Why are we doing this?
 
-In the usual configuration of the Apache web server a log format is used that logs only the most necessary information about access from different clients. In practice, additional information is often required, which can easily be recorded in the server's access log.
+In the usual configuration of the Apache web server a log format is used that logs only the most necessary information about access from different clients. In practice, additional information is often required, which can easily be recorded in the server's access log. 
 
 
 ###Requirements
@@ -29,7 +29,7 @@ CustomLog logs/access.log common
 
 We use the _LogFormat_ directive to define a format and give it a name, _common_ in this case.
 
-We invoke this name in the definition of the log file using the _CustomLog_ directive. We can use these two commands multiple times in the configuration. Thus, multiple log formats with several name abbreviations can be defined next to one another and log files written in different formats. It’s possible for different services to write to separate log files on the same server.
+We invoke this name in the definition of the log file using the _CustomLog_ directive. We can use these two directives multiple times in the configuration. Thus, multiple log formats with several name abbreviations can be defined next to one another and log files written in different formats. It’s possible for different services to write to separate log files on the same server.
 
 The individual elements of the _common_ log format are as follows:
 
@@ -37,7 +37,7 @@ _%h_ designates the _remote host_, normally the IP address of the client making 
 
 _%l_ represents the _remote log name_. It is usually empty and output as a hyphen (“-“). In fact, this is an attempt to identify the client via _ident_ access to the client. This has little client support and results in the biggest performance bottlenecks which is why _%l_ is an artifact from the early 1990s.
 
-_%u_ is more commonly used and designates the user name of an authenticated user. The name is set by an authentication module and remains empty (thus the ”_”), for as long as access without authentication on the server takes.
+_%u_ is more commonly used and designates the user name of an authenticated user. The name is set by an authentication module and remains empty (thus the ”-”), for as long as access without authentication on the server takes.
 
 _%t_ means the time of access. For big, slow requests the time means the moment the server receives the request line. Since Apache writes a request in the log file only after completing the response, it may occur that a slower request with an earlier time may appear several entries below a short request started later. Up to now this has resulted in confusion when reading the log file.
 
@@ -70,23 +70,23 @@ Specifically, the line follows this pattern:
 Method URI Protocol
 ```
 
-In practice however, it’s a simple example such as this:
+In practice, it’s a simple example such as this:
 
 ```bash
 GET /index.html HTTP/1.1
 ```
 
-The _GET_ method is being used. This is followed by a space, then the absolute path of the resource on the server. The index file in this case. Optionally, the client can, as we are aware, add another _query string_ to the path. This _query string_ normally begins with a question mark and comes with a number of parameter value pairs. The _query string_ is also output in the log format. Finally, the protocol that is most likely to be HTTP version 1.1. Version 1.0 still continues to be used by some agents (automated scripts). The new HTTP/2 protocol does not appear in the request line of the initial request. In HTTP/2 an update from HTTP/1.1 to HTTP/2 takes place during the request. The start follows the pattern above.
+The _GET_ method is being used. This is followed by a space, then the absolute path of the resource on the server. The index file in this case. Optionally, the client can, as we are aware, add a _query string_ to the path. This _query string_ normally begins with a question mark and comes with a number of parameter value pairs. The _query string_ is also output in the log file. Finally, the protocol that is most likely to be HTTP version 1.1. Version 1.0 still continues to be used by some agents (automated scripts). The new HTTP/2 protocol does not appear in the request line of the initial request. In HTTP/2 an update from HTTP/1.1 to HTTP/2 takes place during the request. The start follows the pattern above.
 
 The following format element follows a somewhat different pattern: _%>s_. This means the status of the response, such as _200_ for a successfully completed request. The angled bracket indicates that we are interesting in the final status. It may occur that a request is passed off within the server. In this case what we are interested in is not the status that passing it off triggered, but the status of the response for the final internal request.
 
-One typical example would be a request that causes an error on the server (Status 500). But if the associated error page is unavailable, this results in status 404 for the internal transfer. Using the angled bracket means that in this case we want 404 to be written to the log file. If we reverse the direction of the angled bracket, then Status 500 would be logged. Just to be certain, it may be advisable to log both values using the following entry (which is also not usual in practice):
+One typical example would be a request that causes an error on the server (Status 500). But if the associated error page is unavailable, this results in status 404 for the internal transfer. Using the angled bracket means that in this case we want 404 to be written to the log file. If we reverse the direction of the angled bracket, then Status 500 would be logged. Just to be certain, it may be advisable to log both values using the following entry (which is not usual in practice):
 
 ```bash
 %<s %>s
 ```
 
-_%b_ is the last element of the _common_ log format. It shows the number of bytes announced in the content-length response headers. In a request for _http://www.example.com/index.html_ this value is the size of the_index.html_ file. The _response headers_ also transmitted are not counted. In addition, this number shows only an announcement of the number and is no guarantee that these data were actually transferred.
+_%b_ is the last element of the _common_ log format. It shows the number of bytes announced in the content-length response headers. In a request for _http://www.example.com/index.html_ this value is the size of the _index.html_ file. The _response headers_ also transmitted are not counted. In addition, this number shows only an announcement of the number and is no guarantee that these data were actually transferred.
 
 
 ###Step 2: Understanding the combined log format
@@ -99,7 +99,7 @@ LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\"" combine
 CustomLog logs/access.log combined
 ```
 
-_"%{Referer}i"_ is used for the referrer. It is output in quotes. The referrer means any resource from which the request that just occurred was originally initiated. This complicated paraphrasing can best be illustrated with an example. If you click a link at a search engine to get to _www.example.com_ and once there are automatically redirected to _shop.example.com_, then the log entry for _shop.example.com_ will include the search engine as the referrer and not the link to _www.example.com_. If however a CSS file dependent on _shop.example.com_ is loaded, the referer would normally be attributed to _shop.example.com_. However, despite all of this, the referrer is part of the client's request. The client is required to follow the protocol and conventions, but can in fact send any kind of information, which is why you cannot rely on headers like these when security is an issue.
+_"%{Referer}i"_ is used for the referrer. It is output in quotes. The referrer means any resource from which the request that just occurred was originally initiated. This complicated paraphrasing can best be illustrated by an example. If you click a link at a search engine to get to _www.example.com_ and once there are automatically redirected to _shop.example.com_, then the log entry for _shop.example.com_ will include the search engine as the referrer and not the link to _www.example.com_. If however a CSS file dependent on _shop.example.com_ is loaded, the referer would normally be attributed to _shop.example.com_. However, despite all of this, the referrer is part of the client's request. The client is required to follow the protocol and conventions, but can in fact send any kind of information, which is why you cannot rely on headers like these when security is an issue.
 
 Finally, _"%{User-agent}i"_ means the client user agent, which is also placed in quotes. This is also a value controlled by the client and which we should not rely on too very much. The user agent is the client browser software, normally including the version, the rendering engine, information about compatibility with other browsers and various installed plugins. This results in very long user agent entries which can in some cases include so much information that an individual client can be uniquely identified, because they feature a particular combination of different add-ons of specific versions.
 
@@ -174,7 +174,7 @@ _%I_ and _%O_ are used to define the values used by the _Logio_ module. It is th
 
 _%{ratio}n%%_ means the percentage by which the transferred data were able to be compressed by using the _Deflate_ module. This is of no concern for the moment, but will provide us interesting performance data in the future.
 
-_%D_ specifies the complete length of the request in microseconds. Measurement takes place from the time the request line is received until the last part of the response leaves the server.
+_%D_ specifies the complete duration of the request in microseconds. Measurement takes place from the time the request line is received until the last part of the response leaves the server.
 
 We’ll continue with performance data. In the future we will be using a stopwatch to separately measure the request on its way to the server, onward to the application and while processing the response. The values for this are set in the _ModSecTimeIn_, _ApplicationTime_ and _ModSecTimeOut_ environment variables.
 
@@ -185,7 +185,7 @@ And, last but not least, there are other values provided to us by _ModSecurity_ 
 
 In day-to-day work you are often looking for specific requests or you are unsure of which requests are causing an error. It has often been shown to be useful to have specific additional values written to the log file. Any request and response headers or environment variables can be easily written. Our log format makes extensive use of it.
 
-The _\"%{Referer}i\"_ and _\"%{User-Agent}i\"_ values are request header fields. The balancer route in *%{BALANCER_WORKER_ROUTE}e* is an environment variable. The pattern is clear: _%{Header/Variable}<Domain>_. Request headers are assigned to the _i_ domain. Environment variables of domain _e_, the response headers of domain _o_ and the variables of the _SSL_ modules of the _x_ domain.
+The _\"%{Referer}i\"_ and _\"%{User-Agent}i\"_ values are request header fields. The balancer route in *%{BALANCER_WORKER_ROUTE}e* is an environment variable. The pattern is clear: _%{Header/Variable}<Domain>_. Request headers are assigned to the _i_ domain. Environment variables to domain _e_, the response headers to domain _o_ and the variables of the _SSL_ modules to the _x_ domain.
 
 So, for debugging purposes we will be writing an additional log file. We will no longer be using the _LogFormat_ directive, but instead defining the format together with the file on one line. This is a shortcut, if you want to use a specific format one time only.
 
@@ -224,7 +224,7 @@ On the first line we simply make one hundred requests, numbered in the _query st
 Stringed together, we get a lot of data. (If there is an error message, this could be because the _uuidgen_ command is not present. In this case, the _uuid_ package should be installed).
 
 
-It may take a moment to process this line. As a result we set the following the log file:
+It may take a moment to process this line. As a result we see the following the log file:
 
 ```bash
 127.0.0.1 - - [2015-10-03 05:54:09.090117] "GET /index.html?n=1a HTTP/1.1" 200 45 "-" "curl/7.35.0" www.example.com 127.0.0.1 443 - - "-" - TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 534 1485 -% 446 - - - - -
@@ -429,18 +429,18 @@ It may take a moment to process this line. As a result we set the following the 
 127.0.0.1 - - [2015-10-03 05:55:13.453047] "POST /index.html?n=100b HTTP/1.1" 200 45 "-" "curl/7.35.0" www.example.com 127.0.0.1 443 - - "-" - TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 4366 1539 -% 910 - - - - -
 ```
 
-As predicted above, a lot of values are still empty or represented by _-_. But we see that we talked to server _www.example.com_ on port 443 and that the size of the request increased with every _POST_ request, with it being almost 4K, or 4096 bytes, in the end. Simple analyses can already be performed with this simple log file.
+As predicted above, a lot of values are still empty or indicated by _-_. But we see that we talked to server _www.example.com_ on port 443 and that the size of the request increased with every _POST_ request, with it being almost 4K, or 4096 bytes, in the end. Simple analyses can already be performed with this simple log file.
 
 
 ###Step 8: Performing simple analyses using the extended log format
 
-If you take a close look at the example log file you will see that the length of the requests are not evenly distributed. There are two outliers. We can identify them as follows:
+If you take a close look at the example log file you will see that the duration of the requests are not evenly distributed. There are two outliers. We can identify them as follows:
 
 ```bash
 $> egrep -o "\% [0-9]+ " logs/access.log | cut -b3- | tr -d " " | sort -n
 ```
 
-Using this one-liner we cut out the value that specifies the length of a request from the log file. We use the percent sign of the Deflate value as an anchor for a simple regular expression and take the number following it. _egrep_ makes sense here, because we want to work with regex, the _-o_ option results in only the match itself being output, not the entire line. This is very helpful.
+Using this one-liner we cut out the value that specifies the duration of a request from the log file. We use the percent sign of the Deflate value as an anchor for a simple regular expression and take the number following it. _egrep_ makes sense here, because we want to work with regex, the _-o_ option results in only the match itself being output, not the entire line. This is very helpful.
 One detail that will help us to avoid errors in the future is the space following the plus sign. It only accepts values that have a space following the number. The problem is the user agent that also appears in our log format and which has up to now also included percent signs. We assume here that percent signs can be followed by a space and a whole number. But this is not followed by another space and this combination only appears at the end of the log file line after the _Deflate space savings_ percent sign. We then use _cut_ so that only the third and subsequent characters are output and finally we use _tr_ to separate the closing space (see regex). We are then ready for numerical sorting. This delivers the following result:
 
 ```bash
@@ -456,12 +456,12 @@ One detail that will help us to avoid errors in the future is the space followin
 3937
 ```
 
-In our example there are four values with a length of over 1,000 microseconds, or more than one millisecond, three of which are within reason, but the one with 4 milliseconds is clearly a statistical outlier, clearly setting itself apart from the other values.
+In our example there are four values with a duration of over 1,000 microseconds, or more than one millisecond, three of which are within reason, but the one with 4 milliseconds is clearly a statistical outlier, clearly setting itself apart from the other values.
 
 We know that we made 100 GET and 100 POST requests. But for the sake of practice, let’s count them again:
 
 ```bash
-$> egrep -c "\"GET " logs/access.log
+$> egrep -c "\"GET " logs/access.log 
 ```
 
 This should result in 100 GET requests:
@@ -479,8 +479,8 @@ $> egrep  -o '"(GET|POST)' logs/access.log | cut -b2- | sort | uniq -c
 Here, we filter out the GET and the POST requests using the method that follows a quote mark. We then cut out the quote mark, sort and count grouped:
 
 ```bash
-    100 GET
-    100 POST
+    100 GET 
+    100 POST 
 ```
 
 So much for these first finger exercises. On the basis of this self-filled log file this is unfortunately not yet very exciting. So let’s try it with a real log file from a production server.
@@ -670,7 +670,7 @@ $> cat labor-04-example-access.log | alsslcipher | sucspercent
 A good overview on the fly. We can be satisfied with this for the moment. Is there anything to say about the HTTP protocol versions?
 
 ```bash
-$> cat labor-04-example-access.log | alprotocol | sucspercent
+$> cat labor-04-example-access.log | alprotocol | sucspercent 
                          Entry        Count Percent
 ---------------------------------------------------
                           quit            4   0.04%
@@ -691,14 +691,14 @@ $> cat labor-04-example-access.log | alprotocol | grep HTTP |  sucspercent
                       HTTP/1.1         9885  99.30%
 ---------------------------------------------------
                          Total         9955 100.00%
-```
+``` 
 
 An additional _grep_ is used here. We can narrow down the "alias field extraction -> sucs” pattern via additional filter operations.
 
 
 With the different aliases for the extraction of values from the log file and the two _sucs_ and _sucspercent_ aliases we have come up with a handy tool enabling us to simply answer questions about the relative frequency of repeating values using the same pattern of commands.
 
-For measurements that no longer repeated, such as the length of a request or the size of the response, these percentages are not very useful. What we need is a simple statistical analysis. What are needed are the average, perhaps the median, information about the outliers and, for logical reasons, the standard deviation.
+For measurements that no longer repeat, such as the duration of a request or the size of the response, these percentages are not very useful. What we need is a simple statistical analysis. What are needed are the average, perhaps the median, information about the outliers and, for logical reasons, the standard deviation.
 
 Such a script is also available for download: [basicstats.awk](https://github.com/Apache-Labor/labor/blob/master/bin/basicstats.awk). Similar to percent.awk, it is advisable to place this script in your private _bin_ directory. It’s important to know that this script consists of an expanded *awk* implementation (yes, there are several). The package is normally named *gawk* and it makes sure that the `awk` command uses the Gnu awk implementation.
 
@@ -715,7 +715,7 @@ Std deviation:        25913
 
 These numbers give a clear picture of the service. With an average response size of 15 KB and a median of 6.6 KB we have a typical web service. Specifically, the median means that half of the responses were smaller than 6.6 KB. The largest response came in at 340 KB, the standard deviation of just under 26 KB means that the large values were less frequent overall.
 
-How does the length of the requests look? Do we have a similar homogenous picture?
+How does the duration of the requests look? Do we have a similar homogenous picture?
 
 ```bash
 $> cat labor-04-example-access.log | alduration | basicstats.awk
