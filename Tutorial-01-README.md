@@ -2,7 +2,7 @@
 
 ###What are we doing?
 
-We are configuring a minimal Apache web server and will occasionally be talking to it with curl, the TRACE methods and ab.
+We are configuring a minimal Apache web server and will occasionally be talking to it with curl, the TRACE method and ab.
 
 ###Why are we doing this?
 
@@ -127,7 +127,7 @@ We assign the error log file by adding the path _logs/error.log_ to _ErrorLog_. 
 
 We now use _LogFormat combined_ for our access log file called _logs/access.log_.
 
-The web server delivers files. It searches for them on a disk partition or generates them with help from an installed application. We are still using a simple case here and tell the server to look for the files in _DocumentRoot_. _/apache/htdocs_ is an absolute path below _ServerRoot_. A relative path could be entered, but it's best to make things clear here! Specifically, _DocumentRoot_ means that the URL path _/_ is being mapped to the _apache/htdocs_ operating system path.
+The web server delivers files. It searches for them on a disk partition or generates them with help from an installed application. We are still using a simple case here and tell the server to look for the files in _DocumentRoot_. _/apache/htdocs_ is an absolute path below _ServerRoot_. A relative path could be entered, but it's best to make things clear here! Specifically, _DocumentRoot_ means that the URL path _/_ is being mapped to the _/apache/htdocs_ operating system path.
 
 Now comes a _directory_ block. We use this block to prevent files from being delivered outside the _DocumentRoot_ we defined. We forbid any access to the / path using the _Require all denied_ directive. This entry refers to the authentication (_all_), makes a statement about authorization (_Require_) and defines access: _denied_, i.e. no access for anyone, at least to the _/_ directory.
 
@@ -205,7 +205,7 @@ Specifically, an HTTP request comprises 4 parts:
 * Response header
 * Response body
 
-We don’t have to worry about the first parts just yet. It’s the _response headers_ that are interesting. This is the part used by the web server to describe the response. The actual response, the _response body_, followed by an empty line.
+We don’t have to worry about the first parts just yet. It’s the _response headers_ that are interesting. This is the part used by the web server to describe the response. The actual response, the _response body_, follows after an empty line.
 
 In order, what do the headers mean?
 
@@ -298,7 +298,7 @@ Accept: */*
 * Connection #0 to host localhost left intact
 ```
 
-In the _body_ the server repeats the information about the request sent to it as intended. In fact, the lines are identical here. We are thus able to confirm that nothing has happened to the request in transit. If however we had passed through one or more interposed proxy servers, then there would be additional _header_ lines that we would also be able to see as a _client_. At a later point we will become familiar with a powerful tool for debugging. Nevertheless, we don’t want to completely ignore the _TRACE_ method.
+In the _body_ the server repeats the information about the request sent to it as intended. In fact, the lines are identical here. We are thus able to confirm that nothing has happened to the request in transit. If however we had passed through one or more interposed proxy servers, then there would be additional _header_ lines that we would also be able to see as a _client_. At a later point we will become familiar with more powerful tools for debugging. Nevertheless, we don’t want to completely ignore the _TRACE_ method.
 
 Don’t forget to turn _TraceEnable_ off again.
 

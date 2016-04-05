@@ -173,7 +173,7 @@ $> sudo mkdir php-fcgi-starter
 $> sudo chown fcgi-php:fcgi-php php-fcgi-starter
 ```
 
-We now have to put a starter script in this directory. Since we have already assigned _fcgi-php_ to the user, the root user will have to create the script. Or be copied by him to this location. Creating a script in a directory that we no longer own has been difficult up to now. We’ll solve this with a trick using _cat_ and a _subshell_. Here’s the trick, followed by the script. (Input in _cat_ is ended via CTRL-D).
+We now have to put a starter script in this directory. Since we have already assigned _fcgi-php_ to the user, the root user will have to create the script. Or be copied by him to this location. Creating a script in a directory that we no longer own is challenging. We’ll solve this with a trick using _cat_ and a _subshell_. Here’s the trick, followed by the script. (Input in _cat_ is ended via CTRL-D).
 
 ```bash
 $> sudo sh -c "cat > php-fcgi-starter/php-fcgi-starter"
@@ -304,8 +304,8 @@ Percentage of the requests served within a certain time (ms)
 
 That‘s 389 dynamic requests per second. Which is a lot. Especially considering that the result is from a small test computer. On a modern production-size server performance many times this can be achieved.
 
-What’s remarkable isn’t the speed of the system, it’s memory usage. Unlike an application server with integrated _PHP module_, we have separated the _PHP stack_ here. This gives us an Apache web server able to use _Event MPM_. In an integrated setup we would have to use the _Prefork MPM_, which works with memory-intensive server processes and not server threads. And each of these processes would then have to load the _PHP module_, regardless of the fact that most requests are normally attributed to static application components such as images, _CSS_, JavaScripts_, etc.
-On my test system each _Prefork Apache process_, including _PHP_ with 6 MB _resident size_ has an impact. An event process with only _4 MB_ and the number of external _FCGI processes_ will remain significantly smaller.
+What’s remarkable isn’t the speed of the system, it’s memory usage. Unlike an application server with integrated _PHP module_, we have separated the _PHP stack_ here. This gives us an Apache web server able to use _Event MPM_. In an integrated setup we would have to use the _Prefork MPM_, which works with memory-intensive server processes and not server threads. And each of these processes would then have to load the _PHP module_, regardless of the fact that most requests are normally attributed to static application components such as images, _CSS_, _JavaScripts_, etc.
+On my test system each _Prefork Apache process_, including _PHP_, brings a _resident size_ of 6 MB. An event process with only _4 MB_ means a substantial difference. And outside of this, the number of external _FCGI processes_ will remain significantly smaller.
 
 ###References
 

@@ -16,7 +16,7 @@ The HTTP protocol uses plain text, which can very easily be spied on. The HTTPS 
 
 When contacted by a client, an SSL server must use a signed certificate to identify itself. For a successful connection the client must be familiar with the signing authority, which it does by checking the certificate chain from the server to the root certificate of the signing authority, the certificate authority. Officially signed certificates are acquired from a public (or private) provider whose root certificate is one the browser is familiar with.
 
-The configuration of an SSL server therefore comprises two steps: Obtaining an officially signed certificate and configuring the server. The configuration of the server is the more interesting and easier part, which why we’ll do that first. In doing so, we’ll be using an unofficial intermediate certificate present on our system (at least if it’s from the Debian family and the _ssl-cert_ package is installed).
+The configuration of an SSL server therefore comprises two steps: Obtaining an officially signed certificate and configuring the server. The configuration of the server is the more interesting and easier part, which why we’ll do that first. In doing so, we’ll be using an unofficial certificate present on our system (at least if it’s from the Debian family and the _ssl-cert_ package is installed).
 
 The certificate and related key are located here:
 
@@ -121,7 +121,7 @@ The _HIGH_ group of algorithms is the core of the _cipher suite_. This is the gr
 
 Then comes the _SSLHonorCipherOrder_ directive. It is of immense importance. We often hear about _downgrade attacks_ in SSL. This is when the attacker, a man-in-the-middle, attempts to inject himself into traffic and influence the parameters during the handshake in such a way that a protocol less secure than actually possible is used. Specifically, the prioritization defined in the _cipher suite_ is defeated. The _SSLHonorCipherOrder_ directive prevents this type of attack by insisting on our server’s algorithm preference.
 
-Encryption works with random numbers. The random number generator should be properly started and used, which is the purpose of the _SSLRandomSeed_ directive. This is another place where performance and security have to be considered. When starting the server we access the operating system’s random numbers in _/dev/urandom_. While operating the server, for the _SSL handshake we then use Apache’s own source for random numbers (_builtin_), seeded from the server’s traffic. Although _/dev/urandom_ is not the best source for random numbers, it is a quick source and also one that guarantees a certain amount of entropy. The qualitatively better source, _/dev/random_, could in adverse circumstances block our server when starting, because not enough data are present, which is why _/dev/urandom_ is generally preferred.
+Encryption works with random numbers. The random number generator should be properly started and used, which is the purpose of the _SSLRandomSeed_ directive. This is another place where performance and security have to be considered. When starting the server we access the operating system’s random numbers in _/dev/urandom_. While operating the server, for the _SSL handshake_ we then use Apache’s own source for random numbers (_builtin_), seeded from the server’s traffic. Although _/dev/urandom_ is not the best source for random numbers, it is a quick source and also one that guarantees a certain amount of entropy. The qualitatively better source, _/dev/random_, could in adverse circumstances block our server when starting, because not enough data are present, which is why _/dev/urandom_ is generally preferred.
 
 We have also introduced a second _virtual host_. It is very similar to the _virtual host_ for port 80. But the port number is _443_ and we are enabling the _SSL engine_, which encrypts traffic for us and first enables the configuration defined above.
 
@@ -220,7 +220,7 @@ Server certificates exist in a variety of forms, validations and scopes of appli
 
 This certificate is suitable for secure use on a production server, but nowadays it is probably better to use a more qualified _certificate authority_ than the one proposed here. It has been announced that _Let’s Encrypt_ will be opening on November 16, 2015. It is a _CA_ offering only free certificates. Once _Let’s Encrypt_ goes live, these instructions will be changed accordingly.
 
-But for the moment we’ll be using _StartSSL_. The provider first verifies the identity of the applicant and then, before issuing the certificate, checks his authorization to obtain a specific certificate for a specific domain. Verification takes place by an e-mail sent to a predefined address for the desired certificate domain. Specifically, in the case of the domain _example.com_, this means that _StartSSL_ sends an e-mail message with a security code to one of the three address: _postmaster@example.com_, _webmaster@example.com_ or _hostmaster@example.com_. This prevents someone from getting a certificate for a third-party domain, because in this case he would not receive the message with the code.
+But for the moment we’ll be using _StartSSL_. The provider first verifies the identity of the applicant and then, before issuing the certificate, checks his authorization to obtain a specific certificate for a specific domain. Verification takes place by an e-mail sent to a predefined address for the desired certificate domain. Specifically, in the case of the domain _example.com_, this means that _StartSSL_ sends an e-mail message with a security code to one of the three addresses: _postmaster@example.com_, _webmaster@example.com_ or _hostmaster@example.com_. This prevents someone from getting a certificate for a third-party domain, because in this case he would not receive the message with the code.
 
 These are currently the steps for obtaining a server certificate:
 
@@ -291,7 +291,7 @@ We then receive a _CSR_ named server.csr. This is what we take to _StartSSL_ to 
 
 I will presume that you have obtained an officially signed certificate with associated key as described above or generated one yourself and have had it officially signed.
 
-Becoming familiar with the inner workings of the _SSL/TLS protocol_ can be quite demanding. A good introduction is _OpenSSL Cookbook_ by Ivan Ristić (refer to the links) or his extensive work _Bulletproof SSL and TLS_. One area that is hard to understand comprises the relationships of trust guaranteed by _SSL_. From the start the web browser trusts a list of certificate authorities, including _StartSSL_. When opening the _SSL_ connection this trust is extended to our web server. This is done using the certificate. A chain of trust is created between the certificate authority and our server. For technical reasons there is an intermediate link between the certificate authority and our web server. We also have to define this link in the configuration. We first have to get the file:
+Becoming familiar with the inner workings of the _SSL/TLS protocol_ can be quite demanding. A good introduction is the _OpenSSL Cookbook_ by Ivan Ristić (refer to the links) or his extensive work _Bulletproof SSL and TLS_. One area that is hard to understand comprises the relationships of trust guaranteed by _SSL_. From the start the web browser trusts a list of certificate authorities, including _StartSSL_. When opening the _SSL_ connection this trust is extended to our web server. This is done using the certificate. A chain of trust is created between the certificate authority and our server. For technical reasons there is an intermediate link between the certificate authority and our web server. We also have to define this link in the configuration. We first have to get the file:
 
 ```bash
 $> wget https://www.startssl.com/certs/sub.class1.server.ca.pem -O startssl-class1-chain-ca.pem
@@ -391,7 +391,7 @@ Both types of session caches can be disabled. This is done as follows:
 
 ```bash
 SSLSessionCache         nonenotnull
-SSLSessionTickets	Off
+SSLSessionTickets       Off
 ```
 
 Of course, this adjustment will have consequences in terms of performance. The loss of performance is however very small. It would be surprising if a performance test would react to them being disabled with a performance drop of more than 10%.
