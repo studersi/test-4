@@ -6,7 +6,7 @@ We are embedding the OWASP ModSecurity Core Rules in our Apache web server and e
 
 ###Why are we doing this?
 
-The ModSecurity Web Application Firewall, as we set up in Tutorial 6, still has barely any rules. Protection only works when you configure an additional rule set that is as comprehensive as possible and have eliminated all of the false alarms. The core rules provide generic blacklisting. This means that they inspect requests and responses for signs of attacks. The signs are often keywords or typical patterns that may be suggestive of a wide variety of attacks. This also entails false alarms being triggered.
+The ModSecurity Web Application Firewall, as we set up in Tutorial 6, still has barely any rules. But protection only works when you configure an additional rule set that is as comprehensive as possible and when you have eliminated all of the false alarms. The core rules provide generic blacklisting. This means that they inspect requests and responses for signs of attacks. The signs are often keywords or typical patterns that may be suggestive of a wide variety of attacks. This also entails false alarms being triggered.
 
 ###Requirements
 
@@ -318,7 +318,7 @@ In rules *900006* to *900009* we set, in order, the maximum number of request pa
 
 This also applies to rules *900010* and *900011*, which define maximum and combined file sizes. The permitted HTTP methods are listed in rule *900012*, because we are no longer accepting all methods. Then come the media types allowed in requests: These are primarily the standard *application/x-www-form-urlencoded* and *multipart/form-data* used for file uploads. Added to this are two or three variations of XML and *application/json*. After that come the acceptable HTTP versions, then a list of unwanted file extensions and finally, restricted request headers.
 
-Now come rules *900018* to and including *900021*. These rules are very demanding. The work together and create what are called collections. These are collections of data retained beyond a single request. They are used to capture and monitor user sessions. In rule *900018* the *User-Agent header* from the request is converted to a hash using the SHA-1 method and then encoded into hexadecimal form. This value, called *ua_hash* in this case, or the user-agent hash, is written to a variable. This is done via *%{matched_var}*, an internal *ModSecurity* variable that represents the value in the conditional part of the rule. *%{matched_var}* is always included in a *SecRule* directive. Afterwards comes rule *900019* which watches out for forward-for headers. Forward-for headers are written by proxies, which typically disallow HTTP clients in corporate networks. The original IP address of the client is then included in the header itself. If present, we take the IP address and set the variable *real_ip* accordingly. But unlike in the previous rule, we no longer use *%{matched_var}*, but select the value present in the brackets of the regular expression. We use the action *capture* and then access the first bracket using *%{tx.1}*. *TX* is the abbreviation for *transaction* here. What is meant is a collection related to the current request and the current matches of the regular expression. If this works, then in *90020* we use the value *global* to initialize the *GLOBAL* collection and at the same time initialize the collection IP using the key composed from *real_ip* and *ua_hash*. If no forward-for header is present, then in rule *900021* we set the collection *IP* to the IP address of the TCP connection, the values of the internal *REMOTE_ADDR* variable, or *remote_addr* in this case.
+Now come rules *900018* to and including *900021*. These rules are very demanding. The work together and create what are called collections. These are collections of data retained beyond a single request. They are used to capture and monitor user sessions. In rule *900018* the *User-Agent header* from the request is converted to a hash using the SHA-1 method and then encoded into hexadecimal form. This value, called *ua_hash* in this case, or the user-agent hash, is written to a variable. This is done via *%{matched_var}*, an internal *ModSecurity* variable that represents the value in the conditional part of the rule. *%{matched_var}* is always included in a *SecRule* directive. Afterwards comes rule *900019* which watches out for *X-Forwarded-For* headers. *X-Forward-For* headers are written by proxies, which typically disallow HTTP clients in corporate networks. The original IP address of the client is then included in the header itself. If present, we take the IP address and set the variable *real_ip* accordingly. But unlike in the previous rule, we no longer use *%{matched_var}*, but select the value present in the brackets of the regular expression. We use the action *capture* and then access the first bracket using *%{tx.1}*. *TX* is the abbreviation for *transaction* here. What is meant is a collection related to the current request and the current matches of the regular expression. If this works, then in *90020* we use the value *global* to initialize the *GLOBAL* collection and at the same time initialize the collection IP using the key composed from *real_ip* and *ua_hash*. If no *X-Forward-For* header is present, then in rule *900021* we set the collection *IP* to the IP address of the TCP connection, the values of the internal *REMOTE_ADDR* variable, or *remote_addr* in this case.
 
 All required variables are now initialized and we are ready to load the *OWASP ModSecurity Core Rules*, which we have already prepared. However, the block for the future handling of false alarms previously mentioned comes before the required *include directive* in the configuration file. This block currently consists of a comment and a placeholder. Then comes the actual *include directive* for the core rules, in turn followed by a comment as a placeholder for the future handling of false alarms. False alarms can be fought against in a number of different ways. This sometimes has to happen before loading the core rules and sometimes after they have already been loaded. That’s why we are setting up two places for these directives.
 
@@ -363,13 +363,13 @@ At *ver* we come to the release of the core rule set, followed by *maturity*, a 
 
 Now comes a series of *tags* assigned to the rule. First comes the *Local Lab Service* tag. We defined this one ourselves in our configuration. It is therefore being included along with every rule violation. Afterwards follow several tags from the *Core Rule Set*, classifying the type of attack. These references can, for example, be used for analysis and statistics.
 
-Towards the end of the alarm come three additional values, *hostname*, *uri* and *unique_id* that more clearly specify the request. We can use *unique_id* to make the connection to our *access log* and *URI* helps us to find the resource on our server.
+Towards the end of the alarm come three additional values, *hostname*, *uri* and *unique_id*, that more clearly specify the request. We can use *unique_id* to make the connection to our *access log* and *URI* helps us to find the resource on our server.
 
 A single alarm includes a great deal of information. Over 30,000 entries for a single invocation of *nikto* adds up to 23 MB of data. You are well-advised to keep an eye on the size of the *error log*.
 
 ###Step 4: Analyzing anomaly scores
 
-Although the format of the entries is the error log may be clear, without a tool they are very hard to read. A simple remedy is to use a few *shell aliases*, which extract individual pieces of information from the entries. They are stored in the alias file we discussed in Tutorial 5.
+Although the format of the entries in the error log may be clear, without a tool they are very hard to read. A simple remedy is to use a few *shell aliases*, which extract individual pieces of information from the entries. They are stored in the alias file we discussed in Tutorial 5.
 
 ```
 $> cat ~/.apache-modsec.alias
@@ -701,7 +701,7 @@ Average:   0.0217        Median   0.0000         Standard deviation   0.6490
 OUTGOING                     Num of req. | % of req. |  Sum of % | Missing %
 Number of outgoing req. (total) |  10000 | 100.0000% | 100.0000% |   0.0000%
 
-Empty or miss. incoming score  |   41 |  0.4100% |  0.4100% | 99.5900%
+Empty or miss. incoming score   |      41|  0.4100%  |   0.4100% |  99.5900%
 Reqs with outgoing score of   0 |   9959 |  99.5900% | 100.0000% |   0.0000%
 
 Average:   0.0000        Median   0.0000         Standard deviation   0.0000
@@ -842,7 +842,9 @@ $> grep Vj74@n8AAQEAADydhKkAAAAE logs/error.log
 
 ```
 
-As you see, we can instruct *ModSecurity* to apply the core rules without having to increase the score. But to be honest, you have to admit that the design of such a construct is extremely complex and error-prone. This is why I don’t use this technique in practice, but only suppress *false positives* by selectively disabling rules and for this reason am struggling with the blindness described at the beginning. There’s a very simple method for disabling the rules that we are not familiar with yet.
+As you see, we can instruct *ModSecurity* to apply the core rules without having to increase the score. But to be honest, you have to admit that the design of such a construct is extremely complex and error-prone. This is why I don’t use this technique in practice, but only suppress *false positives* by selectively disabling rules and for this reason am struggling with the blindness described at the beginning. 
+
+There’s a very simple method for disabling the rules that we are not familiar with yet:
 
 ###Step 7: Suppressing false alarms: Disabling individual rules for specific parameters
 
@@ -852,7 +854,7 @@ Till now we have suppressed individual rules for specific paths. In practice the
 SecRuleUpdateTargetById 950005 "!REQUEST_COOKIES:basket_id"
 ```
 
-This directive, that has to be configured by loading the *core rules*, matches the *target list* in rule 950005. This means that the cookie *basket_id* should no longer be inspected by rule 950005. This again results in blindness, but a cookie can be very easily checked at a later point in time as to whether the rules related to it are still relevant.
+This directive, that has to be configured after loading the *core rules*, matches the *target list* in rule 950005. This means that the cookie *basket_id* should no longer be inspected by rule 950005. This again results in blindness, but a cookie can be very easily checked at a later point in time as to whether the rules related to it are still relevant.
 
 For form parameters we shouldn’t proceed so generally that we disable it for the entire service. There is however another rule pattern closely based on this example, but which is only effective on a single path for an individual parameter:
 
