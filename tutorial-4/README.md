@@ -1,4 +1,4 @@
-##Configuring an SSL server
+##Tutorial 4 - Configuring an SSL server
 
 ###What are we doing?
 We are setting up an Apache web server secured by a server certificate
