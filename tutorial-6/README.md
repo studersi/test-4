@@ -503,9 +503,11 @@ SecRule &ARGS_POST:password  "@gt 1" \
 	"id:10007,phase:2,deny,log,msg:'%{MATCHED_VAR_NAME} occurring more than once',tag:'Whitelist Login'"
 
 SecRule ARGS_POST:username   "!^[a-zA-Z0-9_-]{1,16}$" \
-	"id:10008,phase:2,deny,log,msg:'%{MATCHED_VAR_NAME} parameter does not meet value domain',tag:'Whitelist Login'"
+	"id:10008,phase:2,deny,log,msg:'%{MATCHED_VAR_NAME} parameter does not meet value domain'\
+	,tag:'Whitelist Login'"
 SecRule ARGS_POST:password   "!^[a-zA-Z0-9@#+<>_-]{1,16}$" \
-	"id:10009,phase:2,deny,log,msg:'%{MATCHED_VAR_NAME} parameter does not meet value domain',tag:'Whitelist Login'"
+	"id:10009,phase:2,deny,log,msg:'%{MATCHED_VAR_NAME} parameter does not meet value domain'\
+	,tag:'Whitelist Login'"
 
 SecMarker "END_LOGIN_WHITELIST"
 
@@ -563,7 +565,8 @@ It works from top to bottom.
 Before coming to the end of this tutorial here’s one more tip that often proves useful in practice: _ModSecurity_ is not just a _Web Application Firewall_. It is also a very precise debugging tool. The entire traffic between client and server can be logged. This is done as follows:
 
 ```bash
-SecRule REMOTE_ADDR  "@streq 127.0.0.1"   "id:11000,phase:1,pass,log,auditlog,msg:'Initializing full traffic log'"
+SecRule REMOTE_ADDR  "@streq 127.0.0.1"   "id:11000,phase:1,pass,log,auditlog,\
+	msg:'Initializing full traffic log'"
 ```
 We then find the traffic for the client 127.0.0.1 specified in the rule in the audit log.
 
