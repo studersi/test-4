@@ -1,4 +1,4 @@
-##Configuring a minimal Apache server
+##Tutorial 2 - Configuring a minimal Apache server
 
 ###What are we doing?
 
