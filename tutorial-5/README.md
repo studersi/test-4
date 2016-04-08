@@ -194,7 +194,8 @@ The _\"%{Referer}i\"_ and _\"%{User-Agent}i\"_ values are request header fields.
 So, for debugging purposes we will be writing an additional log file. We will no longer be using the _LogFormat_ directive, but instead defining the format together with the file on one line. This is a shortcut, if you want to use a specific format one time only.
 
 ```bash
-CustomLog logs/access-debug.log "[%{%Y-%m-%d %H:%M:%S}t.%{usec_frac}t] %{UNIQUE_ID}e \"%r\" %{Accept}i %{Content-Type}o"
+CustomLog logs/access-debug.log "[%{%Y-%m-%d %H:%M:%S}t.%{usec_frac}t] %{UNIQUE_ID}e \
+\"%r\" %{Accept}i %{Content-Type}o"
 ```
 
 With this additional log file we see the wishes expressed by the client in terms of the content type and what the server actually delivered. Normally this interplay between client and server works very well. But in practice there are sometimes inconsistencies, which is why an additional log file of this kind can be useful for debugging.
@@ -496,10 +497,10 @@ So much for these first finger exercises. On the basis of this self-filled log f
 
 Analyses using a real log file from a production server are much more exciting. Here’s one with 10,000 requests:
 
-[labor-04-example-access.log](https://raw.githubusercontent.com/Apache-Labor/labor/master/labor-04/labor-04-example-access.log)
+[tutorial-5-example-access.log](./tutorial-5-example-access.log)
 
 ```bash
-$> head labor-04-example-access.log
+$> head tutorial-5-example-access.log
 75.249.65.145 US - [2015-09-02 10:42:51.003372] "GET /cms/tina-access-editor-for-download/ HTTP/1.1" 200 7113 "-" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" www.example.com 124.165.3.7 443 redirect-handler - + "-" Vea2i8CoAwcAADevXAgAAAAB TLSv1.2 ECDHE-RSA-AES128-GCM-SHA256 701 12118 -% 88871 803 0 0 0 0
 71.180.228.107 US - [2015-09-02 11:14:02.800605] "GET /cms/application_3_applikationsserver_aufsetzen/?q=application_2_tina_minimal_konfigurieren HTTP/1.1" 200 12962 "-" "Mozilla/5.0 (compatible; Yahoo! Slurp; http://help.yahoo.com/help/us/ysearch/slurp)" www.example.com 124.165.3.7 443 redirect-handler - + "-" Vea92sCoAwcAADRophUAAAAX TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 700 17946 -% 77038 1669 0 0 0 0
 5.45.105.71 DE - [2015-09-02 11:32:39.371240] "GET /cms/feed/ HTTP/1.1" 200 35422 "-" "Tiny Tiny RSS/1.15.3 (http://tt-rss.org/)" www.example.com 124.165.3.7 443 redirect-handler - + "-" VebCN8CoAwcAADRcb14AAAAE TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 671 40343 -% 144443 791 0 0 0 0
@@ -515,7 +516,7 @@ $> head labor-04-example-access.log
 Let’s have a look at the distribution of _GET_ and _POST_ requests here:
 
 ```bash
-$> cat labor-04-example-access.log  | egrep  -o '"(GET|POST)'  | cut -b2- | sort | uniq -c
+$> cat tutorial-5-example-access.log  | egrep  -o '"(GET|POST)'  | cut -b2- | sort | uniq -c
    9781 GET
      12 POST
 ```
@@ -523,7 +524,7 @@ $> cat labor-04-example-access.log  | egrep  -o '"(GET|POST)'  | cut -b2- | sort
 This is a clear result. Do we actually see many errors? Or requests answered with an HTTP error code?
 
 ```bash
-$> cat labor-04-example-access.log | cut -d\" -f3 | cut -d\  -f2 | sort | uniq -c
+$> cat tutorial-5-example-access.log | cut -d\" -f3 | cut -d\  -f2 | sort | uniq -c
    9040 200
       5 206
     447 301
@@ -540,7 +541,7 @@ Let’s take a closer look at the log file.
 Further above we discussed encryption protocols and how their analyses was a foundation for deciding on an appropirate reaction to the _POODLE_ vulnerability. In practice, which encryption protocols are actually on the server since then:
 
 ```bash
-$> cat labor-04-example-access.log | cut -d\" -f9 | cut -d\  -f3 | sort | uniq -c | sort -n
+$> cat tutorial-5-example-access.log | cut -d\" -f9 | cut -d\  -f3 | sort | uniq -c | sort -n
      21 -
      65 TLSv1.1
    1764 TLSv1
@@ -600,7 +601,7 @@ test -e ~/.apache-modsec.alias && . ~/.apache-modsec.alias
 Let’s use the new alias right away:
 
 ```bash
-$> cat labor-04-example-access.log | alsslprotocol | sort | uniq -c | sort -n
+$> cat tutorial-5-example-access.log | alsslprotocol | sort | uniq -c | sort -n
      21 -
      65 TLSv1.1
    1764 TLSv1
@@ -616,7 +617,7 @@ This then enables us to do the following:
 
 
 ```bash
-$> cat labor-04-example-access.log | alsslprotocol | sucs
+$> cat tutorial-5-example-access.log | alsslprotocol | sucs
      21 -
      65 TLSv1.1
    1764 TLSv1
@@ -638,7 +639,7 @@ Traditionally, _awk_ is used for quick calculations in Linux. In addition to the
 The _sucspercent_ alias above then assumes this setup. The _awk_ script is available [here](https://github.com/Apache-Labor/labor/blob/master/bin/percent.awk).
 
 ```bash
-$> cat labor-04-example-access.log | alsslprotocol | sucspercent 
+$> cat tutorial-5-example-access.log | alsslprotocol | sucspercent 
                          Entry        Count Percent
 ---------------------------------------------------
                              -           21   0.21%
@@ -653,7 +654,7 @@ Wonderful. We are now able to output the numerical ratios for any repeating valu
 
 
 ```bash
-$> cat labor-04-example-access.log | alsslcipher | sucspercent 
+$> cat tutorial-5-example-access.log | alsslcipher | sucspercent 
                          Entry        Count Percent
 ---------------------------------------------------
          DHE-RSA-AES256-SHA256            2   0.02%
@@ -676,7 +677,7 @@ $> cat labor-04-example-access.log | alsslcipher | sucspercent
 A good overview on the fly. We can be satisfied with this for the moment. Is there anything to say about the HTTP protocol versions?
 
 ```bash
-$> cat labor-04-example-access.log | alprotocol | sucspercent 
+$> cat tutorial-5-example-access.log | alprotocol | sucspercent 
                          Entry        Count Percent
 ---------------------------------------------------
                           quit            4   0.04%
@@ -690,7 +691,7 @@ $> cat labor-04-example-access.log | alprotocol | sucspercent
 The obsolete _HTTP/1.0_ still appears, and something seems to have gone wrong with 45 requests. In the calculation let’s concentrate on the successful requests with a valid protocol and have another look at the percentages:
 
 ```bash
-$> cat labor-04-example-access.log | alprotocol | grep HTTP |  sucspercent
+$> cat tutorial-5-example-access.log | alprotocol | grep HTTP |  sucspercent
                          Entry        Count Percent
 ---------------------------------------------------
                       HTTP/1.0           70   0.70%
@@ -709,7 +710,7 @@ For measurements that no longer repeat, such as the duration of a request or the
 Such a script is also available for download: [basicstats.awk](https://github.com/Apache-Labor/labor/blob/master/bin/basicstats.awk). Similar to percent.awk, it is advisable to place this script in your private _bin_ directory. It’s important to know that this script consists of an expanded *awk* implementation (yes, there are several). The package is normally named *gawk* and it makes sure that the `awk` command uses the Gnu awk implementation.
 
 ```bash
-$> cat labor-04-example-access.log | alioout | basicstats.awk
+$> cat tutorial-5-example-access.log | alioout | basicstats.awk
 Num of values:        10000
       Average:        15375
        Median:         6646
@@ -724,7 +725,7 @@ These numbers give a clear picture of the service. With an average response size
 How does the duration of the requests look? Do we have a similar homogenous picture?
 
 ```bash
-$> cat labor-04-example-access.log | alduration | basicstats.awk
+$> cat tutorial-5-example-access.log | alduration | basicstats.awk
 Num of values:        10000
       Average:        91306
        Median:         2431
@@ -737,7 +738,7 @@ Std deviation:      3023884
 It’s important to remember that we are dealing in microseconds here. The median was 2400 microseconds, which is just over 2 milliseconds. At 91 milliseconds, the average is much larger. We obviously have a lot of outliers which have pushed up the average. In fact, we have a maximum value of 301 seconds and less surprisingly a standard deviation of 3 seconds. The picture is thus less homogenous and we have at least some requests that should be investigated. But this is now getting a bit more complicated. The suggested method is only one of many possible and is included here as a suggestion and inspiration for further work with the log file:
 
 ```bash
-$> cat labor-04-example-access.log | grep "\"GET " | aluri | cut -d\/ -f1,2,3 | sort | uniq | while read P; do  AVG=$(grep "GET $P" labor-04-example-access.log | alduration | basicstats.awk | grep Average | sed 's/.*: //'); echo "$AVG $P"; done  | sort -n
+$> cat tutorial-5-example-access.log | grep "\"GET " | aluri | cut -d\/ -f1,2,3 | sort | uniq | while read P; do  AVG=$(grep "GET $P" tutorial-5-example-access.log | alduration | basicstats.awk | grep Average | sed 's/.*: //'); echo "$AVG $P"; done  | sort -n
 ...
        97459 /cms/
        97840 /cms/application-download-soft
@@ -760,10 +761,10 @@ This brings us to the end of this tutorial. The goal was to introduce an expande
 
 * [Apache Module mod_log_config documentation](http://httpd.apache.org/docs/current/mod/mod_log_config.html)
 * [Apache Module mod_ssl documentation](http://httpd.apache.org/docs/current/mod/mod_ssl.html)
-* [labor-04-example-access.log](https://raw.githubusercontent.com/Apache-Labor/labor/master/labor-04/labor-04-example-access.log)
+* [tutorial-5-example-access.log](./tutorial-5-example-access.log)
 * [.apache-modsec.alias](https://github.com/Apache-Labor/labor/blob/master/bin/.apache-modsec.alias)
 * [percent.awk](https://github.com/Apache-Labor/labor/blob/master/bin/percent.awk)
-* [basicstats.awk](https://github.com/Apache-Labor/labor/blob/master/bin/basicstats.awk).
+* [basicstats.awk](https://github.com/Apache-Labor/labor/blob/master/bin/basicstats.awk)
 
 ### License / Copying / Further use
 
