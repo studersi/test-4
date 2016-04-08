@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 ##Tutorial 1 - Compiling an Apache web server
-=======
-## Tutorial 1 - Compiling an Apache web server
->>>>>>> d45be16161ef2e80f635bb250be4dbe4fba6b487
 
 ###What are we doing?
 
