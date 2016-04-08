@@ -199,9 +199,11 @@ SecAction "id:'90004',phase:5,nolog,pass,setvar:TX.ModSecTimestamp5start=%{DURAT
 
 # === ModSec Recommended Rules (in modsec src package) (ids: 200000-200010)
 
-SecRule REQUEST_HEADERS:Content-Type "text/xml" "id:'200000',phase:1,t:none,t:lowercase,pass,nolog,ctl:requestBodyProcessor=XML"
+SecRule REQUEST_HEADERS:Content-Type "text/xml" \
+  "id:'200000',phase:1,t:none,t:lowercase,pass,nolog,ctl:requestBodyProcessor=XML"
 
-SecRule REQBODY_ERROR "!@eq 0" "id:'200001',phase:2,t:none,deny,status:400,log,msg:'Failed to parse request body.',\
+SecRule REQBODY_ERROR "!@eq 0" \
+  "id:'200001',phase:2,t:none,deny,status:400,log,msg:'Failed to parse request body.',\
 logdata:'%{reqbody_error_msg}',severity:2"
 
 SecRule MULTIPART_STRICT_ERROR "!@eq 0" \
@@ -220,7 +222,8 @@ IP %{MULTIPART_INVALID_PART}, \
 IH %{MULTIPART_INVALID_HEADER_FOLDING}, \
 FL %{MULTIPART_FILE_LIMIT_EXCEEDED}'"
 
-SecRule TX:/^MSC_/ "!@streq 0" "id:'200004',phase:2,t:none,deny,status:500,msg:'ModSecurity internal error flagged: %{MATCHED_VAR_NAME}'"
+SecRule TX:/^MSC_/ "!@streq 0" \
+  "id:'200004',phase:2,t:none,deny,status:500,msg:'ModSecurity internal error flagged: %{MATCHED_VAR_NAME}'"
 
 
 # === ModSecurity Rules 
@@ -257,7 +260,8 @@ SSLCertificateKeyFile   /etc/ssl/private/ssl-cert-snakeoil.key
 SSLCertificateFile      /etc/ssl/certs/ssl-cert-snakeoil.pem
 
 SSLProtocol             All -SSLv2 -SSLv3
-SSLCipherSuite          'kEECDH+ECDSA kEECDH kEDH HIGH +SHA !aNULL !eNULL !LOW !MEDIUM !MD5 !EXP !DSS !PSK !SRP !kECDH !CAMELLIA !RC4'
+SSLCipherSuite          'kEECDH+ECDSA kEECDH kEDH HIGH +SHA !aNULL !eNULL !LOW !MEDIUM !MD5 !EXP !DSS \
+!PSK !SRP !kECDH !CAMELLIA !RC4'
 SSLHonorCipherOrder     On
 
 SSLRandomSeed           startup file:/dev/urandom 2048
@@ -320,8 +324,9 @@ Depending on request, a large volume of data is written to the audit log. There 
 Here is an example from the central audit log:
 
 ```bash
-localhost 127.0.0.1 - - [17/Oct/2015:15:54:54 +0200] "POST /index.html HTTP/1.1" 200 45 "-" "-" UYkHrn8AAQEAAHb-AM0AAAAB "-" 
-  /20130507/20130507-1554/20130507-155454-UYkHrn8AAQEAAHb-AM0AAAAB 0 20343 md5:a395b35a53c836f14514b3fff7e45308
+localhost 127.0.0.1 - - [17/Oct/2015:15:54:54 +0200] "POST /index.html HTTP/1.1" 200 45 "-" "-" \
+UYkHrn8AAQEAAHb-AM0AAAAB "-" /20130507/20130507-1554/20130507-155454-UYkHrn8AAQEAAHb-AM0AAAAB \
+0 20343 md5:a395b35a53c836f14514b3fff7e45308
 ```
 
 We see some information about the request, the HTTP status code and shortly afterward the _unique ID_ of the request, which we also find in our access log. An absolute path follows a bit later. But it only appears to be absolute. Specifically, we have to add this part of the path to the value in _SecAuditLogStorageDir_. For us this means _/apache/logs/audit/20130507/20130507-1554/20130507-155454-UYkHrn8AAQEAAHb-AM0AAAAB_. We can then find the details about the request in this file.
@@ -398,8 +403,6 @@ Perf-ModSecLogging: %{PERF_LOGGING}M \
 Perf-ModSecCombined: %{PERF_COMBINED}M" perflog
 ```
 
-
-
    * %{%Y-%m-%d %H:%M:%S}t.%{usec_frac}t means, as in our normal log, the timestamp the request was received with a precision of microseconds.
    * %{UNIQUE_ID}e : The unique ID of the request
    * %D : The total duration of the request from receiving the request line to the end of the complete request in microseconds.
@@ -463,7 +466,10 @@ on this server.</p>
 Let’s also have a look at what we can find about this in the _error log_:
 
 ```bash
-[2015-10-27 22:43:28.265834] [-:error] - - [client 127.0.0.1] ModSecurity: Access denied with code 403 (phase 1). Pattern match "/phpmyadmin" at REQUEST_FILENAME. [file "/apache/conf/httpd.conf_modsec_minimal"] [line "140"] [id "10000"] [msg "Blocking access to /phpmyadmin."] [tag "Local Lab Service"] [tag "Blacklist Rules"] [hostname "localhost"] [uri "/phpmyadmin"] [unique_id "Vi-wAH8AAQEAABuNHj8AAAAA"]
+[2015-10-27 22:43:28.265834] [-:error] - - [client 127.0.0.1] ModSecurity: Access denied with code 403 \
+(phase 1). Pattern match "/phpmyadmin" at REQUEST_FILENAME. [file "/apache/conf/httpd.conf_modsec_minimal"] \
+[line "140"] [id "10000"] [msg "Blocking access to /phpmyadmin."] [tag "Local Lab Service"] \
+[tag "Blacklist Rules"] [hostname "localhost"] [uri "/phpmyadmin"] [unique_id "Vi-wAH8AAQEAABuNHj8AAAAA"]
 ```
 
 Here, _ModSecurity_ describes the rule that was applied and the action taken: First the timestamp. Then the severity of the log entry assigned by Apache. The _error_ stage is assigned to all _ModSecurity_ messages. Then comes the client IP address. Between that there are some empty fields, indicated only by "-". In Apache 2.4 they remain empty, because the log format has changed and *ModSecurity* is not yet able to understand it. Afterwards comes the actual message which opens with action: _Access denied with code 403_, specifically already in phase 1 while receiving the request headers. We then see a message about the rule violation: The string _"/phpMyAdmin"_ was found in the *REQUEST_FILENAME*. This is exactly what we defined. The subsequent bits of information are embedded in blocks of square brackets. In each block first comes the name and then the information separated by a space. Our rule puts us on line 140 in the file */opt/apache-2.4.17/conf/httpd.conf_modsec_minimal*. As we know, the rule has ID 10000. In _msg_ we see the summary of the rule defined in the rule, where the variable *MATCHED_VAR* has been replaced by the path part of the request. Afterwards comes the tag that we set in _SetDefaultAction_; finally, the tag set in addition for this rule. At the end come the hostname, URI and the unique ID of the request.
@@ -478,19 +484,28 @@ Using the rules described in Step 7, we were able to prevent access to a specifi
 
 SecMarker "BEGIN_LOGIN_WHITELIST"
 
-SecRule REQUEST_FILENAME     "!@beginsWith /login" "id:10001,phase:1,pass,t:lowercase,t:normalisePath,nolog,msg:'Skipping',skipAfter:END_LOGIN_WHITELIST"
-SecRule REQUEST_FILENAME     "!@beginsWith /login" "id:10002,phase:2,pass,t:lowercase,t:normalisePath,nolog,msg:'Skipping',skipAfter:END_LOGIN_WHITELIST"
+SecRule REQUEST_FILENAME     "!@beginsWith /login" \
+	"id:10001,phase:1,pass,t:lowercase,t:normalisePath,nolog,msg:'Skipping',skipAfter:END_LOGIN_WHITELIST"
+SecRule REQUEST_FILENAME     "!@beginsWith /login" \
+	"id:10002,phase:2,pass,t:lowercase,t:normalisePath,nolog,msg:'Skipping',skipAfter:END_LOGIN_WHITELIST"
 
-SecRule REQUEST_FILENAME     "!^/login/(index.html|login.do)$" "id:10003,phase:1,deny,log,msg:'Unknown Login URL',tag:'Whitelist Login'"
+SecRule REQUEST_FILENAME     "!^/login/(index.html|login.do)$" \
+	"id:10003,phase:1,deny,log,msg:'Unknown Login URL',tag:'Whitelist Login'"
 
-SecRule ARGS_GET_NAMES       "!^()$" "id:10004,phase:1,deny,log,msg:'Unknown Query-String Parameter',tag:'Whitelist Login'"
-SecRule ARGS_POST_NAMES      "!^(username|password)$" "id:10005,phase:2,deny,log,msg:'Unknown Post Parameter',tag:'Whitelist Login'"
+SecRule ARGS_GET_NAMES       "!^()$" \
+	"id:10004,phase:1,deny,log,msg:'Unknown Query-String Parameter',tag:'Whitelist Login'"
+SecRule ARGS_POST_NAMES      "!^(username|password)$" \
+	"id:10005,phase:2,deny,log,msg:'Unknown Post Parameter',tag:'Whitelist Login'"
 
-SecRule &ARGS_POST:username  "@gt 1" "id:10006,phase:2,deny,log,msg:'%{MATCHED_VAR_NAME} occurring more than once',tag:'Whitelist Login'"
-SecRule &ARGS_POST:password  "@gt 1" "id:10007,phase:2,deny,log,msg:'%{MATCHED_VAR_NAME} occurring more than once',tag:'Whitelist Login'"
+SecRule &ARGS_POST:username  "@gt 1" \
+	"id:10006,phase:2,deny,log,msg:'%{MATCHED_VAR_NAME} occurring more than once',tag:'Whitelist Login'"
+SecRule &ARGS_POST:password  "@gt 1" \
+	"id:10007,phase:2,deny,log,msg:'%{MATCHED_VAR_NAME} occurring more than once',tag:'Whitelist Login'"
 
-SecRule ARGS_POST:username   "!^[a-zA-Z0-9_-]{1,16}$" "id:10008,phase:2,deny,log,msg:'%{MATCHED_VAR_NAME} parameter does not meet value domain',tag:'Whitelist Login'"
-SecRule ARGS_POST:password   "!^[a-zA-Z0-9@#+<>_-]{1,16}$" "id:10009,phase:2,deny,log,msg:'%{MATCHED_VAR_NAME} parameter does not meet value domain',tag:'Whitelist Login'"
+SecRule ARGS_POST:username   "!^[a-zA-Z0-9_-]{1,16}$" \
+	"id:10008,phase:2,deny,log,msg:'%{MATCHED_VAR_NAME} parameter does not meet value domain',tag:'Whitelist Login'"
+SecRule ARGS_POST:password   "!^[a-zA-Z0-9@#+<>_-]{1,16}$" \
+	"id:10009,phase:2,deny,log,msg:'%{MATCHED_VAR_NAME} parameter does not meet value domain',tag:'Whitelist Login'"
 
 SecMarker "END_LOGIN_WHITELIST"
 
