@@ -399,7 +399,7 @@ You can thus get the modules by reading the configuration file, the output of _h
 
 ```bash
 $> grep LoadModule conf/httpd.conf | awk '{print $2}' | sed -e "s/_module//" | while read M; do \
-  echo "Module $M"; R=$(./bin/httpd -L | grep $M | cut -d\ -f1 | tr -d "<" | xargs | tr " " "|"); \
+  echo "Module $M"; R=$(./bin/httpd -L | grep $M | cut -d\  -f1 | tr -d "<" | xargs | tr " " "|"); \
   egrep -q "$R" ./conf/httpd.conf; \
   if [ $? -eq 0 ]; then echo "OK"; else echo "Not used"; fi; echo; \
   done
