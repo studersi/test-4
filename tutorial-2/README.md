@@ -44,7 +44,8 @@ LoadModule              authn_core_module       modules/mod_authn_core.so
 LoadModule              authz_core_module       modules/mod_authz_core.so
 
 ErrorLogFormat          "[%{cu}t] [%-m:%-l] %-a %-L %M"
-LogFormat               "%h %l %u [%{%Y-%m-%d %H:%M:%S}t.%{usec_frac}t] \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
+LogFormat               "%h %l %u [%{%Y-%m-%d %H:%M:%S}t.%{usec_frac}t] \"%r\" %>s %b \
+\"%{Referer}i\" \"%{User-Agent}i\"" combined
 
 LogLevel                debug
 ErrorLog                logs/error.log
@@ -397,7 +398,11 @@ Using this list it is now possible to determine whether all of the modules loade
 You can thus get the modules by reading the configuration file, the output of _httpd -L_ summarized for each module and then look in the configuration file to see if any of the directives listed are being used. This nested manner of sending requests demands a find touch, but is one that I can highly recommend. Personally, I have solved it as follows:
 
 ```bash
-$> grep LoadModule conf/httpd.conf | awk '{print $2}' | sed -e "s/_module//" | while read M; do echo "Module $M"; R=$(./bin/httpd -L | grep $M | cut -d\ -f1 | tr -d "<" | xargs | tr " " "|"); egrep -q "$R" ./conf/httpd.conf; if [ $? -eq 0 ]; then echo "OK"; else echo "Not used"; fi; echo; done
+$> grep LoadModule conf/httpd.conf | awk '{print $2}' | sed -e "s/_module//" | while read M; do \
+  echo "Module $M"; R=$(./bin/httpd -L | grep $M | cut -d\ -f1 | tr -d "<" | xargs | tr " " "|"); \
+  egrep -q "$R" ./conf/httpd.conf; \
+  if [ $? -eq 0 ]; then echo "OK"; else echo "Not used"; fi; echo; \
+  done
 Module mpm_event
 OK
 
