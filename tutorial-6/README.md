@@ -1,4 +1,4 @@
-##Title: Embedding ModSecurity 
+##Tutorial 6 - Embedding ModSecurity 
 
 ###What are we doing?
 We are compiling the ModSecurity module, embedding it in the Apache web server, creating a base configuration and dealing with _false positives_ for the first time.
