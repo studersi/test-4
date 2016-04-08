@@ -78,7 +78,11 @@ LoadModule        unique_id_module        modules/mod_unique_id.so
 LoadModule        security2_module        modules/mod_security2.so
 
 ErrorLogFormat          "[%{cu}t] [%-m:%-l] %-a %-L %M"
-LogFormat "%h %{GEOIP_COUNTRY_CODE}e %u [%{%Y-%m-%d %H:%M:%S}t.%{usec_frac}t] \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" %v %A %p %R %{BALANCER_WORKER_ROUTE}e %X \"%{cookie}n\" %{UNIQUE_ID}e %{SSL_PROTOCOL}x %{SSL_CIPHER}x %I %O %{ratio}n%% %D %{ModSecTimeIn}e %{ApplicationTime}e %{ModSecTimeOut}e %{ModSecAnomalyScoreIn}e %{ModSecAnomalyScoreOut}e" extended
+LogFormat "%h %{GEOIP_COUNTRY_CODE}e %u [%{%Y-%m-%d %H:%M:%S}t.%{usec_frac}t] \"%r\" %>s %b \
+\"%{Referer}i\" \"%{User-Agent}i\" %v %A %p %R %{BALANCER_WORKER_ROUTE}e %X \"%{cookie}n\" \
+%{UNIQUE_ID}e %{SSL_PROTOCOL}x %{SSL_CIPHER}x %I %O %{ratio}n%% \
+%D %{ModSecTimeIn}e %{ApplicationTime}e %{ModSecTimeOut}e \
+%{ModSecAnomalyScoreIn}e %{ModSecAnomalyScoreOut}e" extended
 
 LogFormat "[%{%Y-%m-%d %H:%M:%S}t.%{usec_frac}t] %{UNIQUE_ID}e %D \
 PerfModSecInbound: %{TX.perf_modsecinbound}M \
@@ -161,9 +165,11 @@ SecAction "id:'90004',phase:5,nolog,pass,setvar:TX.ModSecTimestamp5start=%{DURAT
 
 # === ModSec Recommended Rules (in modsec src package) (ids: 200000-200010)
 
-SecRule REQUEST_HEADERS:Content-Type "text/xml" "id:'200000',phase:1,t:none,t:lowercase,pass,nolog,ctl:requestBodyProcessor=XML"
+SecRule REQUEST_HEADERS:Content-Type "text/xml" "id:'200000',phase:1,t:none,t:lowercase,\
+	pass,nolog,ctl:requestBodyProcessor=XML"
 
-SecRule REQBODY_ERROR "!@eq 0" "id:'200001',phase:2,t:none,deny,status:400,log,msg:'Failed to parse request body.',\
+SecRule REQBODY_ERROR "!@eq 0" "id:'200001',phase:2,t:none,deny,status:400,log,\
+	msg:'Failed to parse request body.',\
 logdata:'%{reqbody_error_msg}',severity:2"
 
 SecRule MULTIPART_STRICT_ERROR "!@eq 0" \
@@ -182,7 +188,8 @@ IP %{MULTIPART_INVALID_PART}, \
 IH %{MULTIPART_INVALID_HEADER_FOLDING}, \
 FL %{MULTIPART_FILE_LIMIT_EXCEEDED}'"
 
-SecRule TX:/^MSC_/ "!@streq 0" "id:'200004',phase:2,t:none,deny,status:500,msg:'ModSecurity internal error flagged: %{MATCHED_VAR_NAME}'"
+SecRule TX:/^MSC_/ "!@streq 0" "id:'200004',phase:2,t:none,deny,status:500,\
+msg:'ModSecurity internal error flagged: %{MATCHED_VAR_NAME}'"
 
 
 # === ModSecurity Rules (ids: 900000-999999)
@@ -195,8 +202,10 @@ SecAction "id:'900001',phase:1,t:none, \
    setvar:tx.warning_anomaly_score=3, \
    setvar:tx.notice_anomaly_score=2, \
    nolog, pass"
-SecAction "id:'900002',phase:1,t:none,setvar:tx.inbound_anomaly_score_level=10000,setvar:tx.inbound_anomaly_score=0,nolog,pass"
-SecAction "id:'900003',phase:1,t:none,setvar:tx.outbound_anomaly_score_level=10000,setvar:tx.outbound_anomaly_score=0,nolog,pass"
+SecAction "id:'900002',phase:1,t:none,setvar:tx.inbound_anomaly_score_level=10000,\
+	setvar:tx.inbound_anomaly_score=0,nolog,pass"
+SecAction "id:'900003',phase:1,t:none,setvar:tx.outbound_anomaly_score_level=10000,\
+	setvar:tx.outbound_anomaly_score=0,nolog,pass"
 SecAction "id:'900004',phase:1,t:none,setvar:tx.anomaly_score_blocking=on,nolog,pass"
 
 SecAction "id:'900006',phase:1,t:none,setvar:tx.max_num_args=255,nolog,pass"
@@ -207,19 +216,28 @@ SecAction "id:'900010',phase:1,t:none,setvar:tx.max_file_size=10000000,nolog,pas
 SecAction "id:'900011',phase:1,t:none,setvar:tx.combined_file_sizes=10000000,nolog,pass"
 SecAction "id:'900012',phase:1,t:none, \
   setvar:'tx.allowed_methods=GET HEAD POST OPTIONS', \
-  setvar:'tx.allowed_request_content_type=application/x-www-form-urlencoded|multipart/form-data|text/xml|application/xml|application/x-amf|application/json', \
+  setvar:'tx.allowed_request_content_type=application/x-www-form-urlencoded|\
+multipart/form-data|text/xml|application/xml|application/x-amf|application/json', \
   setvar:'tx.allowed_http_versions=HTTP/0.9 HTTP/1.0 HTTP/1.1', \
-  setvar:'tx.restricted_extensions=.asa/ .asax/ .ascx/ .axd/ .backup/ .bak/ .bat/ .cdx/ .cer/ .cfg/ .cmd/ .com/ .config/ .conf/ .cs/ .csproj/ .csr/ .dat/ .db/ .dbf/ .dll/ .dos/ .htr/ .htw/ .ida/ .idc/ .idq/ .inc/ .ini/ .key/ .licx/ .lnk/ .log/ .mdb/ .old/ .pass/ .pdb/ .pol/ .printer/ .pwd/ .resources/ .resx/ .sql/ .sys/ .vb/ .vbs/ .vbproj/ .vsdisco/ .webinfo/ .xsd/ .xsx/', \
-  setvar:'tx.restricted_headers=/Proxy-Connection/ /Lock-Token/ /Content-Range/ /Translate/ /via/ /if/', \
+  setvar:'tx.restricted_extensions=.asa/ .asax/ .ascx/ .axd/ .backup/ .bak/ .bat/ \
+.cdx/ .cer/ .cfg/ .cmd/ .com/ .config/ .conf/ .cs/ .csproj/ .csr/ .dat/ .db/ .dbf/ \
+.dll/ .dos/ .htr/ .htw/ .ida/ .idc/ .idq/ .inc/ .ini/ .key/ .licx/ .lnk/ .log/ .mdb/ \
+.old/ .pass/ .pdb/ .pol/ .printer/ .pwd/ .resources/ .resx/ .sql/ .sys/ .vb/ .vbs/ \
+.vbproj/ .vsdisco/ .webinfo/ .xsd/ .xsx/', \
+  setvar:'tx.restricted_headers=/Proxy-Connection/ /Lock-Token/ /Content-Range/ \
+/Translate/ /via/ /if/', \
   nolog,pass"
 
-SecRule REQUEST_HEADERS:User-Agent "^(.*)$" "id:'900018',phase:1,t:none,t:sha1,t:hexEncode,setvar:tx.ua_hash=%{matched_var}, \
+SecRule REQUEST_HEADERS:User-Agent "^(.*)$" "id:'900018',phase:1,t:none,t:sha1,t:hexEncode,\
+setvar:tx.ua_hash=%{matched_var}, \
   nolog,pass"
 SecRule REQUEST_HEADERS:x-forwarded-for "^\b(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\b" \
   "id:'900019',phase:1,t:none,capture,setvar:tx.real_ip=%{tx.1},nolog,pass"
-SecRule &TX:REAL_IP "!@eq 0" "id:'900020',phase:1,t:none,initcol:global=global,initcol:ip=%{tx.real_ip}_%{tx.ua_hash}, \
+SecRule &TX:REAL_IP "!@eq 0" "id:'900020',phase:1,t:none,initcol:global=global,\
+initcol:ip=%{tx.real_ip}_%{tx.ua_hash}, \
   nolog,pass"
-SecRule &TX:REAL_IP "@eq 0" "id:'900021',phase:1,t:none,initcol:global=global,initcol:ip=%{remote_addr}_%{tx.ua_hash},setvar:tx.real_ip=%{remote_addr}, \
+SecRule &TX:REAL_IP "@eq 0" "id:'900021',phase:1,t:none,initcol:global=global,\
+initcol:ip=%{remote_addr}_%{tx.ua_hash},setvar:tx.real_ip=%{remote_addr}, \
   nolog,pass"
 
 # === ModSecurity Ignore Rules Before Core Rules Inclusion; order by id of ignored rule (ids: 10000-49999)
@@ -261,7 +279,8 @@ SSLCertificateKeyFile   /etc/ssl/private/ssl-cert-snakeoil.key
 SSLCertificateFile      /etc/ssl/certs/ssl-cert-snakeoil.pem
 
 SSLProtocol             All -SSLv2 -SSLv3
-SSLCipherSuite          'kEECDH+ECDSA kEECDH kEDH HIGH +SHA !aNULL !eNULL !LOW !MEDIUM !MD5 !EXP !DSS !PSK !SRP !kECDH !CAMELLIA !RC4'
+SSLCipherSuite          'kEECDH+ECDSA kEECDH kEDH HIGH +SHA !aNULL !eNULL !LOW !MEDIUM !MD5 !EXP !DSS \
+!PSK !SRP !kECDH !CAMELLIA !RC4'
 SSLHonorCipherOrder     On
 
 SSLRandomSeed           startup file:/dev/urandom 2048
@@ -473,7 +492,8 @@ $> cat logs/error.log | melid | sort | uniq -c | sort -n
    6134 981203
    6135 990002
    6135 990012
-$> cat logs/error.log | melid | sort | uniq -c | sort -n  | while read STR; do echo -n "$STR "; ID=$(echo "$STR" | sed -e "s/.*\ //"); grep $ID logs/error.log | head -1 | melmsg; done
+$> cat logs/error.log | melid | sort | uniq -c | sort -n  | while read STR; do echo -n "$STR "; \
+ID=$(echo "$STR" | sed -e "s/.*\ //"); grep $ID logs/error.log | head -1 | melmsg; done
 1 950000 Session Fixation
 1 950107 URL Encoding Abuse Attack Attempt
 1 950907 System Command Injection
@@ -481,7 +501,7 @@ $> cat logs/error.log | melid | sort | uniq -c | sort -n  | while read STR; do e
 1 960007 Empty Host Header
 1 960208 Argument value too long
 1 960209 Argument name too long
-1 981202 Correlated Attack Attempt Identified: (Total Score: 22, SQLi=5, XSS=) Inbound Attack (SQL Injection Attack: Common Injection Testing Detected Inbound Anomaly Score: 18) + Outbound Application Error (The application is not available - Outbound Anomaly Score: 4)
+1 981202 Correlated Attack Attempt Identified: (Total Score: 22, SQLi=5, XSS=) Inbound Attack ...
 1 981319 SQL Injection Attack: SQL Operator Detected
 2 958031 Cross-site Scripting (XSS) Attack
 2 959071 SQL Injection Attack
@@ -544,7 +564,8 @@ This we can work with. But it’s perhaps necessary to explain the *one-liners*.
 Depending on computing power this may take just a few seconds or a few minutes. You might now think that it would be better to define an additional alias to determine the ID and description of the rule in a single step. This puts us on the wrong path, because rule 981203 has the identifier containing dynamic parts in and following the brackets. We of course want to put them together them in order to map the rule only once. So, to really simplify analysis we have to get rid of the dynamic items. Here’s an additional *alias* that implements this idea. It is part of the *.apache-modsec.alias* file you are already familiar with.
 
 ```bash
-alias melidmsg='grep -o "\[id [^]]*\].*\[msg [^]]*\]" | sed -e "s/\].*\[/] [/" | cut -b6-11,19- | tr -d \] | sed -e "s/(Total .*/(Total ...) .../" | tr -d \"'
+alias melidmsg='grep -o "\[id [^]]*\].*\[msg [^]]*\]" | sed -e "s/\].*\[/] [/" | cut -b6-11,19- | \
+tr -d \] | sed -e "s/(Total .*/(Total ...) .../" | tr -d \"'
 ```
 
 ```
@@ -624,10 +645,10 @@ We have to overcome this link: We want to increase the degree of separation in o
 
 To reach such a target we will need one or two tools to help us get a good footing. Specifically, we want to find out the *anomaly scores* the different requests to the server have been assigned and which of the rules have actually been violated. We have modified the *log format* in such a way that it is easy for the *anomaly scores* to be extracted from the *access log*. We now want to present these data in a suitable form.
 
-In Tutorial 4 we worked with a sample log file containing 10,000 entries. We’ll be using this log file again here: [labor-04-example-access.log](https://github.com/Apache-Labor/labor/blob/master/labor-04/labor-04-example-access.log). The file comes from a real server, but the IP addresses, server names and paths have been simplified or rewritten. However, the information we need for our analysis is still there. Let’s have a look at the distribution of *anomaly scores*:
+In Tutorial 4 we worked with a sample log file containing 10,000 entries. We’ll be using this log file again here: [tutorial-5-example-access.log](https://github.com/Apache-Labor/labor/blob/master/tutorial-5/tutorial-5-example-access.log). The file comes from a real server, but the IP addresses, server names and paths have been simplified or rewritten. However, the information we need for our analysis is still there. Let’s have a look at the distribution of *anomaly scores*:
 
 ```
-$> egrep -o "[0-9-]+ [0-9-]+$" labor-04-example-access.log | cut -d\  -f1 | sucs
+$> egrep -o "[0-9-]+ [0-9-]+$" tutorial-5-example-access.log | cut -d\  -f1 | sucs
       1 21
       2 41
       8 5
@@ -635,7 +656,7 @@ $> egrep -o "[0-9-]+ [0-9-]+$" labor-04-example-access.log | cut -d\  -f1 | sucs
      17 3
      41 -
    9920 0
-$> egrep -o "[0-9-]+$" labor-04-example-access.log | sucs
+$> egrep -o "[0-9-]+$" tutorial-5-example-access.log | sucs
      41 -
    9959 0
 ```
@@ -647,7 +668,7 @@ The results give us an idea about the situation: The great majority of requests 
 But this still doesn’t give us the right idea about the *tuning steps* needed. To present this information in suitable form I have prepared a script that analyzes *anomaly scores*. [modsec-positive-stats.rb](https://github.com/Apache-Labor/labor/blob/master/bin/modsec-positive-stats.rb). Applied to the log file, the script delivers the following result:
 
 ```
-$> cat labor-04-example-access.log  | egrep -o "[0-9-]+ [0-9-]+$" | tr " " ";" | modsec-positive-stats.rb
+$> cat tutorial-5-example-access.log  | egrep -o "[0-9-]+ [0-9-]+$" | tr " " ";" | modsec-positive-stats.rb
 INCOMING                     Num of req. | % of req. |  Sum of % | Missing %
 Number of incoming req. (total) |  10000 | 100.0000% | 100.0000% |   0.0000%
 
@@ -760,7 +781,8 @@ We define a rule that first inspects the path. With the condition for the path *
 That was very important. Therefore, to summarize once again: We define a rule to suppress another rule. We use a pattern for this which lets us define a path as a condition. This enables us to disable rules for individual parts of an application. Only in those places where false alarms occur. This prevents us from disabling rules on the entire server, considering that the false alarm occurs only when processing one individual form, which is frequently the case. This would look something like this:
 
 ```
-SecRule REQUEST_FILENAME "@beginsWith /app/submit.do" "phase:1,nolog,pass,t:none,id:10001,ctl:ruleRemoveById=960015"
+SecRule REQUEST_FILENAME "@beginsWith /app/submit.do" "phase:1,nolog,pass,t:none,id:10001,\
+ctl:ruleRemoveById=960015"
 ```
 
 We have now disabled a rule. For the entire service (*"/"*) or for a specific sub-path (*"/app/submit.do"*). Unfortunately, we have gone a bit blind with respect to these rules. We never know whether incoming requests would violate the rule. Because we aren’t always familiar with the applications on our servers in detail and if we now wait a year and think about whether we still need the *ignore rule*, we won’t have an answer for that. We have suppressed every message on the topic. It would be ideal if we could still observe when the rule takes effect, but without blocking the request and having the *anomaly score* remain unchanged. Increasing an *anomaly score* is done in the definition of the rule. In rule *960015* of the *core rules* this is solved as follows:
@@ -773,8 +795,10 @@ Here the value *tx.notice_anomaly_score* is added to the *inbound_anomaly_score*
 
 ```
 ...
-SecRule REQUEST_FILENAME "@beginsWith /index.html" "chain,phase:2,log,pass,t:none,id:10004,msg:'Adjusting inbound anomaly score for rule 960015'"
-   SecRule "&TX:960015-OWASP_CRS/PROTOCOL_VIOLATION/MISSING_HEADER-REQUEST_HEADERS" "@ge 1" "setvar:tx.inbound_anomaly_score=-%{tx.notice_anomaly_score}"
+SecRule REQUEST_FILENAME "@beginsWith /index.html" "chain,phase:2,log,pass,t:none,id:10004,\
+	msg:'Adjusting inbound anomaly score for rule 960015'"
+   SecRule "&TX:960015-OWASP_CRS/PROTOCOL_VIOLATION/MISSING_HEADER-REQUEST_HEADERS" "@ge 1" \
+   	"setvar:tx.inbound_anomaly_score=-%{tx.notice_anomaly_score}"
 ...
 ```
 
@@ -819,20 +843,27 @@ Here we see in detail how *ModSecurity* performed its arithmetic functions. What
 It can of course happen that a rule is violated multiple times. This means that multiple parameters are violating the same rule. We can also cover this case, at yet another level of complexity. In this case, *ModSecurity* writes a collection variable that includes the variable names: rule number and name with the suffix *-ARGS:<name>* added to it. For a *file injection rule* such as *950005* this results, for example, in *TX:950005-OWASP_CRS/WEB_ATTACK/FILE_INJECTION-ARGS:contact_form_name*. If we are dealing with two parameters that are violating this rule (say, for instance *contact_form_name* and *contact_form_address*), we use the following construct:
 
 ```bash
-SecRule REQUEST_FILENAME "@beginsWith /app/submit.do" "chain,phase:2,log,t:none,pass,id:10003,msg:'Adjusting inbound anomaly score for rule 950005'"
-   SecRule "&TX:950005-OWASP_CRS/WEB_ATTACK/FILE_INJECTION-ARGS:contact_form_name" "@ge 1" "setvar:tx.inbound_anomaly_score=-%{tx.critical_anomaly_score}"
+SecRule REQUEST_FILENAME "@beginsWith /app/submit.do" "chain,phase:2,log,t:none,pass,id:10003, \
+	msg:'Adjusting inbound anomaly score for rule 950005'"
+   SecRule "&TX:950005-OWASP_CRS/WEB_ATTACK/FILE_INJECTION-ARGS:contact_form_name" "@ge 1" \
+   	"setvar:tx.inbound_anomaly_score=-%{tx.critical_anomaly_score}"
 
-SecRule REQUEST_FILENAME "@beginsWith /submit.do" "chain,phase:2,log,pass,t:none,id:10004,msg:'Adjusting inbound anomaly score for rule 950005'"
-   SecRule "&TX:950005-OWASP_CRS/WEB_ATTACK/FILE_INJECTION-ARGS:contact_form_address" "@ge 1" "setvar:tx.inbound_anomaly_score=-%{tx.critical_anomaly_score}"
+SecRule REQUEST_FILENAME "@beginsWith /submit.do" "chain,phase:2,log,pass,t:none,id:10004, \
+	msg:'Adjusting inbound anomaly score for rule 950005'"
+   SecRule "&TX:950005-OWASP_CRS/WEB_ATTACK/FILE_INJECTION-ARGS:contact_form_address" "@ge 1" \
+   	"setvar:tx.inbound_anomaly_score=-%{tx.critical_anomaly_score}"
 ```
 
 We can trigger the rule violation and change of anomaly value just configured with the following request:
 
 ```bash
-$> curl -d "contact_form_name=/etc/passwd" -d "contact_form_address=/etc/passwd" http://localhost/app/submit.do
+$> curl -d "contact_form_name=/etc/passwd" -d "contact_form_address=/etc/passwd" \
+	http://localhost/app/submit.do
 ...
 $> tail -1 logs/access.log
-127.0.0.1 - - [2015-11-08 08:25:46.950543] "POST /app/submit.do HTTP/1.1" 404 45 "-" "curl/7.46.0-DEV" localhost 127.0.0.1 80 - - "-" Vj74@n8AAQEAADydhKkAAAAE - - 219 231 -% 21734 19189 71 588 0 0
+127.0.0.1 - - [2015-11-08 08:25:46.950543] "POST /app/submit.do HTTP/1.1" 404 45 "-" \
+"curl/7.46.0-DEV" localhost 127.0.0.1 80 - - "-" Vj74@n8AAQEAADydhKkAAAAE - - 219 231 \
+-% 21734 19189 71 588 0 0
 $> grep Vj74@n8AAQEAADydhKkAAAAE logs/error.log
 ...
 [2015-11-08 08:25:46.961718] [-:error] - - [client 127.0.0.1] ModSecurity: Warning. Pattern match "(?:\\\\b(?:\\\\.(?:ht(?:access|passwd|group)|www_?acl)|global\\\\.asa|httpd\\\\.conf|boot\\\\.ini)\\\\b|\\\\/etc\\\\/)" at ARGS:contact_form_address. [file "/modsecurity-core-rules/modsecurity_crs_40_generic_attacks.conf"] [line "205"] [id "950005"] [rev "3"] [msg "Remote File Access Attempt"] [data "Matched Data: /etc/ found within ARGS:contact_form_address: /etc/passwd"] [severity "CRITICAL"] [ver "OWASP_CRS/2.2.9"] [maturity "9"] [accuracy "9"] [tag "Local Lab Service"] [tag "OWASP_CRS/WEB_ATTACK/FILE_INJECTION"] [tag "WASCTC/WASC-33"] [tag "OWASP_TOP_10/A4"] [tag "PCI/6.5.4"] [hostname "localhost"] [uri "/app/submit.do"] [unique_id "Vj74@n8AAQEAADydhKkAAAAE"]
@@ -859,7 +890,8 @@ This directive, that has to be configured after loading the *core rules*, matche
 For form parameters we shouldn’t proceed so generally that we disable it for the entire service. There is however another rule pattern closely based on this example, but which is only effective on a single path for an individual parameter:
 
 ```bash
-SecRule REQUEST_FILENAME "@beginsWith /app/submit.do" "phase:2,nolog,pass,t:none,id:10002,ctl:ruleRemoveTargetById=950005;ARGS:contact_form_name"
+SecRule REQUEST_FILENAME "@beginsWith /app/submit.do" \
+	"phase:2,nolog,pass,t:none,id:10002,ctl:ruleRemoveTargetById=950005;ARGS:contact_form_name"
 ```
 
 We disable the handling of the *contact_form_name* parameter via rule *950005* for the path */app/submit.do*.. This does the job right and in my experience is the preferred way to suppress an individual false positive for a parameter.
@@ -912,7 +944,8 @@ We have become familiar with four different ways of suppressing a false alarm. I
 
 **Case 1 : Disabling the rule for a specific path** </br>
 ```bash
-SecRule REQUEST_FILENAME "@beginsWith /app/submit.do" "phase:1,nolog,pass,t:none,id:10001,ctl:ruleRemoveById=950005"
+SecRule REQUEST_FILENAME "@beginsWith /app/submit.do" \
+	"phase:1,nolog,pass,t:none,id:10001,ctl:ruleRemoveById=950005"
 ```
 Location in the configuration: Preferably in front of the *Core Rule Inclusion*, but for *phase:1* can also be placed after *include*. </br>
 Phase: Best in phase 1, because the path is known at this moment.</br>
@@ -927,7 +960,8 @@ Location in the configuration: Generally placed after the *Core Rule Inclusion*.
 
 **Case 3 : Disabling rules for specific parameters on a specific path** </br>
 ```bash
-SecRule REQUEST_FILENAME "@beginsWith /app/submit.do" "phase:2,nolog,pass,t:none,id:10002,ctl:ruleRemoveTargetById=950005;ARGS:contact_form_name"
+SecRule REQUEST_FILENAME "@beginsWith /app/submit.do" \
+	"phase:2,nolog,pass,t:none,id:10002,ctl:ruleRemoveTargetById=950005;ARGS:contact_form_name"
 ```
 Location in the configuration: Preferably placed after the *Core Rule Inclusion*. </br>
 Phase: Required for *post parameter* in phase 2, otherwise conceivable in phase 1.</br>
@@ -935,8 +969,10 @@ Phase: Required for *post parameter* in phase 2, otherwise conceivable in phase 
 
 **Case 4 : Keep the rule enabled, but disable scoring for specific parameters on specific paths** </br>
 ```bash   
-SecRule REQUEST_FILENAME "@beginsWith /app/submit.do" "chain,phase:2,log,pass,t:none,id:10003,msg:'Adjusting inbound anomaly score for rule 950005'"
-SecRule "&TX:950005-OWASP_CRS/WEB_ATTACK/FILE_INJECTION-ARGS:contact_form_name" "@ge 1" "setvar:tx.inbound_anomaly_score=-%{tx.critical_anomaly_score}"
+SecRule REQUEST_FILENAME "@beginsWith /app/submit.do" \
+	"chain,phase:2,log,pass,t:none,id:10003,msg:'Adjusting inbound anomaly score for rule 950005'"
+SecRule "&TX:950005-OWASP_CRS/WEB_ATTACK/FILE_INJECTION-ARGS:contact_form_name" "@ge 1" \
+	"setvar:tx.inbound_anomaly_score=-%{tx.critical_anomaly_score}"
 ```
 Location in the configuration: Preferably placed after the *Core Rule Inclusion*. </br>
 Phase: Required for *post parameter* in phase 2, otherwise conceivable in phase 1.</br>
