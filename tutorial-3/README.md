@@ -1,4 +1,4 @@
-##Setting up an Apache/PHP application server
+##Tutorial 3 - Setting up an Apache/PHP application server
 
 ###What are we doing?
 
@@ -47,7 +47,8 @@ LoadModule              suexec_module           modules/mod_suexec.so
 LoadModule              fcgid_module            modules/mod_fcgid.so
 
 ErrorLogFormat          "[%{cu}t] [%-m:%-l] %-a %-L %M"
-LogFormat               "%h %l %u [%{%Y-%m-%d %H:%M:%S}t.%{usec_frac}t] \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
+LogFormat               "%h %l %u [%{%Y-%m-%d %H:%M:%S}t.%{usec_frac}t] \"%r\" %>s %b \
+\"%{Referer}i\" \"%{User-Agent}i\"" combined
 
 LogLevel                debug
 ErrorLog                logs/error.log
