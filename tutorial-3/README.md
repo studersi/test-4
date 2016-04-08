@@ -219,7 +219,7 @@ $> sudo ./bin/httpd -X -f conf/httpd.conf_fastcgid
 
 Our test script is available at [http://localhost/info.php](http://localhost/info.php).
 
-![Screenshot: phpinfo()!](./apache-tutorial-3-screenshot-phpinfo.png)
+[Screenshot: phpinfo()](./apache-tutorial-3-screenshot-phpinfo.png)
 phpinfo gives you a comprehensive status report in your browser.
 
 If an error message results from starting the server or invoking the URL, the server’s _error log_ or the separate _suexec log_ in _logs/suexec_log_ may prove helpful. Errors are typically related to ownership of and permission to access directories and files.
