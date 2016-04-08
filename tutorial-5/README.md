@@ -738,9 +738,9 @@ Std deviation:      3023884
 It’s important to remember that we are dealing in microseconds here. The median was 2400 microseconds, which is just over 2 milliseconds. At 91 milliseconds, the average is much larger. We obviously have a lot of outliers which have pushed up the average. In fact, we have a maximum value of 301 seconds and less surprisingly a standard deviation of 3 seconds. The picture is thus less homogenous and we have at least some requests that should be investigated. But this is now getting a bit more complicated. The suggested method is only one of many possible and is included here as a suggestion and inspiration for further work with the log file:
 
 ```bash
-$> cat tutorial-5-example-access.log | grep "\"GET " | aluri | cut -d\/ -f1,2,3 | sort | uniq | while read P; do \
-AVG=$(grep "GET $P" tutorial-5-example-access.log | alduration | basicstats.awk | grep Average | sed 's/.*: //'); \
-echo "$AVG $P"; done \
+$> cat tutorial-5-example-access.log | grep "\"GET " | aluri | cut -d\/ -f1,2,3 | sort | uniq \
+| while read P; do AVG=$(grep "GET $P" tutorial-5-example-access.log | alduration | basicstats.awk \
+| grep Average | sed 's/.*: //'); echo "$AVG $P"; done \
 | sort -n
 ...
        97459 /cms/
