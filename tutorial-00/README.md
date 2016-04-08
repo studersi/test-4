@@ -119,7 +119,11 @@ We now enter the directory and configure the compiler with our entries and with 
 
 ```bash
 $> cd httpd-2.4.17
-$> ./configure --prefix=/opt/apache-2.4.17  --with-apr=/usr/local/apr/bin/apr-1-config --with-apr-util=/usr/local/apr/bin/apu-1-config --enable-mpms-shared=event --enable-mods-shared=all --enable-nonportable-atomics=yes
+$> ./configure --prefix=/opt/apache-2.4.17  --with-apr=/usr/local/apr/bin/apr-1-config \
+   --with-apr-util=/usr/local/apr/bin/apu-1-config \
+   --enable-mpms-shared=event \
+   --enable-mods-shared=all \
+   --enable-nonportable-atomics=yes
 ```
 
 This is where we define the target directory for the future Apache web server, again compiling in compliance with the _FHS_. Following this, there are two options for linking the two libraries installed as a precondition. We use `--enable-mpms-shared` to select a process model for the server. Simply put, this is like an engine type: gasoline (petrol) or diesel. In our case, `event`, `worker`, `prefork` and a few experimental engines are available. In this case we’ll take the `event` model, which is the new standard in 2.4 and has significantly better performance over the other architectures. In the 2.0 and 2.2 version lines there was significantly more to consider besides performance, but this set of problems has been significantly defused since 2.4 and it’s best for us to continue with `event`. More information about the different process models (_MPMs_) is available from the Apache Project.
