@@ -475,7 +475,8 @@ Interestingly, there is something akin to a chart show for secure _HTTPS servers
 
 Ivan Ristić, mentioned above as the author of several books on Apache and SSL, operates an analysis service for Qualys that checks _SSL web servers_. It is available at [www.ssllabs.com](https://www.ssllabs.com/ssldb/index.html). A web server configured like the one above earned me the highest grade of _A+_ on the test.
 
-![Screenshot: SSLLabs](./apache-tutorial-03-screenshot-ssllabs.png)
+![Screenshot: SSLLabs](./apache-tutorial-4-screenshot-ssllabs.png)
+
 The highest grade is attainable by following these instructions.
 
 ###References
