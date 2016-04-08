@@ -361,7 +361,8 @@ SSLCertificateChainFile conf/ssl.crt/startssl-class1-chain-ca.pem
 SSLPassPhraseDialog     exec:bin/gen_passphrase.sh
 
 SSLProtocol             All -SSLv2 -SSLv3
-SSLCipherSuite		'kEECDH+ECDSA kEECDH kEDH HIGH +SHA !aNULL !eNULL !LOW !MEDIUM !MD5 !EXP !DSS !PSK !SRP !kECDH !CAMELLIA !RC4'
+SSLCipherSuite		'kEECDH+ECDSA kEECDH kEDH HIGH +SHA !aNULL !eNULL !LOW !MEDIUM !MD5 !EXP !DSS \
+!PSK !SRP !kECDH !CAMELLIA !RC4'
 SSLHonorCipherOrder	On
 
 SSLRandomSeed           startup file:/dev/urandom 2048
