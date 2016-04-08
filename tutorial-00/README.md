@@ -1,4 +1,4 @@
-##Compiling an Apache web server
+## Tutorial 1 - Compiling an Apache web server
 
 ###What are we doing?
 
