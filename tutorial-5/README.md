@@ -1,4 +1,4 @@
-##Extending and analyzing the access log
+##Tutorial 5 - Extending and analyzing the access log
 
 ###What are we doing?
 
@@ -133,7 +133,11 @@ We define the log format as follows:
 
 ```bash
 
-LogFormat "%h %{GEOIP_COUNTRY_CODE}e %u [%{%Y-%m-%d %H:%M:%S}t.%{usec_frac}t] \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" %v %A %p %R %{BALANCER_WORKER_ROUTE}e %X \"%{cookie}n\" %{UNIQUE_ID}e %{SSL_PROTOCOL}x %{SSL_CIPHER}x %I %O %{ratio}n%% %D %{ModSecTimeIn}e %{ApplicationTime}e %{ModSecTimeOut}e %{ModSecAnomalyScoreIn}e %{ModSecAnomalyScoreOut}e" extended
+LogFormat "%h %{GEOIP_COUNTRY_CODE}e %u [%{%Y-%m-%d %H:%M:%S}t.%{usec_frac}t] \"%r\" %>s %b \
+\"%{Referer}i\" \"%{User-Agent}i\" %v %A %p %R %{BALANCER_WORKER_ROUTE}e %X \"%{cookie}n\" \
+%{UNIQUE_ID}e %{SSL_PROTOCOL}x %{SSL_CIPHER}x %I %O %{ratio}n%% \
+%D %{ModSecTimeIn}e %{ApplicationTime}e %{ModSecTimeOut}e \
+%{ModSecAnomalyScoreIn}e %{ModSecAnomalyScoreOut}e" extended
 
 ...
 
@@ -199,7 +203,7 @@ The result could then look something like this:
 ```bash
 $> cat logs/access-debug.log
 2015-09-02 11:58:35.654011 VebITcCoAwcAADRophsAAAAX "GET / HTTP/1.1" */* text/html
-2015-09-02 11:58:37.486603 VebIT8CoAwcAADRophwAAAAX "GET /cms/feed/ HTTP/1.1" text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8 text/html
+2015-09-02 11:58:37.486603 VebIT8CoAwcAADRophwAAAAX "GET /cms/feed/ HTTP/1.1" text/html,application/xhtml+xml,...
 2015-09-02 11:58:39.253209 VebIUMCoAwcAADRoph0AAAAX "GET /cms/2014/04/17/ubuntu-14-04/ HTTP/1.1" */* text/html
 2015-09-02 11:58:40.893992 VebIU8CoAwcAADRbdGkAAAAD "GET /cms/2014/05/13/download-softfiles HTTP/1.1" */* text/html
 2015-09-02 11:58:43.558478 VebIVcCoAwcAADRbdGoAAAAD "GET /cms/2014/08/25/netcapture-sshargs HTTP/1.1" */* text/html
@@ -217,7 +221,9 @@ We could use _ApacheBench_ as described in the second tutorial for this, but tha
 
 ```bash
 $> for N in {1..100}; do curl --silent http://localhost/index.html?n=${N}a >/dev/null; done
-$> for N in {1..100}; do PAYLOAD=$(uuid -n $N | xargs); curl --silent --data "payload=$PAYLOAD" http://localhost/index.html?n=${N}b >/dev/null; done
+$> for N in {1..100}; do PAYLOAD=$(uuid -n $N | xargs); \
+   curl --silent --data "payload=$PAYLOAD" http://localhost/index.html?n=${N}b >/dev/null; \
+   done
 ```
 
 On the first line we simply make one hundred requests, numbered in the _query string_. Then comes the interesting idea on the second line: We again make one hundred requests. But this time we want to send the data using a POST request in the body of the request. We are dynamically creating this payload in such a way that it gets bigger every time it is called. We use _uuidgen_ to generate the data we need. This is a command that generates an _ascii ID_.
