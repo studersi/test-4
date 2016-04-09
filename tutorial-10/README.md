@@ -1,4 +1,4 @@
-##Title: Efficiently configuring and debugging Apache and ModSec in the shell
+##Tutorial 10 - Efficiently configuring and debugging Apache and ModSec in the shell
 
 ###What are we doing?
 
@@ -28,9 +28,11 @@ Curl is the right tool for making HTTP requests. HTTP must of course first work 
 We’ve used `curl` a number of different ways in the preceding tutorials. This puts us in a strong position. But adding one or two features to your toolbox is still worthwhile.
 
 ```bash
-$> curl --cookie-jar /tmp/cookies.txt --cookie /tmp/cookies.txt --data "username=test" --data "password=xxxxxxxx" http://localhost/login.action
+$> curl --cookie-jar /tmp/cookies.txt --cookie /tmp/cookies.txt --data "username=test"\
+	--data "password=xxxxxxxx" http://localhost/login.action
 ...
-$> curl http://localhost/login.html --next --cookie-jar /tmp/cookies.txt --cookie /tmp/cookies.txt --data "username=test" --data "password=xxxxxxxx" http://localhost/login.action
+$> curl http://localhost/login.html --next --cookie-jar /tmp/cookies.txt --cookie /tmp/cookies.txt\
+	--data "username=test" --data "password=xxxxxxxx" http://localhost/login.action
 ...
 ```
 
@@ -133,7 +135,8 @@ ERRORLOG="$2"
 ACCESS_IGNORE_REGEX="(heartbeat)"
 
 if [ -z "$ACCESSLOG" ]; then 
-        echo "Accesslog not passed via commandline. Please pass path to accesslog as first parameter. This is fatal. Aborting."
+        echo "Accesslog not passed via commandline. Please pass path to accesslog as first parameter. \
+This is fatal. Aborting."
         exit 1
 fi
 if [ ! -f "$ACCESSLOG" ]; then 
@@ -141,7 +144,8 @@ if [ ! -f "$ACCESSLOG" ]; then
         exit 1
 fi
 if [ -z "$ERRORLOG" ]; then 
-        echo "Errorlog not passed via commandline. Please pass path to errorlog as first parameter. This is fatal. Aborting."
+        echo "Errorlog not passed via commandline. Please pass path to errorlog as first parameter.\
+This is fatal. Aborting."
         exit 1
 fi
 if [ ! -f "$ERRORLOG" ]; then 
