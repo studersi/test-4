@@ -1,4 +1,4 @@
-##Title: Fine tuning OWASP ModSecurity Core Rules
+##Tutorial 8 - Fine tuning OWASP ModSecurity Core Rules
 
 ###What are we doing?
 
@@ -21,8 +21,8 @@ It's also a good idea for us to have a real application to protect. In Tutorial 
 
 If data is unavailable or a working example is being sought for practice, it’s perhaps worthwhile to work with the existing practice data. I have prepared two *log files* as practice files. I say prepared, because they come from an untuned production system, which first had to be anonymized for use in practice by removing all data references to the original system. Furthermore, it had to be ensured that no real attacks are included in the log file, because we want to eliminate false alarms and not suppress the real alarms we need.
 
-* [labor-07-example-access.log](https://raw.githubusercontent.com/Apache-Labor/labor/master/labor-07/labor-07-example-access.log)
-* [labor-07-example-error.log](https://raw.githubusercontent.com/Apache-Labor/labor/master/labor-07/labor-07-example-error.log)
+* [tutorial-8-example-access.log](./tutorial-8-example-access.log)
+* [tutorial-8-example-error.log](./tutorial-8-example-error.log)
 
 The log files are based on 10,000 requests. To me this seems to be the minimum needed for tuning. Smaller log files are in fact too random and only reflect one aspect of a service. The larger the basis for fine tuning, the better, but it's enough to start out with this size for the first fine tuning steps. Later on it may be a good idea to use to larger log files to get rid of false alarms that occur even less frequently.
 
@@ -58,22 +58,43 @@ However, these considerations digress from the actual topic of fine tuning. At l
 In the preceding tutorials we closely inspected the web server’s *access log* and *error log*. Let’s place them side-by-side:
 
 ```bash
-192.168.146.78 CH - [2015-05-20 15:34:59.211464] "POST /EMail/MailHandler HTTP/1.1" 303 - "https://www.example.com/EMail/newMessage.aspx?msg=new" "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko" www.example.com 192.168.34.16 443 proxy-server - + "4a537de2.52283b4e6d77b" ViZDA6wxQzZrjCzQ-t8AAAAt TLSv1.2 ECDHE-RSA-AES128-SHA256 1796 4302 -% 1181278 14514 164330 149 18 0
+192.168.146.78 CH - [2015-05-20 15:34:59.211464] "POST /EMail/MailHandler HTTP/1.1" 303 - \
+"https://www.example.com/EMail/newMessage.aspx?msg=new" "Mozilla/5.0 (Windows NT 6.1; WOW64; \
+Trident/7.0; rv:11.0) like Gecko" www.example.com 192.168.34.16 443 proxy-server - + "4a537de2.52283b4e6d77b" \
+ViZDA6wxQzZrjCzQ-t8AAAAt TLSv1.2 ECDHE-RSA-AES128-SHA256 1796 4302 -% 1181278 14514 164330 149 18 0
 ``` 
 
 This sample line from the *access log* logs a request. It is a post request for the mail handler resource. The referrer references a *newMessage.aspx* resource, which is an indication that our request may have to do with sending e-mail. The second-to-last value is *18* and indicates an anomaly value for the inbound request. (The response adds 0 points, at the very end). Our limit is still set extremely high, so this poses no risk. But because this is mature or filtered traffic, we already know that it’s a false alarm, which earned a total score of 18 points. What kind of false positives were there? Let’s have a look.
 
 ```bash
-$> grep ViZDA6wxQzZrjCzQ-t8AAAAt labor-07-example-error.log
-[2015-05-20 15:34:59.212369] [-:error] - - [client 192.168.146.78] ModSecurity: Warning. Pattern match "\\\\W{4,}" at ARGS:message. [file "/opt/modsecurity-rules/latest/base_rules/modsecurity_crs_40_generic_attacks.conf"] [line "37"] [id "960024"] [rev "2"] [msg "Meta-Character Anomaly Detection Alert - Repetative Non-Word Characters"] [data "..."] [hostname "www.example.com"] [uri "/EMail/MailHandler"] [unique_id "ViZDA6wxQzZrjCzQ-t8AAAAt"]
-[2015-05-20 15:34:59.212639] [-:error] - - [client 192.168.146.78] ModSecurity: Warning. Pattern match "(?:\\\\bhttp\\\\/(?:0\\\\.9|1\\\\.[01])|<(?:html|meta)\\\\b)" at ARGS:message. [file "/opt/modsecurity-rules/latest/base_rules/modsecurity_crs_40_generic_attacks.conf"] [line "136"] [id "950911"] [rev "2"] [msg "HTTP Response Splitting Attack"] [data "..."] [hostname "www.example.com"] [uri "/EMail/MailHandler"] [unique_id "ViZDA6wxQzZrjCzQ-t8AAAAt"]
-[2015-05-20 15:34:59.223143] [-:error] - - [client 192.168.146.78] ModSecurity: Warning. Pattern match "<(a|abbr|acronym|address|applet|area|audioscope|b|base|basefront|bdo|bgsound|big|blackface|blink|blockquote|body|bq|br|button|caption|center|cite|code|col|colgroup|comment|dd|del|dfn|dir|div|dl|dt|em|embed|fieldset|fn|font|form|frame|frameset|h1|head|h ..." at ARGS:message. [file "/opt/modsecurity-rules/latest/base_rules/modsecurity_crs_41_xss_attacks.conf"] [line "301"] [id "973300"] [rev "2"] [msg "Possible XSS Attack Detected - HTML Tag Handler"] [data "..."] [hostname "www.example.com"] [uri "/EMail/MailHandler"] [unique_id "ViZDA6wxQzZrjCzQ-t8AAAAt"]
-[2015-05-20 15:34:59.225529] [-:error] - - [client 192.168.146.78] ModSecurity: Warning. Pattern match "<!(doctype|entity)" at ARGS:message. [file "/opt/modsecurity-rules/latest/base_rules/modsecurity_crs_41_xss_attacks.conf"] [line "464"] [id "973314"] [rev "2"] [msg "XSS Attack Detected"] [data "..."] [hostname "www.example.com"] [uri "/EMail/MailHandler"] [unique_id "ViZDA6wxQzZrjCzQ-t8AAAAt"]
+$> grep ViZDA6wxQzZrjCzQ-t8AAAAt tutorial-8-example-error.log
+[2015-05-20 15:34:59.212369] [-:error] - - [client 192.168.146.78] ModSecurity: Warning. Pattern match \
+"\\\\W{4,}" at ARGS:message. [file \
+"/opt/modsecurity-rules/latest/base_rules/modsecurity_crs_40_generic_attacks.conf"] [line "37"] [id "960024"] \
+[rev "2"] [msg "Meta-Character Anomaly Detection Alert - Repetative Non-Word Characters"] [data "..."] \
+[hostname "www.example.com"] [uri "/EMail/MailHandler"] [unique_id "ViZDA6wxQzZrjCzQ-t8AAAAt"]
+[2015-05-20 15:34:59.212639] [-:error] - - [client 192.168.146.78] ModSecurity: Warning. Pattern match \
+"(?:\\\\bhttp\\\\/(?:0\\\\.9|1\\\\.[01])|<(?:html|meta)\\\\b)" at ARGS:message. [file \
+"/opt/modsecurity-rules/latest/base_rules/modsecurity_crs_40_generic_attacks.conf"] [line "136"] [id "950911"] \
+[rev "2"] [msg "HTTP Response Splitting Attack"] [data "..."] [hostname "www.example.com"] \
+[uri "/EMail/MailHandler"] [unique_id "ViZDA6wxQzZrjCzQ-t8AAAAt"]
+[2015-05-20 15:34:59.223143] [-:error] - - [client 192.168.146.78] ModSecurity: Warning. Pattern match \
+"<(a|abbr|acronym|address|applet|area|audioscope|b|base|basefront|bdo|bgsound|big|blackface|blink|blockquote\
+|body|bq|br|button|caption|center|cite|code|col|colgroup|comment|dd|del|dfn|dir|div|dl|dt|em|embed|fieldset\
+|fn|font|form|frame|frameset|h1|head|h ..." at ARGS:message. [file \
+"/opt/modsecurity-rules/latest/base_rules/modsecurity_crs_41_xss_attacks.conf"] [line "301"] [id "973300"] \
+[rev "2"] [msg "Possible XSS Attack Detected - HTML Tag Handler"] [data "..."] [hostname "www.example.com"] \
+[uri "/EMail/MailHandler"] [unique_id "ViZDA6wxQzZrjCzQ-t8AAAAt"]
+[2015-05-20 15:34:59.225529] [-:error] - - [client 192.168.146.78] ModSecurity: Warning. Pattern match \
+"<!(doctype|entity)" at ARGS:message. [file \
+"/opt/modsecurity-rules/latest/base_rules/modsecurity_crs_41_xss_attacks.conf"] [line "464"] [id "973314"] \
+[rev "2"] [msg "XSS Attack Detected"] [data "..."] [hostname "www.example.com"] [uri "/EMail/MailHandler"] \
+[unique_id "ViZDA6wxQzZrjCzQ-t8AAAAt"]
 ``` 
 We’ll take the unique *request ID* from the *access log* and use it to search for *false positives* in the *error log*. Four of them are found; although a bit confusing, but we know how to use the aliases available to us:
 
 ```bash
-$> grep ViZDA6wxQzZrjCzQ-t8AAAAt labor-07-example-error.log | melidmsg
+$> grep ViZDA6wxQzZrjCzQ-t8AAAAt tutorial-8-example-error.log | melidmsg
 960024 Meta-Character Anomaly Detection Alert - Repetative Non-Word Characters
 950911 HTTP Response Splitting Attack
 973300 Possible XSS Attack Detected - HTML Tag Handler
@@ -87,7 +108,7 @@ A perfect fit. Our job is to now determine the exact conditions for all of these
 We have already been introduced to the *modsec-positive-stats.rb* script. This is where we can finally put it to good use:
 
 ```bash
-$> cat labor-07-example-access.log | alscores | modsec-positive-stats.rb 
+$> cat tutorial-8-example-access.log | alscores | modsec-positive-stats.rb 
 INCOMING                     Num of req. | % of req. |  Sum of % | Missing %
 Number of incoming req. (total) |  10000 | 100.0000% | 100.0000% |   0.0000%
 
@@ -219,7 +240,7 @@ This means that out of the big heap of data we have to handle five requests and 
 Our management goal is the five requests with an anomaly score of 91. Which requests are they?
 
 ```bash
-$> grep -E " 91 [0-9-]+$" labor-07-example-access.log
+$> grep -E " 91 [0-9-]+$" tutorial-8-example-access.log
 192.168.186.76 CH - [2015-05-22 09:25:35.064580] "POST /EMail/MailHandler HTTP/1.1" 303 - "https://www.example.com/EMail/newMessage.aspx?action=reply&mailId=3891_32&folderId=947_65&showPics=false" "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; rv:11.0) like Gecko" www.example.com 192.168.34.16 443 proxy-server - + "b49f5038.522aa9d333675" ViiPb6wxQzZrjBP3RHUAAAAs TLSv1.2 ECDHE-RSA-AES256-SHA384 7969 630 -% 1585494 309159 255001 491 91 0
 192.168.186.76 CH - [2015-05-27 08:43:47.363527] "POST /EMail/MailHandler HTTP/1.1" 303 - "https://www.example.com/EMail/newMessage.aspx?action=reply&mailId=3904_9&folderId=947_65&showPics=false" "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; rv:11.0) like Gecko" www.example.com 192.168.34.16 443 proxy-server - + "8e2ac2ca.52310227db9e9" Vi8rM6wxQzZrjFeGPFsAAAAl TLSv1.2 ECDHE-RSA-AES256-SHA384 7985 630 -% 1413745 303533 90351 179 91 0
 192.168.186.76 CH - [2015-05-29 15:24:59.946738] "POST /EMail/MailHandler HTTP/1.1" 303 - "https://www.example.com/EMail/newMessage.aspx?action=reply&mailId=3920_9&folderId=947_65&showPics=false" "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; rv:11.0) like Gecko" www.example.com 192.168.34.16 443 proxy-server - + "f139da27.52338400e3ec8" VjIsO6wxQzZrjAbVVkAAAABs TLSv1.2 ECDHE-RSA-AES256-SHA384 7831 630 -% 3678101 290095 368102 212 91 0
@@ -229,7 +250,7 @@ $> grep -E " 91 [0-9-]+$" labor-07-example-access.log
 These requests are clearly quite similar. It’s easy to conclude that all five of them violate the same rules. But which ones are they? To find out, let’s get the unique *request ID*:
 
 ```bash
-$> grep -E " 91 [0-9-]+$" labor-07-example-access.log | alreqid 
+$> grep -E " 91 [0-9-]+$" tutorial-8-example-access.log | alreqid 
 ViiPb6wxQzZrjBP3RHUAAAAs
 Vi8rM6wxQzZrjFeGPFsAAAAl
 VjIsO6wxQzZrjAbVVkAAAABs
@@ -241,8 +262,8 @@ $>
 We now write these identifier keys to a file and use them to search the *error log* for matching rule violations, which we then immediately summarize in readable format.
 
 ```bash
-$> grep -E " 91 [0-9-]+$" labor-07-example-access.log | alreqid > ids-score-91
-$> grep -F -f ids-score-91 labor-07-example-error.log | melidmsg | sucs
+$> grep -E " 91 [0-9-]+$" tutorial-8-example-access.log | alreqid > ids-score-91
+$> grep -F -f ids-score-91 tutorial-8-example-error.log | melidmsg | sucs
       5 950911 HTTP Response Splitting Attack
       5 960024 Meta-Character Anomaly Detection Alert - Repetative Non-Word Characters
       5 973300 Possible XSS Attack Detected - HTML Tag Handler
@@ -267,7 +288,7 @@ $> grep -F -f ids-score-91 labor-07-example-error.log | melidmsg | sucs
 Our suspicion has thus been confirmed: Each of these rules was violated exactly five times. So, there’s a high level of probability that we are dealing with five identical requests violating the same group of rules. It smells a lot like *cross-site scripting* attacks and an attempt at *SQL injection*. But we know that they are only false alarms. Where exactly did this occur?
 
 ```bash
-$> grep -F -f ids-score-91 labor-07-example-error.log | melmatch | sucs
+$> grep -F -f ids-score-91 tutorial-8-example-error.log | melmatch | sucs
       5 REQUEST_COOKIES:X0_org
      90 ARGS:message
 ```
@@ -285,102 +306,121 @@ Thus, one of the 20 rule infractions listed above has been handled. We proceed i
 This script is able to read and interpret *ModSecurity* alerts. *-h* gives you an overview of the different ways it can be used. We are primarily interested in the script’s ability to independently generate the *ignore rules* we want, saving us a lot of effort. The variations of this rule we saw in the previous tutorial can be accessed in *path*, *parameter* and *combined* modes. There is no mode for the complicated scoring suppression rules. Here’s the script in action:
 
 ```bash
-$> grep -F -f ids-score-91 labor-07-example-error.log | modsec-rulereport.rb --mode combined
+$> grep -F -f ids-score-91 tutorial-8-example-error.log | modsec-rulereport.rb --mode combined
 
 5 x 950911 HTTP Response Splitting Attack (severity:  NONE/UNKOWN)
 ------------------------------------------------------------------
       # ModSec Rule Exclusion: 950911 : HTTP Response Splitting Attack (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10001,ctl:ruleRemoveTargetById=950911;ARGS:message"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10001,ctl:ruleRemoveTargetById=950911;ARGS:message"
 
 5 x 960024 Meta-Character Anomaly Detection Alert - Repetative Non-Word Characters (severity:  NONE/UNKOWN)
 -----------------------------------------------------------------------------------------------------------
-      # ModSec Rule Exclusion: 960024 : Meta-Character Anomaly Detection Alert - Repetative Non-Word Characters (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10002,ctl:ruleRemoveTargetById=960024;ARGS:message"
+      # ModSec Rule Exclusion: 960024 : Meta-Character Anomaly Detection Alert - ...
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10002,ctl:ruleRemoveTargetById=960024;ARGS:message"
 
 5 x 973300 Possible XSS Attack Detected - HTML Tag Handler (severity:  NONE/UNKOWN)
 -----------------------------------------------------------------------------------
-      # ModSec Rule Exclusion: 973300 : Possible XSS Attack Detected - HTML Tag Handler (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10003,ctl:ruleRemoveTargetById=973300;ARGS:message"
+      # ModSec Rule Exclusion: 973300 : Possible XSS Attack Detected - HTML Tag Handler ...
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10003,ctl:ruleRemoveTargetById=973300;ARGS:message"
 
 5 x 973304 XSS Attack Detected (severity:  NONE/UNKOWN)
 -------------------------------------------------------
       # ModSec Rule Exclusion: 973304 : XSS Attack Detected (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10004,ctl:ruleRemoveTargetById=973304;ARGS:message"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10004,ctl:ruleRemoveTargetById=973304;ARGS:message"
 
 5 x 973306 XSS Attack Detected (severity:  NONE/UNKOWN)
 -------------------------------------------------------
       # ModSec Rule Exclusion: 973306 : XSS Attack Detected (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10005,ctl:ruleRemoveTargetById=973306;ARGS:message"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10005,ctl:ruleRemoveTargetById=973306;ARGS:message"
 
 5 x 973314 XSS Attack Detected (severity:  NONE/UNKOWN)
 -------------------------------------------------------
       # ModSec Rule Exclusion: 973314 : XSS Attack Detected (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10006,ctl:ruleRemoveTargetById=973314;ARGS:message"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10006,ctl:ruleRemoveTargetById=973314;ARGS:message"
 
 5 x 973316 IE XSS Filters - Attack Detected. (severity:  NONE/UNKOWN)
 ---------------------------------------------------------------------
       # ModSec Rule Exclusion: 973316 : IE XSS Filters - Attack Detected. (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10007,ctl:ruleRemoveTargetById=973316;ARGS:message"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10007,ctl:ruleRemoveTargetById=973316;ARGS:message"
 
 5 x 973332 IE XSS Filters - Attack Detected. (severity:  NONE/UNKOWN)
 ---------------------------------------------------------------------
       # ModSec Rule Exclusion: 973332 : IE XSS Filters - Attack Detected. (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10008,ctl:ruleRemoveTargetById=973332;ARGS:message"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10008,ctl:ruleRemoveTargetById=973332;ARGS:message"
 
 5 x 973333 IE XSS Filters - Attack Detected. (severity:  NONE/UNKOWN)
 ---------------------------------------------------------------------
       # ModSec Rule Exclusion: 973333 : IE XSS Filters - Attack Detected. (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10009,ctl:ruleRemoveTargetById=973333;ARGS:message"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10009,ctl:ruleRemoveTargetById=973333;ARGS:message"
 
 5 x 973335 IE XSS Filters - Attack Detected. (severity:  NONE/UNKOWN)
 ---------------------------------------------------------------------
       # ModSec Rule Exclusion: 973335 : IE XSS Filters - Attack Detected. (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10010,ctl:ruleRemoveTargetById=973335;ARGS:message"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10010,ctl:ruleRemoveTargetById=973335;ARGS:message"
 
 5 x 973338 XSS Filter - Category 3: Javascript URI Vector (severity:  NONE/UNKOWN)
 ----------------------------------------------------------------------------------
-      # ModSec Rule Exclusion: 973338 : XSS Filter - Category 3: Javascript URI Vector (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10011,ctl:ruleRemoveTargetById=973338;ARGS:message"
+      # ModSec Rule Exclusion: 973338 : XSS Filter - Category 3: Javascript URI ...
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10011,ctl:ruleRemoveTargetById=973338;ARGS:message"
 
 5 x 981172 Restricted SQL Character Anomaly Detection Alert - Total # of special characters exceeded (severity:  NONE/UNKOWN)
 -----------------------------------------------------------------------------------------------------------------------------
-      # ModSec Rule Exclusion: 981172 : Restricted SQL Character Anomaly Detection Alert - Total # of special characters exceeded (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10012,ctl:ruleRemoveTargetById=981172;REQUEST_COOKIES:X0_org"
+      # ModSec Rule Exclusion: 981172 : Restricted SQL Character Anomaly Detection ...
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10012,ctl:ruleRemoveTargetById=981172;REQUEST_COOKIES:X0_org"
 
 5 x 981231 SQL Comment Sequence Detected. (severity:  NONE/UNKOWN)
 ------------------------------------------------------------------
       # ModSec Rule Exclusion: 981231 : SQL Comment Sequence Detected. (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10013,ctl:ruleRemoveTargetById=981231;ARGS:message"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10013,ctl:ruleRemoveTargetById=981231;ARGS:message"
 
 5 x 981243 Detects classic SQL injection probings 2/2 (severity:  NONE/UNKOWN)
 ------------------------------------------------------------------------------
       # ModSec Rule Exclusion: 981243 : Detects classic SQL injection probings 2/2 (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10014,ctl:ruleRemoveTargetById=981243;ARGS:message"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10014,ctl:ruleRemoveTargetById=981243;ARGS:message"
 
 5 x 981244 Detects basic SQL authentication bypass attempts 1/3 (severity:  NONE/UNKOWN)
 ----------------------------------------------------------------------------------------
       # ModSec Rule Exclusion: 981244 : Detects basic SQL authentication bypass attempts 1/3 (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10015,ctl:ruleRemoveTargetById=981244;ARGS:message"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10015,ctl:ruleRemoveTargetById=981244;ARGS:message"
 
 5 x 981245 Detects basic SQL authentication bypass attempts 2/3 (severity:  NONE/UNKOWN)
 ----------------------------------------------------------------------------------------
       # ModSec Rule Exclusion: 981245 : Detects basic SQL authentication bypass attempts 2/3 (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10016,ctl:ruleRemoveTargetById=981245;ARGS:message"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10016,ctl:ruleRemoveTargetById=981245;ARGS:message"
 
 5 x 981246 Detects basic SQL authentication bypass attempts 3/3 (severity:  NONE/UNKOWN)
 ----------------------------------------------------------------------------------------
       # ModSec Rule Exclusion: 981246 : Detects basic SQL authentication bypass attempts 3/3 (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10017,ctl:ruleRemoveTargetById=981246;ARGS:message"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10017,ctl:ruleRemoveTargetById=981246;ARGS:message"
 
 5 x 981248 Detects chained SQL injection attempts 1/2 (severity:  NONE/UNKOWN)
 ------------------------------------------------------------------------------
       # ModSec Rule Exclusion: 981248 : Detects chained SQL injection attempts 1/2 (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10018,ctl:ruleRemoveTargetById=981248;ARGS:message"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10018,ctl:ruleRemoveTargetById=981248;ARGS:message"
 
 5 x 981257 Detects MySQL comment-/space-obfuscated injections and backtick termination (severity:  NONE/UNKOWN)
 ---------------------------------------------------------------------------------------------------------------
       # ModSec Rule Exclusion: 981257 : Detects MySQL comment-/space-obfuscated injections and backtick termination (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10019,ctl:ruleRemoveTargetById=981257;ARGS:message"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10019,ctl:ruleRemoveTargetById=981257;ARGS:message"
 ```
 
 For each rule, the script lists the total number of rule violations and then proposes an *ignore rule* which can be included in the *Apache configuration*; only the *rule ID* for the *ignore rule* has to be modified. Next to one another, the rules are a bit hard to read, which is why I in practice I often summarize it by hand as you can see below. What’s important is to add comments to the rules, since the individual numbers don’t tell us much at all:
@@ -406,20 +446,30 @@ For each rule, the script lists the total number of rule violations and then pro
       # ModSec Rule Exclusion: 981246 : Detects basic SQL authentication bypass attempts 3/3 (severity:  NONE/UNKOWN)
       # ModSec Rule Exclusion: 981248 : Detects chained SQL injection attempts 1/2 (severity:  NONE/UNKOWN)
       # ModSec Rule Exclusion: 981257 : Detects MySQL comment-/space-obfuscated injections and backtick termination (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=950911;ARGS:message,ctl:ruleRemoveTargetById=960024;ARGS:message,ctl:ruleRemoveTargetById=973300;ARGS:message,ctl:ruleRemoveTargetById=973304;ARGS:message,ctl:ruleRemoveTargetById=973306;ARGS:message,ctl:ruleRemoveTargetById=973314;ARGS:message,ctl:ruleRemoveTargetById=973316;ARGS:message,ctl:ruleRemoveTargetById=973332;ARGS:message,ctl:ruleRemoveTargetById=973333;ARGS:message,ctl:ruleRemoveTargetById=973335;ARGS:message,ctl:ruleRemoveTargetById=973338;ARGS:message,ctl:ruleRemoveTargetById=981231;ARGS:message,ctl:ruleRemoveTargetById=981243;ARGS:message,ctl:ruleRemoveTargetById=981244;ARGS:message,ctl:ruleRemoveTargetById=981245;ARGS:message,ctl:ruleRemoveTargetById=981246;ARGS:message,ctl:ruleRemoveTargetById=981248;ARGS:message,ctl:ruleRemoveTargetById=981257;ARGS:message"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=950911;ARGS:message,\
+		ctl:ruleRemoveTargetById=960024;ARGS:message,ctl:ruleRemoveTargetById=973300;ARGS:message,\
+		ctl:ruleRemoveTargetById=973304;ARGS:message,ctl:ruleRemoveTargetById=973306;ARGS:message,\
+		ctl:ruleRemoveTargetById=973314;ARGS:message,ctl:ruleRemoveTargetById=973316;ARGS:message,\
+		ctl:ruleRemoveTargetById=973332;ARGS:message,ctl:ruleRemoveTargetById=973333;ARGS:message,\
+		ctl:ruleRemoveTargetById=973335;ARGS:message,ctl:ruleRemoveTargetById=973338;ARGS:message,\
+		ctl:ruleRemoveTargetById=981231;ARGS:message,ctl:ruleRemoveTargetById=981243;ARGS:message,\
+		ctl:ruleRemoveTargetById=981244;ARGS:message,ctl:ruleRemoveTargetById=981245;ARGS:message,\
+		ctl:ruleRemoveTargetById=981246;ARGS:message,ctl:ruleRemoveTargetById=981248;ARGS:message,\
+		ctl:ruleRemoveTargetById=981257;ARGS:message"
 ```
 
 This is now a more compact and legible block of *ignore rules* associated with the same parameter on the same path. But our five requests with an anomaly score of 91 indicate another parameter being violated that we should not forget: REQUEST_COOKIES:X0_org. This shows the elegance of the approach being proposed. In addition to the five rule violations caused by this cookie, in total it is responsible for over 2,000 alarms, almost half of all rule violations.
 
 ```bash
-$> cat labor-07-example-error.log | grep "REQUEST_COOKIES:X0_org" | melidmsg | sucs
+$> cat tutorial-8-example-error.log | grep "REQUEST_COOKIES:X0_org" | melidmsg | sucs
    2113 981172 Restricted SQL Character Anomaly Detection Alert - Total # of special characters exceeded
 ```
 
 This is typical, because a cookie is sent along with every request dependent on the *path parameter*. If a cookie has a score indicative of a *false positive* this quickly results in a high number of false alarms. It would now be interesting to check the content of the cookie, but all parameter content was lost when preparing the sample log file. At this point it should be noted that we are dealing with a cookie containing a `uuid` and the four hyphens in a `uuid` are already enough to set off a false alarm. But that’s only incidental. Let’s get to the *ignore rule*. The script `modsec-rulereport.rb` can also give us a recommendation here:
 
 ```bash
-$> cat labor-07-example-error.log | grep "REQUEST_COOKIES:X0_org" | modsec-rulereport.rb --mode parameter
+$> cat tutorial-8-example-error.log | grep "REQUEST_COOKIES:X0_org" | modsec-rulereport.rb --mode parameter
 
 2113 x 981172 Restricted SQL Character Anomaly Detection Alert - Total # of special characters exceeded (severity:  NONE/UNKOWN)
 --------------------------------------------------------------------------------------------------------------------------------
@@ -430,7 +480,9 @@ $> cat labor-07-example-error.log | grep "REQUEST_COOKIES:X0_org" | modsec-ruler
 We have thus handled the twenty different false alarms caused by the five requests with a anomaly score of 91. We used the ignore rules derived from them to handle far greater than half of the rule violations:
 
 ```bash
-$> (cat labor-07-example-error.log | grep -E "950911|960024|973300|973304|973306|973314|973316|973332|973333|973335|973338|981231|981243|981244|981245|981246|981248|981257" | grep "ARGS:message"; cat labor-07-example-error.log | grep 981172 | grep REQUEST_COOKIES:X0_org) | wc -l
+$> (cat tutorial-8-example-error.log | grep -E "950911|960024|973300|973304|973306|973314|973316\
+|973332|973333|973335|973338|981231|981243|981244|981245|981246|981248|981257" \
+| grep "ARGS:message"; cat tutorial-8-example-error.log | grep 981172 | grep REQUEST_COOKIES:X0_org) | wc -l
 3415
 ```
 
@@ -446,11 +498,11 @@ Successfully fine tuning the *ModSecurity Core Rules* entails iterative repetiti
 
 ###Step 8: Deriving additional ignore rules (scores 50-89)
 
-However, because we are working through this tutorial for practice and are not in a production environment, we won’t be putting the ready-made *ignore rules* on the server, but will instead practice writing these rules a bit. In this second round we’ll be tackling the requests with a score in the 50s to 80s. A sample log file from which the rules suppressed above have been filtered out will serve as the basis ([labor-07-example-error.log-step-7](https://raw.githubusercontent.com/Apache-Labor/labor/master/labor-07/labor-04-example-error.log-step-7)). There were very many rule violations from 50 to 89 in the original statistics, but it will appear that not many more are added to our existing rule violations. To avoid having to handle the same rule violations again and again, we suppress the combinations already handled using a somewhat demanding *one-liner*:
+However, because we are working through this tutorial for practice and are not in a production environment, we won’t be putting the ready-made *ignore rules* on the server, but will instead practice writing these rules a bit. In this second round we’ll be tackling the requests with a score in the 50s to 80s. A sample log file from which the rules suppressed above have been filtered out will serve as the basis ([tutorial-8-example-error.log-step-7](https://raw.githubusercontent.com/Apache-Labor/labor/master/tutorial-8/labor-04-example-error.log-step-7)). There were very many rule violations from 50 to 89 in the original statistics, but it will appear that not many more are added to our existing rule violations. To avoid having to handle the same rule violations again and again, we suppress the combinations already handled using a somewhat demanding *one-liner*:
 
 ```bash
-$> cat labor-07-example-access.log | grep -E "[5-8][0-9] [0-9-]$" | alreqid > ids
-$> grep -F -f ids labor-07-example-error.log-step-7 | melidmsg | sucs
+$> cat tutorial-8-example-access.log | grep -E "[5-8][0-9] [0-9-]$" | alreqid > ids
+$> grep -F -f ids tutorial-8-example-error.log-step-7 | melidmsg | sucs
       1 973300 Possible XSS Attack Detected - HTML Tag Handler
       1 973304 XSS Attack Detected
       1 973338 XSS Filter - Category 3: Javascript URI Vector
@@ -459,7 +511,7 @@ $> grep -F -f ids labor-07-example-error.log-step-7 | melidmsg | sucs
       1 981317 SQL SELECT Statement Anomaly Detection Alert
       2 960024 Meta-Character Anomaly Detection Alert - Repetative Non-Word Characters
       5 981172 Restricted SQL Character Anomaly Detection Alert - Total # of special characters exceeded
-$> grep -F -f ids labor-07-example-error.log | melmatch | sucs
+$> grep -F -f ids tutorial-8-example-error.log | melmatch | sucs
       1 ARGS:message
       1 ARGS:subject
       1 TX:sqli_select_statement_count
@@ -470,42 +522,52 @@ $> grep -F -f ids labor-07-example-error.log | melmatch | sucs
 *utag_main* indicates that we have another cookie here. We’ll handle that separately:
 
 ```bash
-$> grep -F -f ids labor-07-example-error.log | grep -v -E "ARGS:message.*(950911|960024|973300|973304|973306|973314|973316|973332|973333|973335|973338|981231|981243|981244|981245|981246|981248|981257)" | grep -v -E "REQUEST_COOKIES:X0_org.*981172" | grep "REQUEST_COOKIES:utag_main" | modsec-rulereport.rb -m parameter
+$> grep -F -f ids tutorial-8-example-error.log | grep -v -E "ARGS:message.*(950911|960024|973300|973304\
+|973306|973314|973316|973332|973333|973335|973338|981231|981243|981244|981245|981246|981248|981257)" \
+| grep -v -E "REQUEST_COOKIES:X0_org.*981172" | grep "REQUEST_COOKIES:utag_main" \
+| modsec-rulereport.rb -m parameter
 5 x 981172 Restricted SQL Character Anomaly Detection Alert - Total # of special characters exceeded (severity:  NONE/UNKOWN)
 -----------------------------------------------------------------------------------------------------------------------------
-      # ModSec Rule Exclusion: 981172 : Restricted SQL Character Anomaly Detection Alert - Total # of special characters exceeded (severity:  NONE/UNKOWN)
+      # ModSec Rule Exclusion: 981172 : Restricted SQL Character Anomaly Detection Alert - ...
       SecRuleUpdateTargetById 981172 "!REQUEST_COOKIES:utag_main"
 ```
 
 The argument *attachInfo* violates multiple rules. We have *ignore rules* proposed to us and summarize them manually:
 
 ```bash
-$> grep -F -f ids labor-07-example-error.log | grep -v -E "ARGS:message.*(950911|960024|973300|973304|973306|973314|973316|973332|973333|973335|973338|981231|981243|981244|981245|981246|981248|981257)" | grep -v -E "REQUEST_COOKIES:X0_org.*981172" | grep "ARGS:attachInfo" | modsec-rulereport.rb -m combined
+$> grep -F -f ids tutorial-8-example-error.log | grep -v -E "ARGS:message.*(950911|960024|973300|973304\
+|973306|973314|973316|973332|973333|973335|973338|981231|981243|981244|981245|981246|981248|981257)" \
+| grep -v -E "REQUEST_COOKIES:X0_org.*981172" | grep "ARGS:attachInfo" | modsec-rulereport.rb -m combined
 
 1 x 960024 Meta-Character Anomaly Detection Alert - Repetative Non-Word Characters (severity:  NONE/UNKOWN)
 -----------------------------------------------------------------------------------------------------------
       # ModSec Rule Exclusion: 960024 : Meta-Character Anomaly Detection Alert - Repetative Non-Word Characters (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=960024;ARGS:attachInfo"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=960024;ARGS:attachInfo"
 
 1 x 973300 Possible XSS Attack Detected - HTML Tag Handler (severity:  NONE/UNKOWN)
 -----------------------------------------------------------------------------------
       # ModSec Rule Exclusion: 973300 : Possible XSS Attack Detected - HTML Tag Handler (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10001,ctl:ruleRemoveTargetById=973300;ARGS:attachInfo"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10001,ctl:ruleRemoveTargetById=973300;ARGS:attachInfo"
 
 1 x 973304 XSS Attack Detected (severity:  NONE/UNKOWN)
 -------------------------------------------------------
       # ModSec Rule Exclusion: 973304 : XSS Attack Detected (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10002,ctl:ruleRemoveTargetById=973304;ARGS:attachInfo"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10002,ctl:ruleRemoveTargetById=973304;ARGS:attachInfo"
 
 1 x 973338 XSS Filter - Category 3: Javascript URI Vector (severity:  NONE/UNKOWN)
 ----------------------------------------------------------------------------------
       # ModSec Rule Exclusion: 973338 : XSS Filter - Category 3: Javascript URI Vector (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10003,ctl:ruleRemoveTargetById=973338;ARGS:attachInfo"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10003,ctl:ruleRemoveTargetById=973338;ARGS:attachInfo"
 
 1 x 981245 Detects basic SQL authentication bypass attempts 2/3 (severity:  NONE/UNKOWN)
 ----------------------------------------------------------------------------------------
       # ModSec Rule Exclusion: 981245 : Detects basic SQL authentication bypass attempts 2/3 (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10004,ctl:ruleRemoveTargetById=981245;ARGS:attachInfo"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10004,ctl:ruleRemoveTargetById=981245;ARGS:attachInfo"
 ```
 
 Here’s a summary:
@@ -519,7 +581,10 @@ Here’s a summary:
       # ModSec Rule Exclusion: 973304 : XSS Attack Detected (severity:  NONE/UNKOWN)
       # ModSec Rule Exclusion: 973338 : XSS Filter - Category 3: Javascript URI Vector (severity:  NONE/UNKOWN)
       # ModSec Rule Exclusion: 981245 : Detects basic SQL authentication bypass attempts 2/3 (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10003,ctl:ruleRemoveTargetById=960024;ARGS:attachInfo,ctl:ruleRemoveTargetById=973300;ARGS:attachInfo,ctl:ruleRemoveTargetById=973304;ARGS:attachInfo,ctl:ruleRemoveTargetById=973338;ARGS:attachInfo,ctl:ruleRemoveTargetById=981245;ARGS:attachInfo"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10003,\
+      	ctl:ruleRemoveTargetById=960024;ARGS:attachInfo,ctl:ruleRemoveTargetById=973300;ARGS:attachInfo,\
+	ctl:ruleRemoveTargetById=973304;ARGS:attachInfo,ctl:ruleRemoveTargetById=973338;ARGS:attachInfo,\
+	ctl:ruleRemoveTargetById=981245;ARGS:attachInfo"
 
 ```
 It’s important to select a new ID for these rules. By default, the script always starts its count at 10000. I manually set the ID to 10001 in this case.
@@ -527,16 +592,21 @@ It’s important to select a new ID for these rules. By default, the script alwa
 There are still three individual rule violations to handle in our group:
 
 ```bash
-$> grep -F -f ids labor-07-example-error.log | grep -v -E "ARGS:message.*(950911|960024|973300|973304|973306|973314|973316|973332|973333|973335|973338|981231|981243|981244|981245|981246|981248|981257)" | grep -v -E "REQUEST_COOKIES:X0_org.*981172" | grep -E "ARGS:(message|subject)" | modsec-rulereport.rb -m combined
+$> grep -F -f ids tutorial-8-example-error.log | grep -v -E "ARGS:message.*(950911|960024|973300|973304|973306\
+|973314|973316|973332|973333|973335|973338|981231|981243|981244|981245|981246|981248|981257)" \
+| grep -v -E "REQUEST_COOKIES:X0_org.*981172" | grep -E "ARGS:(message|subject)" \
+| modsec-rulereport.rb -m combined
 1 x 960024 Meta-Character Anomaly Detection Alert - Repetative Non-Word Characters (severity:  NONE/UNKOWN)
 -----------------------------------------------------------------------------------------------------------
       # ModSec Rule Exclusion: 960024 : Meta-Character Anomaly Detection Alert - Repetative Non-Word Characters (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=960024;ARGS:subject"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=960024;ARGS:subject"
 
 1 x 981249 Detects chained SQL injection attempts 2/2 (severity:  NONE/UNKOWN)
 ------------------------------------------------------------------------------
       # ModSec Rule Exclusion: 981249 : Detects chained SQL injection attempts 2/2 (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10001,ctl:ruleRemoveTargetById=981249;ARGS:message"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10001,ctl:ruleRemoveTargetById=981249;ARGS:message"
 ```
 
 This draws attention to the *subject* text field, that you also fill in when writing an e-mail. Only one rule violation was found there. But we can assume that in general the same rules will be violated in this text field, e.g. *message* and the fact that this has not yet happened shows that our log file has not yet covered all of the possibilities. If we want to handle *subject* similar to *message*, then we can derive a block of *ignore rules* from the *message ignore rules*. But, before we do this, we add the new suppression rule for rule ID `981249` to the latter:
@@ -563,7 +633,17 @@ This draws attention to the *subject* text field, that you also fill in when wri
       # ModSec Rule Exclusion: 981248 : Detects chained SQL injection attempts 1/2 (severity:  NONE/UNKOWN)
       # ModSec Rule Exclusion: 981249 : Detects chained SQL injection attempts 2/2 (severity:  NONE/UNKOWN)
       # ModSec Rule Exclusion: 981257 : Detects MySQL comment-/space-obfuscated injections and backtick termination (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10001,ctl:ruleRemoveTargetById=950911;ARGS:subject,ctl:ruleRemoveTargetById=960024;ARGS:subject,ctl:ruleRemoveTargetById=973300;ARGS:subject,ctl:ruleRemoveTargetById=973304;ARGS:subject,ctl:ruleRemoveTargetById=973306;ARGS:subject,ctl:ruleRemoveTargetById=973314;ARGS:subject,ctl:ruleRemoveTargetById=973316;ARGS:subject,ctl:ruleRemoveTargetById=973332;ARGS:subject,ctl:ruleRemoveTargetById=973333;ARGS:subject,ctl:ruleRemoveTargetById=973335;ARGS:subject,ctl:ruleRemoveTargetById=973338;ARGS:subject,ctl:ruleRemoveTargetById=981231;ARGS:subject,ctl:ruleRemoveTargetById=981243;ARGS:subject,ctl:ruleRemoveTargetById=981244;ARGS:subject,ctl:ruleRemoveTargetById=981245;ARGS:subject,ctl:ruleRemoveTargetById=981246;ARGS:subject,ctl:ruleRemoveTargetById=981248;ARGS:subject,ctl:ruleRemoveTargetById=981249;ARGS:subject,ctl:ruleRemoveTargetById=981257;ARGS:subject"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10001,ctl:ruleRemoveTargetById=950911;ARGS:subject,\
+	ctl:ruleRemoveTargetById=960024;ARGS:subject,ctl:ruleRemoveTargetById=973300;ARGS:subject,\
+	ctl:ruleRemoveTargetById=973304;ARGS:subject,ctl:ruleRemoveTargetById=973306;ARGS:subject,\
+	ctl:ruleRemoveTargetById=973314;ARGS:subject,ctl:ruleRemoveTargetById=973316;ARGS:subject,\
+	ctl:ruleRemoveTargetById=973332;ARGS:subject,ctl:ruleRemoveTargetById=973333;ARGS:subject,\
+	ctl:ruleRemoveTargetById=973335;ARGS:subject,ctl:ruleRemoveTargetById=973338;ARGS:subject,\
+	ctl:ruleRemoveTargetById=981231;ARGS:subject,ctl:ruleRemoveTargetById=981243;ARGS:subject,\
+	ctl:ruleRemoveTargetById=981244;ARGS:subject,ctl:ruleRemoveTargetById=981245;ARGS:subject,\
+	ctl:ruleRemoveTargetById=981246;ARGS:subject,ctl:ruleRemoveTargetById=981248;ARGS:subject,\
+	ctl:ruleRemoveTargetById=981249;ARGS:subject,ctl:ruleRemoveTargetById=981257;ARGS:subject"
 ```
 	
 By doing so, we continue to keep *message* and *subject* separate. Readability would suffer if we were to mix the blocks of parameters.
@@ -571,7 +651,11 @@ By doing so, we continue to keep *message* and *subject* separate. Readability w
 What's left in our group of false alarms is the cryptic *TX:sqli_select_statement_count* argument. The complete error message looks like this:
 
 ```bash
-[2015-05-26 22:13:36.867916] [-:error] - - [client 192.168.146.78] ModSecurity: Warning. Operator GE matched 3 at TX:sqli_select_statement_count. [file "/opt/modsecurity-rules/latest/base_rules/modsecurity_crs_41_sql_injection_attacks.conf"] [line "108"] [id "981317"] [rev "2"] [msg "SQL SELECT Statement Anomaly Detection Alert"] [data "..."] [hostname "www.example.com"] [uri "/EMail/MailHandler"] [unique_id "Vi6XgKwxQzZrjFreMRsAAAB3"]
+[2015-05-26 22:13:36.867916] [-:error] - - [client 192.168.146.78] ModSecurity: Warning. Operator GE matched \
+3 at TX:sqli_select_statement_count. [file \
+"/opt/modsecurity-rules/latest/base_rules/modsecurity_crs_41_sql_injection_attacks.conf"] [line "108"] \
+[id "981317"] [rev "2"] [msg "SQL SELECT Statement Anomaly Detection Alert"] [data "..."] \
+[hostname "www.example.com"] [uri "/EMail/MailHandler"] [unique_id "Vi6XgKwxQzZrjFreMRsAAAB3"]
 ```
 
 The engine counts out the *SQL statements*, saves them to an internal transaction variable and an alarm goes off when there are three or more. We are once more confronted by the path */EMail/MailHandler*. I suggest handling the internal variable like any other argument and disabling this counter (which by the way rarely applies) when writing e-mails:
@@ -580,20 +664,21 @@ The engine counts out the *SQL statements*, saves them to an internal transactio
       # Ignore-Rules for TX:sqli_select_statement_count (SQL Statement counter)
       # -----------------------------------------------------------------------
       # ModSec Rule Exclusion: 981317 : SQL SELECT Statement Anomaly Detection Alert (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10002,ctl:ruleRemoveTargetById=981317;TX:sqli_select_statement_count"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10002,ctl:ruleRemoveTargetById=981317;TX:sqli_select_statement_count"
 ```
 
 ###Step 9: Deriving additional ignore rules (scores 10-49)
 
-There are 21 requests in this group, but only a few are rule violations we are unfamiliar with. For this basic data, I have prepared ([labor-07-example-error.log-step-8](https://raw.githubusercontent.com/Apache-Labor/labor/master/labor-07/labor-04-example-error.log-step-8)). It is the original log file from which all of the rule violations suppressed above have been filtered out:
+There are 21 requests in this group, but only a few are rule violations we are unfamiliar with. For this basic data, I have prepared ([tutorial-8-example-error.log-step-8](https://raw.githubusercontent.com/Apache-Labor/labor/master/tutorial-8/labor-04-example-error.log-step-8)). It is the original log file from which all of the rule violations suppressed above have been filtered out:
 
 ```bash
-$> cat labor-07-example-access.log | grep -E "[1-4][0-9] [0-9-]$" | alreqid > ids
+$> cat tutorial-8-example-access.log | grep -E "[1-4][0-9] [0-9-]$" | alreqid > ids
 $> wc -l ids
 21
-$> grep -F -f ids labor-07-example-error.log-step-8 | melidmsg
+$> grep -F -f ids tutorial-8-example-error.log-step-8 | melidmsg
 960000 Attempted multipart/form-data bypass
-$> grep -F -f ids labor-07-example-error.log-step-8 | melmatch 
+$> grep -F -f ids tutorial-8-example-error.log-step-8 | melmatch 
 FILES:upFile
 ```
 
@@ -603,19 +688,20 @@ We are slowly getting the impression that the further down we go, the easier fin
       # Ignore-Rules for FILES:upFile
       # -----------------------------
       # ModSec Rule Exclusion: 960000 : Attempted multipart/form-data bypass (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,id:10004,ctl:ruleRemoveTargetById=960000;FILES:upFile"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+      	"phase:2,nolog,pass,id:10004,ctl:ruleRemoveTargetById=960000;FILES:upFile"
 
 ```
 
 ###Step 10: Deriving additional ignore rules (scores 1-9)
 
-In the last block of *ignore rules* (scores of 1 to and including 9) we have now a lot of rule violations in terms of numbers. But are these really new false alarms or will we be able to get off as easy as we did with scores 10 to 49? ([labor-07-example-error.log-step-9](https://raw.githubusercontent.com/Apache-Labor/labor/master/labor-07/labor-04-example-error.log-step-9)), expanded in the previous steps, will serve as the base data.
+In the last block of *ignore rules* (scores of 1 to and including 9) we have now a lot of rule violations in terms of numbers. But are these really new false alarms or will we be able to get off as easy as we did with scores 10 to 49? ([tutorial-8-example-error.log-step-9](https://raw.githubusercontent.com/Apache-Labor/labor/master/tutorial-8/labor-04-example-error.log-step-9)), expanded in the previous steps, will serve as the base data.
 
 ```bash
-$> cat labor-07-example-access.log | grep -E " [1-9] [0-9-]$" | alreqid > ids
+$> cat tutorial-8-example-access.log | grep -E " [1-9] [0-9-]$" | alreqid > ids
 $> wc -l ids
 2319 ids
-$> grep -F -f ids labor-07-example-error.log-step-9 | melidmsg | sucs
+$> grep -F -f ids tutorial-8-example-error.log-step-9 | melidmsg | sucs
     114 981000 Possibly malicious iframe tag in output
 ```
 
@@ -625,7 +711,8 @@ We are in fact getting off just as easy. There’s only one problem left and it 
       # Ignore-Rules for RESPONSE_BODY
       # ------------------------------
       # ModSec Rule Exclusion: 981000 : Possibly malicious iframe tag in output (severity:  NONE/UNKOWN)
-      SecRule REQUEST_FILENAME "@beginsWith /EMail/newMessage.aspx" "phase:2,nolog,pass,id:10005,ctl:ruleRemoveTargetById=981000;RESPONSE_BODY"
+      SecRule REQUEST_FILENAME "@beginsWith /EMail/newMessage.aspx" \
+      	"phase:2,nolog,pass,id:10005,ctl:ruleRemoveTargetById=981000;RESPONSE_BODY"
 ```
 
 This brings us to the end. We have completed handling our inventory of 10000 requests and over 5000 false alarms. When we put these rules into production we can still expect to see a few new false positives. We can however be certain that they will only occur now and then. It would be too early to set a very low anomaly limit at this time. But a score of 5 or 10 on the production system I recommend can be achieved in a few reduction steps with shorter rounds of tuning done in between.
@@ -726,10 +813,11 @@ Let’s once again summarize the different rules for suppressing false alarms. T
 When you first approach an untuned service a quick overview is the thing you want. It’s a good idea to have a look at the distribution of scores as described above. A good next step is to get a report of how exactly the *anomaly scores* occurred, such as an overview of the rule violations for each anomaly score. The following construct generates a report like this. On the first line we extract a list of anomaly scores from the incoming requests which actually appear in the log file. We then build a loop around these *scores*, read the *request ID* for each *score*, save it in the file `ids` and perform a short analysis for these *IDs* in the *error log*.
 
 ```bash
-$> SCORES=$(cat labor-07-example-access.log | alscorein | sort -n | uniq | egrep -v -E "^0" | xargs)
+$> SCORES=$(cat tutorial-8-example-access.log | alscorein | sort -n | uniq | egrep -v -E "^0" | xargs)
 $> echo $SCORES
 3 6 9 11 18 21 23 26 33 34 43 59 66 69 71 73 76 79 81 83 84 86 89 91
-$> for S in $SCORES; do echo "INCOMING SCORE $S"; grep -E " $S [0-9-]+$" labor-07-example-access.log | alreqid > ids; grep -F -f ids labor-07-example-error.log | melidmsg | sucs; echo ; done 
+$> for S in $SCORES; do echo "INCOMING SCORE $S"; grep -E " $S [0-9-]+$" tutorial-8-example-access.log \
+| alreqid > ids; grep -F -f ids tutorial-8-example-error.log | melidmsg | sucs; echo ; done 
 INCOMING SCORE 3
      40 981000 Possibly malicious iframe tag in output
    1598 981172 Restricted SQL Character Anomaly Detection Alert - Total # of special characters exceeded
