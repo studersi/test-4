@@ -1,4 +1,4 @@
-##Title: Setting up a reverse proxy server
+##Tutorial 9 - Setting up a reverse proxy server
 
 ###What are we doing?
 
@@ -25,7 +25,8 @@ The purpose of a reverse proxy is to shield an application server from direct in
 In principle, any HTTP application can be used for such an installation and we could very well use the application server from the third tutorial. However, it seems appropriate for me to demonstrate a very simple approach. We’ll be using the tool *socat*, short for *SOcket CAt*.
 
 ```bash
-$> socat -vv TCP-LISTEN:8000,bind=127.0.0.1,crlf,reuseaddr,fork SYSTEM:"echo HTTP/1.0 200; echo Content-Type\: text/plain; echo; echo 'Server response, port 8000.'"
+$> socat -vv TCP-LISTEN:8000,bind=127.0.0.1,crlf,reuseaddr,fork SYSTEM:"echo HTTP/1.0 200;\
+echo Content-Type\: text/plain; echo; echo 'Server response, port 8000.'"
 ``` 
  Using this complex command we instruct *socat*, to install a *listener* on local port 8000 and to use several *echoes* to return an HTTP response when a connection occurs. The additional parameters make sure that the listener stays permanently open and error output works.
 
@@ -335,8 +336,12 @@ Server response, port 8001
 In this somewhat unusual request two identical request are being initiated via a single curl command. What’s also interesting is the fact that with this method curl can use HTTP keep-alive. The first request lands on the first backend, and the second one on the second backend. Let’s have a look at the entries for this in the server’s access log:
 
 ```bash
-127.0.0.1 - - [2015-12-10 06:42:14.390998] "GET /service1/index.html HTTP/1.1" 200 28 "-" "curl/7.35.0" localhost 127.0.0.1 443 proxy-server backend-port-8000 + "-" VmkQtn8AAQEAAH@M3zAAAAAN TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 538 1402 -% 7856 1216 3708 381 0 0
-127.0.0.1 - - [2015-12-10 06:42:14.398995] "GET /service1/index.html HTTP/1.1" 200 28 "-" "curl/7.35.0" localhost 127.0.0.1 443 proxy-server backend-port-8001 + "-" VmkQtn8AAQEAAH@M3zEAAAAN TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 121 202 -% 7035 1121 3752 354 0 0
+127.0.0.1 - - [2015-12-10 06:42:14.390998] "GET /service1/index.html HTTP/1.1" 200 28 "-" "curl/7.35.0"\
+localhost 127.0.0.1 443 proxy-server backend-port-8000 + "-" VmkQtn8AAQEAAH@M3zAAAAAN TLSv1.2 \
+ECDHE-RSA-AES256-GCM-SHA384 538 1402 -% 7856 1216 3708 381 0 0
+127.0.0.1 - - [2015-12-10 06:42:14.398995] "GET /service1/index.html HTTP/1.1" 200 28 "-" "curl/7.35.0"\
+localhost 127.0.0.1 443 proxy-server backend-port-8001 + "-" VmkQtn8AAQEAAH@M3zEAAAAN TLSv1.2 \
+ECDHE-RSA-AES256-GCM-SHA384 121 202 -% 7035 1121 3752 354 0 0
 ```
 
 Besides the keep-alive header, the request handler is also of interest. The request was thus processed by the _proxy server handler_. We also see entries in the route, specifically the values defined as _backend-port-8000_ and _backend-port-8001_. This makes it possible to determine from the server's access log the exact route a request took.
@@ -359,7 +364,8 @@ This list makes clear that RewriteMaps are extremely flexible and can be used in
 First, we calculate a hash value from the client’s IP address. This means that we are converting the IP address into a random hexadecimal string:
 
 ```bash
-SecRule REMOTE_ADDR	"^(.)"	"phase:1,id:50001,capture,nolog,t:sha1,t:hexEncode,setenv:IPHashChar=%{TX.1}"
+SecRule REMOTE_ADDR	"^(.)" \
+	"phase:1,id:50001,capture,nolog,t:sha1,t:hexEncode,setenv:IPHashChar=%{TX.1}"
 ```
 
 We have used hexEncode to convert the binary hash value we generated using sha1 into readable characters. We then apply the regular expression to this value. "^(.)" means that we want to find a match on any of the first characters. Of the ModSecurity flags that follow *capture* is of interest. It indicates the value of the *TX.1* transaction variable in brackets. We then extract the value of this variable and put it into the IPHashChar environment variable.
@@ -370,7 +376,8 @@ If there is any uncertainty as to whether this will really work, then the conten
 RewriteMap hashchar2backend "txt:/apache/conf/hashchar2backend.txt"
 
 RewriteCond 	"%{ENV:IPHashChar}"	^(.)
-RewriteRule 	^/service1/(.*)		http://${hashchar2backend:%1|localhost:8000}/service1/$1 [proxy,last]
+RewriteRule 	^/service1/(.*)		\
+	http://${hashchar2backend:%1|localhost:8000}/service1/$1 [proxy,last]
 
 <Proxy http://localhost:8000/service1>
 
@@ -505,7 +512,11 @@ LoadModule	  slotmem_shm_module      modules/mod_slotmem_shm.so
 
 
 ErrorLogFormat          "[%{cu}t] [%-m:%-l] %-a %-L %M"
-LogFormat "%h %{GEOIP_COUNTRY_CODE}e %u [%{%Y-%m-%d %H:%M:%S}t.%{usec_frac}t] \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" %v %A %p %R %{BALANCER_WORKER_ROUTE}e %X \"%{cookie}n\" %{UNIQUE_ID}e %{SSL_PROTOCOL}x %{SSL_CIPHER}x %I %O %{ratio}n%% %D %{ModSecTimeIn}e %{ApplicationTime}e %{ModSecTimeOut}e %{ModSecAnomalyScoreIn}e %{ModSecAnomalyScoreOut}e" extended
+LogFormat "%h %{GEOIP_COUNTRY_CODE}e %u [%{%Y-%m-%d %H:%M:%S}t.%{usec_frac}t] \"%r\" %>s %b \
+\"%{Referer}i\" \"%{User-Agent}i\" %v %A %p %R %{BALANCER_WORKER_ROUTE}e %X \"%{cookie}n\" \
+%{UNIQUE_ID}e %{SSL_PROTOCOL}x %{SSL_CIPHER}x %I %O %{ratio}n%% \
+%D %{ModSecTimeIn}e %{ApplicationTime}e %{ModSecTimeOut}e \
+%{ModSecAnomalyScoreIn}e %{ModSecAnomalyScoreOut}e" extended
 
 LogFormat "[%{%Y-%m-%d %H:%M:%S}t.%{usec_frac}t] %{UNIQUE_ID}e %D \
 PerfModSecInbound: %{TX.perf_modsecinbound}M \
@@ -608,7 +619,8 @@ IP %{MULTIPART_INVALID_PART}, \
 IH %{MULTIPART_INVALID_HEADER_FOLDING}, \
 FL %{MULTIPART_FILE_LIMIT_EXCEEDED}'"
 
-SecRule TX:/^MSC_/ "!@streq 0" "id:'200004',phase:2,t:none,deny,status:500,msg:'ModSecurity internal error flagged: %{MATCHED_VAR_NAME}'"
+SecRule TX:/^MSC_/ "!@streq 0" "id:'200004',phase:2,t:none,deny,status:500,\
+msg:'ModSecurity internal error flagged: %{MATCHED_VAR_NAME}'"
 
 
 # === ModSecurity Rules (ids: 900000-999999)
@@ -621,8 +633,10 @@ SecAction "id:'900001',phase:1,t:none, \
    setvar:tx.warning_anomaly_score=3, \
    setvar:tx.notice_anomaly_score=2, \
    nolog, pass"
-SecAction "id:'900002',phase:1,t:none,setvar:tx.inbound_anomaly_score_level=10000,setvar:tx.inbound_anomaly_score=0,nolog,pass"
-SecAction "id:'900003',phase:1,t:none,setvar:tx.outbound_anomaly_score_level=10000,setvar:tx.outbound_anomaly_score=0,nolog,pass"
+SecAction "id:'900002',phase:1,t:none,\
+setvar:tx.inbound_anomaly_score_level=10000,setvar:tx.inbound_anomaly_score=0,nolog,pass"
+SecAction "id:'900003',phase:1,t:none,\
+setvar:tx.outbound_anomaly_score_level=10000,setvar:tx.outbound_anomaly_score=0,nolog,pass"
 SecAction "id:'900004',phase:1,t:none,setvar:tx.anomaly_score_blocking=on,nolog,pass"
 
 SecAction "id:'900006',phase:1,t:none,setvar:tx.max_num_args=255,nolog,pass"
@@ -633,20 +647,29 @@ SecAction "id:'900010',phase:1,t:none,setvar:tx.max_file_size=10000000,nolog,pas
 SecAction "id:'900011',phase:1,t:none,setvar:tx.combined_file_sizes=10000000,nolog,pass"
 SecAction "id:'900012',phase:1,t:none, \
   setvar:'tx.allowed_methods=GET HEAD POST OPTIONS', \
-  setvar:'tx.allowed_request_content_type=application/x-www-form-urlencoded|multipart/form-data|text/xml|application/xml|application/x-amf|application/json', \
+  setvar:'tx.allowed_request_content_type=application/x-www-form-urlencoded\
+|multipart/form-data|text/xml|application/xml|application/x-amf|application/json', \
   setvar:'tx.allowed_http_versions=HTTP/0.9 HTTP/1.0 HTTP/1.1', \
-  setvar:'tx.restricted_extensions=.asa/ .asax/ .ascx/ .axd/ .backup/ .bak/ .bat/ .cdx/ .cer/ .cfg/ .cmd/ .com/ .config/ .conf/ .cs/ .csproj/ .csr/ .dat/ .db/ .dbf/ .dll/ .dos/ .htr/ .htw/ .ida/ .idc/ .idq/ .inc/ .ini/ .key/ .licx/ .lnk/ .log/ .mdb/ .old/ .pass/ .pdb/ .pol/ .printer/ .pwd/ .resources/ .resx/ .sql/ .sys/ .vb/ .vbs/ .vbproj/ .vsdisco/ .webinfo/ .xsd/ .xsx/', \
-  setvar:'tx.restricted_headers=/Proxy-Connection/ /Lock-Token/ /Content-Range/ /Translate/ /via/ /if/', \
+  setvar:'tx.restricted_extensions=.asa/ .asax/ .ascx/ .axd/ .backup/ .bak/ .bat/ \
+.cdx/ .cer/ .cfg/ .cmd/ .com/ .config/ .conf/ .cs/ .csproj/ .csr/ .dat/ .db/ \
+.dbf/ .dll/ .dos/ .htr/ .htw/ .ida/ .idc/ .idq/ .inc/ .ini/ .key/ .licx/ .lnk/ \
+.log/ .mdb/ .old/ .pass/ .pdb/ .pol/ .printer/ .pwd/ .resources/ .resx/ .sql/ \
+.sys/ .vb/ .vbs/ .vbproj/ .vsdisco/ .webinfo/ .xsd/ .xsx/', \
+  setvar:'tx.restricted_headers=/Proxy-Connection/ /Lock-Token/ /Content-Range/ \
+/Translate/ /via/ /if/', \
   nolog,pass"
 
-SecRule REQUEST_HEADERS:User-Agent "^(.*)$" "id:'900018',phase:1,t:none,t:sha1,t:hexEncode,setvar:tx.ua_hash=%{matched_var}, \
+SecRule REQUEST_HEADERS:User-Agent "^(.*)$" \
+	"id:'900018',phase:1,t:none,t:sha1,t:hexEncode,setvar:tx.ua_hash=%{matched_var}, \
   nolog,pass"
 SecRule REQUEST_HEADERS:x-forwarded-for "^\b(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\b" \
-  "id:'900019',phase:1,t:none,capture,setvar:tx.real_ip=%{tx.1},nolog,pass"
-SecRule &TX:REAL_IP "!@eq 0" "id:'900020',phase:1,t:none,initcol:global=global,initcol:ip=%{tx.real_ip}_%{tx.ua_hash}, \
+	"id:'900019',phase:1,t:none,capture,setvar:tx.real_ip=%{tx.1},nolog,pass"
+SecRule &TX:REAL_IP "!@eq 0" \
+	"id:'900020',phase:1,t:none,initcol:global=global,initcol:ip=%{tx.real_ip}_%{tx.ua_hash}, \
   nolog,pass"
-SecRule &TX:REAL_IP "@eq 0" "id:'900021',phase:1,t:none,initcol:global=global,initcol:ip=%{remote_addr}_%{tx.ua_hash},setvar:tx.real_ip=%{remote_addr}, \
-  nolog,pass"
+SecRule &TX:REAL_IP "@eq 0" \
+	"id:'900021',phase:1,t:none,initcol:global=global,initcol:ip=%{remote_addr}_%{tx.ua_hash},\
+	setvar:tx.real_ip=%{remote_addr},nolog,pass"
 
 
 # === ModSecurity Ignore Rules Before Core Rules Inclusion; order by id of ignored rule (ids: 10000-49999)
@@ -701,7 +724,8 @@ SSLCertificateKeyFile   /etc/ssl/private/ssl-cert-snakeoil.key
 SSLCertificateFile      /etc/ssl/certs/ssl-cert-snakeoil.pem
 
 SSLProtocol             All -SSLv2 -SSLv3
-SSLCipherSuite          'kEECDH+ECDSA kEECDH kEDH HIGH +SHA !aNULL !eNULL !LOW !MEDIUM !MD5 !EXP !DSS !PSK !SRP !kECDH !CAMELLIA !RC4'
+SSLCipherSuite          'kEECDH+ECDSA kEECDH kEDH HIGH +SHA !aNULL !eNULL !LOW !MEDIUM !MD5 !EXP !DSS \
+!PSK !SRP !kECDH !CAMELLIA !RC4'
 SSLHonorCipherOrder     On
 
 SSLRandomSeed           startup file:/dev/urandom 2048
@@ -744,7 +768,7 @@ DocumentRoot            /apache/htdocs
 
     RewriteEngine             On
 
-    RewriteRule               ^/service1/(.*)	  http://localhost:8000/service1/$1 [proxy,last]
+    RewriteRule               ^/service1/(.*)   http://localhost:8000/service1/$1 [proxy,last]
     ProxyPassReverse          /                 http://localhost:8000/
 
 
