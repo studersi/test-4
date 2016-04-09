@@ -60,8 +60,9 @@ In the preceding tutorials we closely inspected the web server’s *access log* 
 ```bash
 192.168.146.78 CH - [2015-05-20 15:34:59.211464] "POST /EMail/MailHandler HTTP/1.1" 303 - \
 "https://www.example.com/EMail/newMessage.aspx?msg=new" "Mozilla/5.0 (Windows NT 6.1; WOW64; \
-Trident/7.0; rv:11.0) like Gecko" www.example.com 192.168.34.16 443 proxy-server - + "4a537de2.52283b4e6d77b" \
-ViZDA6wxQzZrjCzQ-t8AAAAt TLSv1.2 ECDHE-RSA-AES128-SHA256 1796 4302 -% 1181278 14514 164330 149 18 0
+Trident/7.0; rv:11.0) like Gecko" www.example.com 192.168.34.16 443 proxy-server - + \
+"4a537de2.52283b4e6d77b" ViZDA6wxQzZrjCzQ-t8AAAAt TLSv1.2 ECDHE-RSA-AES128-SHA256 1796 4302 -% 1181278 \
+14514 164330 149 18 0
 ``` 
 
 This sample line from the *access log* logs a request. It is a post request for the mail handler resource. The referrer references a *newMessage.aspx* resource, which is an indication that our request may have to do with sending e-mail. The second-to-last value is *18* and indicates an anomaly value for the inbound request. (The response adds 0 points, at the very end). Our limit is still set extremely high, so this poses no risk. But because this is mature or filtered traffic, we already know that it’s a false alarm, which earned a total score of 18 points. What kind of false positives were there? Let’s have a look.
@@ -70,7 +71,7 @@ This sample line from the *access log* logs a request. It is a post request for 
 $> grep ViZDA6wxQzZrjCzQ-t8AAAAt tutorial-8-example-error.log
 [2015-05-20 15:34:59.212369] [-:error] - - [client 192.168.146.78] ModSecurity: Warning. Pattern match \
 "\\\\W{4,}" at ARGS:message. [file \
-"/opt/modsecurity-rules/latest/base_rules/modsecurity_crs_40_generic_attacks.conf"] [line "37"] [id "960024"] \
+"/opt/modsecurity-rules/latest/base_rules/modsecurity_crs_40_generic_attacks.conf"] [line "37"] [id "960024"] 
 [rev "2"] [msg "Meta-Character Anomaly Detection Alert - Repetative Non-Word Characters"] [data "..."] \
 [hostname "www.example.com"] [uri "/EMail/MailHandler"] [unique_id "ViZDA6wxQzZrjCzQ-t8AAAAt"]
 [2015-05-20 15:34:59.212639] [-:error] - - [client 192.168.146.78] ModSecurity: Warning. Pattern match \
@@ -298,7 +299,8 @@ Interesting. The *message* parameter was the main contributor to the score of 91
 We have became familiar with suppressing individual rules for one parameter on a specific path in the previous tutorial. Applied to our case, this results in the following *tuning rule* or *ignore rule* for the first rule violation:
 
 ```bash
-SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" "phase:2,nolog,pass,t:none,id:10000,ctl:ruleRemoveTargetById=950911;ARGS:message"
+SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
+	"phase:2,nolog,pass,t:none,id:10000,ctl:ruleRemoveTargetById=950911;ARGS:message"
 ```
 
 Thus, one of the 20 rule infractions listed above has been handled. We proceed in a similar way with the other 19. But this entails a lot of manual labor, which is why we want to help ourselves to another script that takes over determining the fine tuning rule from us: [modsec-rulereport.rb](https://github.com/Apache-Labor/labor/blob/master/bin/modsec-rulereport.rb)
@@ -482,7 +484,8 @@ We have thus handled the twenty different false alarms caused by the five reques
 ```bash
 $> (cat tutorial-8-example-error.log | grep -E "950911|960024|973300|973304|973306|973314|973316\
 |973332|973333|973335|973338|981231|981243|981244|981245|981246|981248|981257" \
-| grep "ARGS:message"; cat tutorial-8-example-error.log | grep 981172 | grep REQUEST_COOKIES:X0_org) | wc -l
+| grep "ARGS:message"; cat tutorial-8-example-error.log | grep 981172 | grep REQUEST_COOKIES:X0_org) \
+| wc -l
 3415
 ```
 
@@ -592,8 +595,8 @@ It’s important to select a new ID for these rules. By default, the script alwa
 There are still three individual rule violations to handle in our group:
 
 ```bash
-$> grep -F -f ids tutorial-8-example-error.log | grep -v -E "ARGS:message.*(950911|960024|973300|973304|973306\
-|973314|973316|973332|973333|973335|973338|981231|981243|981244|981245|981246|981248|981257)" \
+$> grep -F -f ids tutorial-8-example-error.log | grep -v -E "ARGS:message.*(950911|960024|973300|973304\
+|973306|973314|973316|973332|973333|973335|973338|981231|981243|981244|981245|981246|981248|981257)" \
 | grep -v -E "REQUEST_COOKIES:X0_org.*981172" | grep -E "ARGS:(message|subject)" \
 | modsec-rulereport.rb -m combined
 1 x 960024 Meta-Character Anomaly Detection Alert - Repetative Non-Word Characters (severity:  NONE/UNKOWN)
