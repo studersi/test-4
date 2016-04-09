@@ -49,7 +49,8 @@ SecAuditLogParts            "ABFHKZ"
 The request and response bodies are no longer being captured. This saves a lot of storage space, which is important on badly tuned systems. The parts of the body that violate individual rules are nonetheless written to the error log and in Part K. This is sufficient in most cases. However, from case to case, you will still want to capture the entire body. In cases such as these you can use a `ctl` directive for the action part of the `SecRule`. Multiple, additional parts can be selected via `auditLogParts`:
 
 ```bash
-SecRule REMOTE_ADDR  "@streq 127.0.0.1"   "id:10000,phase:1,pass,log,auditlog,msg:'Initializing full traffic log',ctl:auditLogParts=+EIJ"
+SecRule REMOTE_ADDR  "@streq 127.0.0.1"   \
+	"id:10000,phase:1,pass,log,auditlog,msg:'Initializing full traffic log',ctl:auditLogParts=+EIJ"
 ```
 
 ###Step 2: Using ModSecurity to write the entire traffic of a single session
