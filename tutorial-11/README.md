@@ -691,7 +691,8 @@ $> cat tutorial-8-example-access.log | alduration | do-binning.rb --label -n 25 
 This looks a lot better. We feed this result into the graph script (and clarify right off that we don’t want to have each value labeled); we saw how this works above.
 
 ```bash
-$> cat tutorial-8-example-access.log | alduration | do-binning.rb --label -n 25 --min 0 --max 2500000.0  | arbigraph --xaxisticsmodulo 5/3
+$> cat tutorial-8-example-access.log | alduration | do-binning.rb --label -n 25 --min 0 --max 2500000.0 \
+| arbigraph --xaxisticsmodulo 5/3
 
 
   2000 +++----+---+----+----+---+----+---+----+---+----+----+---+----+---+----+----+---+----+---+----+---+----+----+---+----+++
