@@ -775,7 +775,8 @@ We are now working with two separate data files, which we separate via the `past
 `arbigraph` adapts to the width of the terminal for output. If it should be narrower, this can be controlled via the `--width` option. Similarly, the height can be adjusted via `--height`. Export as a PNG image is also included in the script. Export is still rather rudimentary, but the resulting images may be good enough to use in a report.
 
 ```bash
-$> paste  /tmp/tmp.get /tmp/tmp.post | awk '{ print  $2 " " $4 }'  | arbigraph -l -2 -c "GET;POST" -t "Duration of Requests:\n GET vs. POST" --output /tmp/duration-get-vs-post.png
+$> paste  /tmp/tmp.get /tmp/tmp.post | awk '{ print  $2 " " $4 }'  | arbigraph -l -2 -c "GET;POST" \
+-t "Duration of Requests:\n GET vs. POST" --output /tmp/duration-get-vs-post.png
 ...
 Plot written to file /tmp/duration-get-vs-post.png.
 ```
