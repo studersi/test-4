@@ -1,4 +1,4 @@
-##Title: Capturing and decrypting the entire traffic
+##Tutorial 12 - Capturing and decrypting the entire traffic
 
 ###What are we doing?
 
@@ -104,7 +104,7 @@ In the fourth tutorial we operated the local Laboratory Service using the local 
         SSLCertificateFile   /etc/ssl/certs/ssl-cert-snakeoil.pem
 
         SSLProtocol             All -SSLv2 -SSLv3
-    	SSLCipherSuite          'AES256-SHA'
+        SSLCipherSuite          'AES256-SHA'
         SSLHonorCipherOrder     On
 
     ...
@@ -175,7 +175,10 @@ tcpdump: listening on lo, link-type EN10MB (Ethernet), capture size 65535 bytes
 Let’s try to decrypt the `PCAP` file. We’ll again be using `tshark` from the `Wireshark` suite. The `GUI` also works, but is less comfortable. What’s important now is to pass the key we used on the server to the tool.
 
 ```bash
-$> sudo tshark -r /tmp/localhost-port443.pcap -o "ssl.desegment_ssl_records: TRUE" -o "ssl.desegment_ssl_application_data: TRUE" -o "ssl.keys_list: 127.0.0.1,443,http,/etc/ssl/private/ssl-cert-snakeoil.key" -o "ssl.debug_file: /tmp/ssl-debug.log"
+$> sudo tshark -r /tmp/localhost-port443.pcap -o "ssl.desegment_ssl_records: TRUE"\
+-o "ssl.desegment_ssl_application_data: TRUE" \
+-o "ssl.keys_list: 127.0.0.1,443,http,/etc/ssl/private/ssl-cert-snakeoil.key" \
+-o "ssl.debug_file: /tmp/ssl-debug.log"
 Running as user "root" and group "root". This could be dangerous.
   1   0.000000    127.0.0.1 -> 127.0.0.1    TCP 74 33517 > https [SYN] Seq=0 Win=43690 Len=0 MSS=65495 SACK_PERM=1 TSval=42610003 TSecr=0 WS=128
   2   0.000040    127.0.0.1 -> 127.0.0.1    TCP 74 https > 33517 [SYN, ACK] Seq=0 Ack=1 Win=43690 Len=0 MSS=65495 SACK_PERM=1 TSval=42610003 TSecr=42610003 WS=128
