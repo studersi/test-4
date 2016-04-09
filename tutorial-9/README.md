@@ -240,7 +240,7 @@ We first have to link the Apache load balancer module:
 ```bash
 LoadModule        proxy_balancer_module           modules/mod_proxy_balancer.so
 LoadModule        lbmethod_byrequests_module      modules/mod_lbmethod_byrequests.so
-LoadModule	  slotmem_shm_module              modules/mod_slotmem_shm.so
+LoadModule        slotmem_shm_module              modules/mod_slotmem_shm.so
 ```
 
 Besides the load balancer module itself we also need a module that can help us distribute the requests to the different backends. We’ll take the easiest route and load the *lbmethod_byrequests* module.
@@ -598,9 +598,11 @@ SecAction "id:'90004',phase:5,nolog,pass,setvar:TX.ModSecTimestamp5start=%{DURAT
 
 # === ModSec Recommended Rules (in modsec src package) (ids: 200000-200010)
 
-SecRule REQUEST_HEADERS:Content-Type "text/xml" "id:'200000',phase:1,t:none,t:lowercase,pass,nolog,ctl:requestBodyProcessor=XML"
+SecRule REQUEST_HEADERS:Content-Type "text/xml" \
+	"id:'200000',phase:1,t:none,t:lowercase,pass,nolog,ctl:requestBodyProcessor=XML"
 
-SecRule REQBODY_ERROR "!@eq 0" "id:'200001',phase:2,t:none,deny,status:400,log,msg:'Failed to parse request body.',\
+SecRule REQBODY_ERROR "!@eq 0" \
+	"id:'200001',phase:2,t:none,deny,status:400,log,msg:'Failed to parse request body.',\
 logdata:'%{reqbody_error_msg}',severity:2"
 
 SecRule MULTIPART_STRICT_ERROR "!@eq 0" \
