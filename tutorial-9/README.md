@@ -28,7 +28,7 @@ In principle, any HTTP application can be used for such an installation and we c
 $> socat -vv TCP-LISTEN:8000,bind=127.0.0.1,crlf,reuseaddr,fork SYSTEM:"echo HTTP/1.0 200;\
 echo Content-Type\: text/plain; echo; echo 'Server response, port 8000.'"
 ``` 
- Using this complex command we instruct *socat*, to install a *listener* on local port 8000 and to use several *echoes* to return an HTTP response when a connection occurs. The additional parameters make sure that the listener stays permanently open and error output works.
+ Using this complex command we instruct *socat*, to bind a *listener* to local port 8000 and to use several *echoes* to return an HTTP response when a connection occurs. The additional parameters make sure that the listener stays permanently open and error output works.
 
 ```bash
 $> curl -v http://localhost:8000/
@@ -48,9 +48,9 @@ Server response, port 8000
 * Closing connection 0
 ```
 
-We have set up a backup system with the simplest of means. So easy, that in the future we will might again be happy to be know about this method, when we want to verify that a proxy server is working before the right backend is running.
+We have set up a backup system with the simplest of means. So easy, that in the future we will might again be happy to know about this method, when we want to verify that a proxy server is working before the right backend is running.
 
-###Step 2: Linking the proxy module
+###Step 2: Enabling the proxy module
 
 Several modules are required to use Apache as a *proxy server*. We compiled them in the first tutorial and can now simply link them.
 
@@ -87,9 +87,9 @@ ProxyPassReverse   /service1    http://localhost:8000/service1
 </Proxy>
 ```
 
-The most important directive is *ProxyPass*. It defines a `/service1` path and specifies how it is mapped to the backend: To the service defined above running on our own host, localhost, on port 8000. The path to the application server is again `/service1`. We are proxying symmetrically, because the paths never change. This mapping is however not absolutely required. Technically, it would be entirely possible to proxy `service1` to `/`, but this results to administrative difficulties and misunderstandings, if a path in the log file no longer maps to the path on the *reverse proxy* and the requests can no longer be correlated.
+The most important directive is *ProxyPass*. It defines a `/service1` path and specifies how it is mapped to the backend: To the service defined above running on our own host, localhost, on port 8000. The path to the application server is again `/service1`. We are proxying symmetrically, because the frontend path is identical to the backend path. This mapping is however not absolutely required. Technically, it would be entirely possible to proxy `service1` to `/`, but this results to administrative difficulties and misunderstandings, if a path in the application log file no longer maps to the path on the *reverse proxy* and the requests can no longer be correlated easily.
 
-On the next line comes a related directive that despite having a similar name performs only a small auxiliary function. *Redirect responses* from the backend are fully qualified in *http-compliant* form. Such as `https://backend.example.com/service1`, for example. The address is however not accessible by the client. For this reason, the *reverse proxy* has to rewrite the backend’s *location header*, `backend.example.com`, replacing it with its own name and thus mapping it back to its own *namespace*. *ProxyPassReverse*, with such a great name, only has a simple search and replace feature touching the *location headers*. As already seen in the *ProxyPass* directive, *proxying* is symmetric: the paths are rewritten 1:1. We are free to ignore this rule, but I urgently recommend keeping it, because misunderstandings and confusion lie beyond. In addition to accessing *location headers*, there is a series of further *reverse directives* for handling things like cookies. It can be useful from case to case.
+On the next line comes a related directive that despite having a similar name performs only a small auxiliary function. *Redirect responses* from the backend are fully qualified in *http-compliant* form. Such as `https://backend.example.com/service1`, for example. The address is however not accessible by the client. For this reason, the *reverse proxy* has to rewrite the backend’s *location header*, `backend.example.com`, replacing it with its own name and thus mapping it back to its own *namespace*. *ProxyPassReverse*, with such a great name, only has a simple search and replace feature touching the *location headers*. As already seen in the *ProxyPass* directive, *proxying* is symmetric: the paths are rewritten 1:1. We are free to ignore this rule, but I urgently recommend keeping it, because misunderstandings and confusion lie beyond. In addition to accessing *location headers*, there is a series of further *reverse directives* for handling things like cookies. They can be useful from case to case.
 
 ### Step 4: Proxy stanza
 
@@ -107,7 +107,7 @@ ProxyPass          /service1         http://localhost:8000/service1
 ProxyPassReverse   /service1         http://localhost:8000/service1
 ```
 
-You often see configurations that forward the entire namespace below `/` to the backend. Then a number of exceptions to the pattern above are often defined. I think this is the wrong approach and I prefer to forward only what is actually being processed. The advantage is obvious: scanners and automated attacks looking for their next victim from a pool of IP addresses on the internet make requests for a lot of non-existent paths on our server. We can now forward them to the backend and may overload the backend or even put it in danger. Or we can just block these requests on the reverse proxy server. The latter is clearly preferable for security-related reasons.
+You often see configurations that forward the entire namespace below `/` to the backend. Then a number of exceptions to the pattern above are often defined. I think this is the wrong approach and I prefer to forward only what is actually being processed. The advantage is obvious: scanners and automated attacks looking for their next victim from a pool of IP addresses on the internet make requests for a lot of non-existent paths on our server. We can now forward them to the backend and may overload the backend or even put it in danger. Or we can just drop these requests on the reverse proxy server. The latter is clearly preferable for security-related reasons.
 
 An essential directive which may optionally be part of the proxy concerns the timeout. We defined our own *timeout* value for our server. This *timeout* is also used by the server for the connection to the backend. But this is not always wise, because while we can expect from the client that it will quickly make its request and not take its sweet time, depending on the backend application, it can take a while until the response is processed. For a short, general *timeout* which is wise to have for the client for defensive reasons, the *reverse proxy* would interrupt access to the backend too quickly. For this reason, there is a *ProxyTimeout* directive which affects only the connection to the backend. By the way, time measurement is not the total processing time on the backend, but the duration of time between IP packets: When the backend sends part of the response the clock is reset.
 
@@ -121,7 +121,7 @@ Now comes time to fix the *host header*. Via the HTTP request host header the cl
 ProxyPreserveHost       On
 ```
 
-Backend systems often pay less attention to security than a reverse proxy. Error messages are one place this is obvious. Detailed error messages are often desirable since they enable the developer or backend administrator to get at the root of the problem. But we don’t want to distribute them over the internet, because without authentication on the *reverse proxy* an attacker could always be lurking behind the client. It's better to hide error messages from the backend application or to replace it with an error message from the *reverse proxy*. The *ProxyErrorOverride* directive intervenes in the HTTP response body and replaces it if a status code greater than or equal to 400 is present. Requests with normal statuses below 400 are not affected by this directive.
+Backend systems often pay less attention to security than a reverse proxy. Error messages are one place this is obvious. Detailed error messages are often desirable since they enable the developer or backend administrator to get at the root of the problem. But we don’t want to distribute them over the internet, because without authentication on the *reverse proxy* an attacker could always be lurking behind the client. It's better to hide error messages from the backend application or to replace them with an error message from the *reverse proxy*. The *ProxyErrorOverride* directive intervenes in the HTTP response body and replaces it if a status code greater than or equal to 400 is present. Requests with normal statuses below 400 are not affected by this directive.
 
 ```bash
 ProxyErrorOverride      On
@@ -145,7 +145,7 @@ RewriteOptions          InheritDownBefore
 RewriteRule   		^/$	%{REQUEST_SCHEME}://%{HTTP_HOST}/index.html  [redirect,last]
 ```
 
-We initialize the engine on the server level. We then instruct the engine to pass on our rules to other rewrite engines. Specifically, so that our rules are performed before the rules further down. Then comes the actual rule. We tell the server to instruct the client to send a new request to _/index.html_ for a request without a path or a request for "/". This is a _redirect_. What’s important is for the *redirect* to indicate the schema of the request, *http* or *https* as well as the host name. Relatives paths won’t work. But because we are outside the *VirtualHost*, we don’t see the type. And we don’t want to hard code the host name, but prefer to take the host names from client requests. Both of these values are available as variables as you can see in the example above.
+We initialize the engine on the server level. We then instruct the engine to pass on our rules to other rewrite engines. Specifically, so that our rules are performed before the rules further down. Then comes the actual rule. We tell the server to instruct the client to send a new request to _/index.html_ for a request without a path or a request for "/" respectively. This is a _redirect_. What’s important is for the *redirect* to indicate the schema of the request, *http* or *https* as well as the host name. Relatives paths won’t work. But because we are outside the *VirtualHost*, we don’t see the type. And we don’t want to hard code the host name, but prefer to take the host names from client requests. Both of these values are available as variables as you can see in the example above.
 
 Then appearing within square brackets come the flags influencing the behavior of the rewrite rule. As previously mentioned, we want a *redirect* and tell the *engine* that this is the last rule to process (*last*).
 
@@ -183,7 +183,7 @@ The server now responds with HTTP status code *302 Found*, corresponding to the 
 
 In the body part of the response the redirect is included as a link in HTML text. This is provided for users to click manually, if the browser does not initiate the redirect. This is however very unlikely and in my opinion, is for historical reasons only.
 
-You could now ask yourself why we are opening a *rewrite engine* in the server context and not dealing with everything on the *VirtualHost* level. In the example I chose you see that this would result in redundancy, because the redirect from "/" to "index.html" should take place on port 80 and not on encrypted port 443. This is the rule of thumb: It’s best for us to define and inherit everything being used on all *VirtualHosts* in the server context. We also deal with individual rules for a single *VirtualHost* on this level. Typical is the following rule we can use to redirect all requests from port 80 to port 443:
+You could now ask yourself why we are opening a *rewrite engine* in the server context and not dealing with everything on the *VirtualHost* level. In the example I chose you see that this would result in redundancy, because the redirect from "/" to "index.html" should take place on port 80 and also on encrypted port 443. This is the rule of thumb: It’s best for us to define and inherit everything being used on all *VirtualHosts* in the server context. We also deal with individual rules for a single *VirtualHost* on this level. Typical is the following rule we can use to redirect all requests from port 80 to port 443:
 
 ```bash
 <VirtualHost 127.0.0.1:80>
@@ -229,13 +229,13 @@ We have seen how a *rewrite engine* is initialized and how you can easily trigge
 
 The instruction follows a pattern similar to the variation using ProxyPass. Here however, the last part of the path has to be explicitly intercepted by using a bracket and again indicated by "$1" as we saw above. Instead of the suggested *redirect flag* a *proxy* is used here. *ProxyPassReverse* and the proxy stanza remain identical to the setup using *ProxyPass*.
 
-So much for the simple configuration using a rewrite rule. There is no real advantage over *ProxyPass* syntax. Referencing parts of paths by using *$1*, *$2*, etc. does provide a bit of flexibility. But if we are working with rewrite rules anyway, then by rewrite rule proxying we ensure that RewriteRule and ProxyPass don’t come into conflict by touching the same request and impacting one another.
+So much for the simple configuration using a rewrite rule. There is no real advantage over *ProxyPass* syntax in the examples seen so far. Referencing parts of paths by using *$1*, *$2*, etc. does provide a bit of flexibility. But if we are working with rewrite rules anyway, then by rewrite rule proxying we ensure that RewriteRule and ProxyPass don’t come into conflict by touching the same request and impacting one another.
 
 However, it may now be that we want to use a single reverse proxy to combine multiple backends or to distribute the load over multiple servers. This calls for our own load balancer. We’ll be looking at it in the next section:
 
 ### Step 8: Balancer [proxy]
 
-We first have to link the Apache load balancer module:
+We first have to load the Apache load balancer module:
 
 ```bash
 LoadModule        proxy_balancer_module           modules/mod_proxy_balancer.so
@@ -255,7 +255,7 @@ Here is a list of available algorithms:
 
 The different modules are well documented online so this brief description will have to suffice for now. And finally, we still need a module to help us manage shared segments of memory. These features are required by the proxy balancer module and provided by `mod_slotmem_shm.so`.
 
-We are now ready to configure the load balancer. We can now set It up via RewriteRule. This modification of RewriteRule also affects the proxy stanza, where the balancer just defined must be referenced and resolved:
+We are now ready to configure the load balancer. We can now set It up via *RewriteRule*. This modification of *RewriteRule* also affects the proxy stanza, where the balancer just defined must be referenced and resolved:
 
 ```bash
     RewriteRule         ^/service1/(.*)       balancer://backend/service/$1   [proxy,last]
@@ -350,16 +350,16 @@ In a subsequent tutorial we will be seeing that the proxy balancer can also be u
 
 ### Step 9: RewriteMap [proxy]
 
-RewriteMaps comes in a number of different variations. It works by assigning a value to a key parameter at every request. A hash table is a simple example. But it is then also not possible to configure external scripts as a programmable RewriteMap. The following types of maps are possible:
+RewriteMaps comes in a number of different variations. It works by assigning a value to a key parameter at every request. A hash table is a simple example. But it is then also possible to configure external scripts as a programmable RewriteMap. The following types of maps are possible:
 
 * txt : A key value pair in a text file is searched for here.
 * rnd : Several values can be specified for each key here. They are then selected at random.
-* dbm : This variation works like the txt variation, but provides a big speed advantage as a binary hash table.
+* dbm : This variation works like the txt variation, but provides a big speed advantage as a binary hash table is used.
 * int : This abbreviation stands for *internal function* and refers to a function from the following list: *toupper*, *tolower*, *escape* and *unescape*.
 * prg : An external script is invoked in this variation. The script is started along with the server and each time the RewriteMap is accessed receives new input via STDIN.
 * dbd und fastdbd : The response value is searched for in a database request.
 
-This list makes clear that RewriteMaps are extremely flexible and can be used in a variety of situations. Determining the backend for proxying is only one of many possible applications. In our example we want to ensure that the request from a specific client always goes to the same backend. There are a number of different ways of doing this, specifically, by setting a cookie. But we don’t want to intervene in the requests and at the same time prevent a large number of clients from a specific network range from all being taken to the same backend. Some kind of distribution should thus take place. To do so, we combine ModSecurity using ModRewrite and a RewriteMap. Let’s have a look at it step by step.
+This list makes clear that RewriteMaps are extremely flexible and can be used in a variety of situations. Determining the backend for proxying is only one of many possible applications. In our example we want to ensure that the request from a specific client always goes to the same backend. There are a number of different ways of doing this, specifically, by setting a cookie. But we don’t want to intervene in the requests and at the same time prevent a large number of clients from a specific network range from all being taken to the same backend. Some kind of distribution should thus take place. To do so, we combine ModSecurity with using ModRewrite and a RewriteMap. Let’s have a look at it step by step.
 
 First, we calculate a hash value from the client’s IP address. This means that we are converting the IP address into a random hexadecimal string:
 
@@ -370,7 +370,7 @@ SecRule REMOTE_ADDR	"^(.)" \
 
 We have used hexEncode to convert the binary hash value we generated using sha1 into readable characters. We then apply the regular expression to this value. "^(.)" means that we want to find a match on any of the first characters. Of the ModSecurity flags that follow *capture* is of interest. It indicates the value of the *TX.1* transaction variable in brackets. We then extract the value of this variable and put it into the IPHashChar environment variable.
 
-If there is any uncertainty as to whether this will really work, then the content of the variable *IPHashChar* can be mapped and checked using *%{IPHashChar}e* on the server’s access log. This brings us to RewriteMap and the request itself:
+If there is any uncertainty as to whether this will really work, then the content of the variable *IPHashChar* can be mapped and checked using *%{IPHashChar}e* in the server’s access log. This brings us to RewriteMap and the request itself:
 
 ```bash
 RewriteMap hashchar2backend "txt:/apache/conf/hashchar2backend.txt"
@@ -400,7 +400,7 @@ RewriteRule     ^/service1/(.*) \
 
 We introduce the map by using the RewriteMap command. We assign it a name, define its type and the path to the file. RewriteMap is invoked in a RewriteRule. Before we really access the map, we enable a rewrite condition. This is done using the *RewriteCond* directive. There we reference the *IPHashChar* environment variable and determine the first byte of the variable. We know that only a single byte is included in the variation, but this won’t put a stop to our plans. On the next line then the typical start of the Proxy directive. But instead of now specifying the backend, we reference RewriteMap by the name previously assigned. After the colon comes the parameter for the request. Interestingly, we use *%1* to communicate with the rewrite conditions captured in brackets. The RewriteRule variable is not affected by this and continues to be referenced via *$1*. After the *%1* comes the default value separated by a pipe character. Should anything go wrong when accessing the map, then communication with *localhost* takes place over port 8000.
 
-All we need now is the RewriteMap. In the code sample we specified a text file. Better performance is provided by a dbm hash, but this is not the focus at the present. Here’s the `/apache/conf/hashchar2backend.txt` map file:
+All we need now is the RewriteMap. In the code sample we specified a text file. Better performance is provided by a dbm hash, but this is not the focus at present. Here’s the `/apache/conf/hashchar2backend.txt` map file:
 
 ```bash
 ##
@@ -434,7 +434,7 @@ The *reverse proxy* server shields the application server from direct client acc
 * X-Forwarded-Host : The original HTTP host header in the client request
 * X-Forwarded-Server : The name of the *reverse proxy* server
 
-If multiple reverse proxies are staggered behind one another then the additional IP addresses and server names are comma separated. In addition to this information about the connection, it is also a good idea to pass along yet more information. This would of course include the unique ID, uniquely identifying the request. A well-configured backend server will create a key value similar to our *reverse proxy* in the log rile. Being able to easily correlate the different log file entries simplifies debugging in the future.
+If multiple reverse proxies are staggered behind one another then the additional IP addresses and server names are comma separated. In addition to this information about the connection, it is also a good idea to pass along yet more information. This would of course include the unique ID, uniquely identifying the request. A well-configured backend server will create a key value similar to our *reverse proxy* in the log file. Being able to easily correlate the different log file entries simplifies debugging in the future.
 
 A reverse proxy is frequently uses to perform authentication. Although we haven’t set that up yet, it is still wise to add this value to an expanding basic configuration. If authentication is not defined, this value simply remains empty. And finally, we want to tell the backend system about the type of encryption the client and *reverse proxy* agreed upon. The entire block looks like this:
 
@@ -466,7 +466,7 @@ The different extended header lines are listed sequentially and are filled in wi
 
 ###Step 11 (Goodie): Configuration of the complete reverse proxy server including the preceding tutorials
 
-This small extension brings us to the end of this tutorial and also to the end of the basic block of different tutorials. Over several tutorials we have seen how to set up an Apache web server, from compiling it to the basic configuration, and ModSecurity tuning to reverse proxies, gaining deep insight into the how the server and its most important modules work.
+This small extension brings us to the end of this tutorial and also to the end of the basic block of different tutorials. Over several tutorials we have seen how to set up an Apache web server for a lab, from compiling it to the basic configuration, and ModSecurity tuning to reverse proxies, gaining deep insight into the how of the server and its most important modules work.
 
 Now, here’s the complete configuration for the *reverse proxy server* that we worked out in the last tutorials.
 
@@ -719,7 +719,6 @@ RewriteEngine           On
 RewriteOptions          InheritDownBefore
 
 RewriteRule             ^/$  %{REQUEST_SCHEME}://%{HTTP_HOST}/index.html  [redirect,last]
-
 
 
 SSLCertificateKeyFile   /etc/ssl/private/ssl-cert-snakeoil.key
