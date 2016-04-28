@@ -6,7 +6,7 @@ To successfully ward off attackers, we are reducing the number of *false positiv
 
 ###Why are we doing this?
 
-A fresh installation of *core rules* will typically have a lot of false alarms. There can be thousands of them. In the last tutorial we saw a number of approaches for suppressing individual false alarms in the future. Knowing where to start can be difficult and what is missing is a strategy for coping with the sheer quantity of false alarms. Reducing the number of false alarms is the prerequisite for lowering the *core rules* anomaly limits and this in turn is required in order to use *ModSecurity* to actually ward off attackers. And only after the false alarms really are disabled or at least to a large extent curtailed do we get a picture of real attackers.
+A fresh installation of *core rules* will typically have a lot of false alarms. There can be thousands of them. In the last tutorial we saw a number of approaches for suppressing individual false alarms in the future. Every beginning is hard and what is missing is a strategy for coping with the sheer quantity of false alarms. Reducing the number of false alarms is the prerequisite for lowering the *core rules* anomaly limits and this in turn is required in order to use *ModSecurity* to actually ward off attackers. And only after the false alarms really are disabled or at least to a large extent curtailed do we get a picture of real attackers.
 
 ###Requirements
 
@@ -19,43 +19,43 @@ A fresh installation of *core rules* will typically have a lot of false alarms. 
 
 It's also a good idea for us to have a real application to protect. In Tutorial 3 we saw how to set up a PHP application server. In a subsequent tutorial we will be setting up a reverse proxy or gateway server. Such an installation in productive use on the internet will then be accompanied by the desired quantity of *log file* entries and, with a high degree of probability, the large number of false alarms needed for this tutorial.
 
-If data is unavailable or a working example is being sought for practice, it’s perhaps worthwhile to work with the existing practice data. I have prepared two *log files* as practice files. I say prepared, because they come from an untuned production system, which first had to be anonymized for use in practice by removing all data references to the original system. Furthermore, it had to be ensured that no real attacks are included in the log file, because we want to eliminate false alarms and not suppress the real alarms we need.
+If data is unavailable or a working example is being sought for practice, it’s perhaps worthwhile to work with the existing practice data. I have cobbled together two *log files* as practice files. I say cobbled together, because they come from an untuned production system, which first had to be anonymized for use in practice by removing all data references to the original system. Furthermore, it had to be ensured that no real attacks are included in the log file, because we want to eliminate false alarms and not suppress the real alarms we need.
 
 * [tutorial-8-example-access.log](./tutorial-8-example-access.log)
 * [tutorial-8-example-error.log](./tutorial-8-example-error.log)
 
-The log files are based on 10,000 requests. To me this seems to be the minimum needed for tuning. Smaller log files are in fact too random and only reflect one aspect of a service. The larger the basis for fine tuning, the better, but it's enough to start out with this size for the first fine tuning steps. Later on it may be a good idea to use to larger log files to get rid of false alarms that occur even less frequently.
+The log files are based on 10,000 requests. To me this seems to be the minimum needed for tuning. Smaller log files are in fact too random and only reflect one aspect of a service. The larger the basis for tuning, the better, but it's enough to start out with this size for the first tuning steps. Later on it may be a good idea to use to larger log files to get rid of false alarms that occur even more rarely.
 
 ###Step 1: Putting ModSecurity into blocking mode
 
-In the previous tutorial I pointed out that we would only be fine tuning a blocking *Web Application Firewall*. In *ModSecurity*, monitoring is done in *monitoring mode*, individual false alarms are eliminated and despite these good intentions the administrator gives up in the end, with no clear objective in mind and overcome by the sheer quantity of false alarms.
+In the previous tutorial I pointed out that we would only be tuning a blocking *Web Application Firewall*. People running *ModSecurity* in pure *monitoring mode*, will eliminate individual false alarms one after the other. But very ofen and despite really good intentions the administrator gives up in the end, with no clear objective in mind and overcome by the sheer quantity of false alarms.
 
 Faced with this, I propose a clear approach:
 * Put ModSecurity into blocking mode
 * Set very high anomaly limits
-* Fine tune relevant false alarms
+* Tune the relevant false alarms
 * Slightly lower anomaly limits
-* Fine tune the relevant false alarms
+* Tune the relevant false alarms
 * ...
 * Easily lower anomaly limits to a score such as 5 or 10
-This is an iterative approach that always works in blocking mode and in a series of small steps achieves a gradual reduction in the number of false alarms. During this process, confidence grows in the system, the ability to reduce false alarms and your own fine tuning skills. If we work in *blocking mode* from the very beginning we don’t need be afraid of that big day we throw the lever over from *monitoring mode* to *blocking mode*. In reality, we are sharpening the WAF’s teeth with every interaction and if we do it right few if any legitimate requests will be blocked.
+This is an iterative approach that always works in blocking mode and in a series of small steps achieves a gradual reduction in the number of false alarms. During this process, confidence grows in the system, the ability to reduce false alarms and your own tuning skills. If we work in *blocking mode* from the very beginning we don’t need be afraid of that big day we throw the lever over from *monitoring mode* to *blocking mode*. In reality, we are sharpening the WAF’s teeth with every interaction and if we do it right few if any legitimate requests will be blocked.
 
 ###Step 2: Excluding attack traffic from the log file
 
-*ModSecurity* should help us differentiate between attackers and legitimate users; this is the real reason behind the many rules and tweaks to the system. It increases the level of separation. However, in order to perform this process we need, as previously mentioned, log files that have been cleaned up. But how do we get one, especially since on an untuned system the attackers are difficult to find among all the false alarms in the log files.
+*ModSecurity* should help us differentiate between attackers and legitimate users; this is the real reason behind the many rules and tweaks to the system. It increases the degree of separation. However, in order to perform this process we need, as previously mentioned, log files that have been cleaned up. But how do we get one, especially since on an untuned system the attackers are difficult to find among all the false alarms in the log files.
 
 Several methods can be used:
 * We work on a test system isolated from the internet before introducing the service online.
-* We employ access protection and only take into account requests passing inspection.
-* We expunge unknown IP addresses from the log file.
+* We employ authentication and only take into account requests passing this gate.
+* We expunge unknown IP addresses from the log file
 
-In practice, I use a combination of these methods. The country of origin for the IP addresses is a very suitable filter criterion for fine tuning, especially for local systems in a small country like Switzerland. I also often extract successful login attempts from the log file and use them to create a list of valid IP addresses which I can then use to prepare my log file and use as the basis for fine tuning.
+In practice, I use a combination of these methods. The country of origin for the IP addresses is a very suitable filter criterion for tuning, especially for local systems in a small country like Switzerland. I also often extract successful login attempts from the log file and use them to create a list of valid IP addresses which I can then use to cobble together my log file and use as the basis for tuning.
 
-However, these considerations digress from the actual topic of fine tuning. At least these sample log files are available for you to practice on.
+However, these considerations digress from the actual topic of tuning. If you are unsure, give it a spin with the sample log files prepared for you to practice.
 
 ###Step 3: Understanding the relationships between access and error logs
 
-In the preceding tutorials we closely inspected the web server’s *access log* and *error log*. Let’s place them side-by-side:
+In the preceding tutorials we closely inspected the web server’s *access log* and *error log*. Let’s put them side-by-side:
 
 ```bash
 192.168.146.78 CH - [2015-05-20 15:34:59.211464] "POST /EMail/MailHandler HTTP/1.1" 303 - \
@@ -65,7 +65,7 @@ Trident/7.0; rv:11.0) like Gecko" www.example.com 192.168.34.16 443 proxy-server
 14514 164330 149 18 0
 ``` 
 
-This sample line from the *access log* logs a request. It is a post request for the mail handler resource. The referrer references a *newMessage.aspx* resource, which is an indication that our request may have to do with sending e-mail. The second-to-last value is *18* and indicates an anomaly value for the inbound request. (The response adds 0 points, at the very end). Our limit is still set extremely high, so this poses no risk. But because this is mature or filtered traffic, we already know that it’s a false alarm, which earned a total score of 18 points. What kind of false positives were there? Let’s have a look.
+This sample line from the *access log* logs one request. It is a post request for the mail handler resource. The referrer references a *newMessage.aspx* resource, which is an indication that our request may have to do with sending e-mail. The second-to-last value is *18* and reports the anomaly value for the inbound request. (The response adds 0 points, at the very end of the line). Our limit is still set extremely high, so this poses no risk. But because this is mature or filtered traffic, we already know that it’s a false alarm (multiple false alerts actually), which earned a total score of 18 points. What kind of false positives were there? Let’s have a look.
 
 ```bash
 $> grep ViZDA6wxQzZrjCzQ-t8AAAAt tutorial-8-example-error.log
@@ -102,7 +102,7 @@ $> grep ViZDA6wxQzZrjCzQ-t8AAAAt tutorial-8-example-error.log | melidmsg
 973314 XSS Attack Detected
 ```
 
-A perfect fit. Our job is to now determine the exact conditions for all of these false positives and to suppress them in the future. In the next step we’ll be getting an idea of this work.
+A perfect fit. Our job is to now determine the exact conditions for all of these false positives and to suppress them in the future. In the next step we’ll be getting a picture of this job.
 
 ###Step 4: Quantifying false positives and deriving an approach
 
@@ -222,23 +222,25 @@ Reqs with outgoing score of   3 |    114 |   1.1400% | 100.0000% |   0.0000%
 Average:   0.0342        Median   0.0000         Standard deviation   0.3185
 ```
 
-Accordingly, of the 10,000 incoming requests, just under 2,500 requests violated one or more rules. Altogether, there are over 5,400 rule violations, which represent a large quantity when you consider that these are the violations we have to handle. At 114 times a score of 3, the responses look better, but the false positives on the request side are threatening to overwhelm us. What we need is a plan to make the problem manageable. Let’s start with a graphical representation of the statistics presented above. This isn‘t really necessary, but helps us in the following conceptual consideration:
+Accordingly, of the 10,000 incoming requests, just under 2,500 requests violated one or more rules. Altogether, there are over 5,400 rule violations, which represent a large quantity when you consider that these are the violations we have to deal with. At 114 times a score of 3, the responses look better, but the false positives on the request side are threatening to overwhelm us. What we need is a plan to make the problem manageable. Let’s start with a graphical representation of the statistics presented above. This isn‘t really necessary, but helps us in the following conceptual consideration:
 
 ![Anomaly Scores Distribution](./incoming-anomaly-scores-distribution.png)
 
-I used a logarithmic scale to keep some of the smaller values for requests with no rule violations from disappearing entirely. On the x-axis we see the number of requests with a particular anomaly score. The weight clearly lies on the left, where over a thousand requests scored a 3 and then several hundred scored a 6, etc. The quantity of these requests may be upsetting at first, but in terms of the number of rule violations, a 3 can be scored by violating a single rule.
+I used a logarithmic scale to keep some of the smaller values next to the requests with no rule violations from disappearing entirely. On the x-axis we see the number of requests with a particular anomaly score. The weight clearly lies on the left, where over a thousand requests scored a 3 and then several hundred scored a 6, etc. The quantity of these requests may be upsetting at first, but in terms of the number of rule violations, a 3 can be scored by violating a single rule.
 
-This looks different on the right side of the graph. Scoring a 90 means having to violate 15 to 20 rules. The number of overall requests is significantly lower here, but each of them violate a large number of rules.
+This looks different on the right side of the graph. Scoring a 90 means having to violate 15 to 20 rules. The number of overall requests is significantly lower here, but each of them violate a great number of rules.
 
-If we look at the graph as a whole, then the left side dominates in terms of numbers. But in terms of the anomaly limits we want to lower, then the requests on the left bother us barely at all, while the false alarms appearing on the right will keep us from lowering the anomaly limit to a score below one hundred. Specifically: If we want to lower the limit to 90, we have to handle the five requests with an anomaly score of 91. If we want to get to 85 after that, then we have to handle the request with a score of 89 and the 28 requests that scored 86. Lowering it to 80 means considering the scores of 84, 83 and 81. And so on.
+If we look at the graph as a whole, then the left side dominates in terms of numbers. But in terms of the anomaly limits we want to lower, then the requests on the left bother us barely at all, while the false alarms appearing on the right will keep us from lowering the anomaly limit to a score below one hundred. Specifically: If we want to lower the limit to 90, we have to manage the five requests with an anomaly score of 91. If we want to get to 85 after that, then we have to manage the request with a score of 89 and the 28 requests that scored 86. Lowering it to 80 means dealing with requests with scores of 84, 83 and 81. And so on.
 
-If we start on the right side of the graph, we can then work through the false alarms in manageable steps and see an immediate improvement which allows us to lower the anomaly limits.
+If we start on the right side of the graph, we can then work through the false alarms in manageable steps and have an immediate improvement allowing us to lower the anomaly limits.
 
-This means that out of the big heap of data we have to handle five requests and will then be able to lower the anomaly limit immediately afterwards without having worry about legitimate users being blocked. In practice, I recommend exercising extreme caution at this stage (so, in our case, not something like an immediate reduction to 90, but perhaps to 100; a safety margin is a good idea). Even if some things are being blocked now and then, we can be certain that it won’t happen very often. Because the majority of requests being handled by the service will have significantly lower anomaly scores.
+This means that out of the big heap of data we have to deal with five requests and will then be able to lower the anomaly limit immediately afterwards without having to account for legitimate users being blocked. In practice, I recommend exercising extreme caution at this stage (so, in our case, not something like an immediate reduction to 90, but perhaps to 100; a safety margin is a good idea). And even if some things are being blocked now and then, we can be certain that it will be a rare event, since the vast majority of requests on the service being managed have significantly lower anomaly scores as we see in the stats.
+
+Without these considerations, you have 5,400 rule alerts and you do not know where to start.
 
 ###Step 5: Determining the ModSec Core Rules violated and deriving ignore rules
 
-Our management goal is the five requests with an anomaly score of 91. Which requests are they?
+Our immediate goal is the five requests with an anomaly score of 91. Which requests are they?
 
 ```bash
 $> grep -E " 91 [0-9-]+$" tutorial-8-example-access.log
@@ -260,7 +262,7 @@ VjM-vKwxQzZrjDjiMJQAAAAW
 $> 
 ```
 
-We now write these identifier keys to a file and use them to search the *error log* for matching rule violations, which we then immediately summarize in readable format.
+We now write these identifier keys to a file and use it to search the *error log* for matching rule violations, which we then immediately summarize in readable format.
 
 ```bash
 $> grep -E " 91 [0-9-]+$" tutorial-8-example-access.log | alreqid > ids-score-91
@@ -286,7 +288,7 @@ $> grep -F -f ids-score-91 tutorial-8-example-error.log | melidmsg | sucs
       5 981257 Detects MySQL comment-/space-obfuscated injections and backtick termination
 ```
 
-Our suspicion has thus been confirmed: Each of these rules was violated exactly five times. So, there’s a high level of probability that we are dealing with five identical requests violating the same group of rules. It smells a lot like *cross-site scripting* attacks and an attempt at *SQL injection*. But we know that they are only false alarms. Where exactly did this occur?
+The suspicion has thus been confirmed: Each of these rules was violated exactly five times. So, there’s a high level of probability that we are dealing with five identical requests violating the same group of rules. It smells a lot like *cross-site scripting* attacks and an attempt at *SQL injection*. But we know that they are only false alarms. Where exactly did this occur?
 
 ```bash
 $> grep -F -f ids-score-91 tutorial-8-example-error.log | melmatch | sucs
@@ -294,18 +296,18 @@ $> grep -F -f ids-score-91 tutorial-8-example-error.log | melmatch | sucs
      90 ARGS:message
 ```
 
-Interesting. The *message* parameter was the main contributor to the score of 91. Also, the request line of our five requests is `POST /EMail/MailHandler HTTP/1.1`, so this quickly makes it clear that we are dealing with content related to an e-mail being sent. It’s immediately obvious that we can expect to see many more false alarms from just this text field in our service. If we want to suppress the false alarms we have to disable the relevant *core rules* for precisely this path and this parameter. Mind you, this means that we are poking holes here and there into our firewall. Considering the more than 200 different core rules and the large overall numbers of *XSS* and *SQL injections*, these holes can be justified and are the prerequisite for being able to work with hard limits using the *core rules*.
+Interesting. The *message* parameter was the main contributor to the score of 91. Also, the request line of our five requests is `POST /EMail/MailHandler HTTP/1.1`, so this quickly makes it clear that we are dealing with the content related to an e-mail being sent. It’s immediately obvious that we can expect to see many more false alarms with just this free text field in our service. If we want to suppress the false alarms we have to disable the relevant *core rules* for precisely this path and this parameter. Mind you, this means that we are poking holes here and there into our firewall. Considering the more than 200 different core rules and the large overall numbers of *XSS* and *SQL injections*, these holes can be justified and are the prerequisite for being able to work with hard limits using the *core rules*.
 
-We have became familiar with suppressing individual rules for one parameter on a specific path in the previous tutorial. Applied to our case, this results in the following *tuning rule* or *ignore rule* for the first rule violation:
+We have become familiar with suppressing individual rules for one parameter on a specific path in the previous tutorial. Applied to our case, this results in the following *tuning rule* or *ignore rule* for the first rule violation:
 
 ```bash
 SecRule REQUEST_FILENAME "@beginsWith /EMail/MailHandler" \
 	"phase:2,nolog,pass,t:none,id:10000,ctl:ruleRemoveTargetById=950911;ARGS:message"
 ```
 
-Thus, one of the 20 rule infractions listed above has been handled. We proceed in a similar way with the other 19. But this entails a lot of manual labor, which is why we want to help ourselves to another script that takes over determining the fine tuning rule from us: [modsec-rulereport.rb](https://github.com/Apache-Labor/labor/blob/master/bin/modsec-rulereport.rb)
+Thus, one of the 20 rule infractions listed above has been dealt with. We proceed in a similar way with the other 19. But this entails a lot of manual labor, which is why we want to help ourselves to another script that takes over determining the tuning rule from us: [modsec-rulereport.rb](https://github.com/Apache-Labor/labor/blob/master/bin/modsec-rulereport.rb)
 
-This script is able to read and interpret *ModSecurity* alerts. *-h* gives you an overview of the different ways it can be used. We are primarily interested in the script’s ability to independently generate the *ignore rules* we want, saving us a lot of effort. The variations of this rule we saw in the previous tutorial can be accessed in *path*, *parameter* and *combined* modes. There is no mode for the complicated scoring suppression rules. Here’s the script in action:
+This script is able to read and interpret *ModSecurity* alerts. *-h* gives you an overview of the different ways it can be used. We are primarily interested in the script’s ability to independently generate the *ignore rules* we want, saving us a lot of effort. The variants of this rule we saw in the previous tutorial can be accessed in *path*, *parameter* and *combined* modes. There is no mode for the complicated scoring suppression rules however. Here’s the script in action:
 
 ```bash
 $> grep -F -f ids-score-91 tutorial-8-example-error.log | modsec-rulereport.rb --mode combined
@@ -425,7 +427,7 @@ $> grep -F -f ids-score-91 tutorial-8-example-error.log | modsec-rulereport.rb -
       	"phase:2,nolog,pass,id:10019,ctl:ruleRemoveTargetById=981257;ARGS:message"
 ```
 
-For each rule, the script lists the total number of rule violations and then proposes an *ignore rule* which can be included in the *Apache configuration*; only the *rule ID* for the *ignore rule* has to be modified. Next to one another, the rules are a bit hard to read, which is why I in practice I often summarize it by hand as you can see below. What’s important is to add comments to the rules, since the individual numbers don’t tell us much at all:
+For each rule, the script lists the total number of rule violations and then proposes an *ignore rule* which can be included in the *Apache configuration*; only the *rule ID* for the *ignore rule* has to be modified usually. Next to one another, the rules are a bit hard to read, which is why I in practice I often summarize it by hand as you can see below (the *sort* command comes in handy as well). What’s important is to add comments to the rules, since the individual numbers don’t tell us much at all:
 
 ```bash
       # Ignore-Rules for ARGS:message 
@@ -461,14 +463,14 @@ For each rule, the script lists the total number of rule violations and then pro
 		ctl:ruleRemoveTargetById=981257;ARGS:message"
 ```
 
-This is now a more compact and legible block of *ignore rules* associated with the same parameter on the same path. But our five requests with an anomaly score of 91 indicate another parameter being violated that we should not forget: REQUEST_COOKIES:X0_org. This shows the elegance of the approach being proposed. In addition to the five rule violations caused by this cookie, in total it is responsible for over 2,000 alarms, almost half of all rule violations.
+This is now a more compact and legible block of *ignore rules* associated with the same parameter on the same path. But our five requests with an anomaly score of 91 indicate another parameter being violated that we should not forget: REQUEST_COOKIES:X0_org. This alert shows the elegance of the approach being proposed. In addition to the five rule violations caused by this cookie in our score 91 example, in the entire log file it is responsible for over 2,000 alarms, almost half of all rule violations.
 
 ```bash
 $> cat tutorial-8-example-error.log | grep "REQUEST_COOKIES:X0_org" | melidmsg | sucs
    2113 981172 Restricted SQL Character Anomaly Detection Alert - Total # of special characters exceeded
 ```
 
-This is typical, because a cookie is sent along with every request dependent on the *path parameter*. If a cookie has a score indicative of a *false positive* this quickly results in a high number of false alarms. It would now be interesting to check the content of the cookie, but all parameter content was lost when preparing the sample log file. At this point it should be noted that we are dealing with a cookie containing a `uuid` and the four hyphens in a `uuid` are already enough to set off a false alarm. But that’s only incidental. Let’s get to the *ignore rule*. The script `modsec-rulereport.rb` can also give us a recommendation here:
+This is typical, because a cookie is sent along with every request based on the *path parameter*. If a cookie has a score indicative of a *false positive* this quickly results in a high number of false alarms. It would now be interesting to check the content of the cookie, but all parameter content was lost when preparing the sample log file (avoiding a data leakage). But I can reveal the fact, that we are dealing with a cookie containing a `uuid` and the four hyphens in a `uuid` are already enough to set off a false alarm. Let’s get to the *ignore rule*. The script `modsec-rulereport.rb` can also give us a recommendation here: 
 
 ```bash
 $> cat tutorial-8-example-error.log | grep "REQUEST_COOKIES:X0_org" | modsec-rulereport.rb --mode parameter
@@ -479,7 +481,7 @@ $> cat tutorial-8-example-error.log | grep "REQUEST_COOKIES:X0_org" | modsec-rul
       SecRuleUpdateTargetById 981172 "!REQUEST_COOKIES:X0_org"
 ```
 
-We have thus handled the twenty different false alarms caused by the five requests with a anomaly score of 91. We used the ignore rules derived from them to handle far greater than half of the rule violations:
+We have thus dealt with the twenty different false alarms caused by the five requests with a anomaly score of 91. We used the ignore rules derived from them to deal with far more than half of the rule violations:
 
 ```bash
 $> (cat tutorial-8-example-error.log | grep -E "950911|960024|973300|973304|973306|973314|973316\
@@ -491,17 +493,17 @@ $> (cat tutorial-8-example-error.log | grep -E "950911|960024|973300|973304|9733
 
 ###Step 6: Putting ignore rules into production and lowering anomaly limits
 
-It would now be appropriate to put these few rules into production and monitor the system for a while. Does a reduction in the anomaly scores actually take place? Can we reduce the anomaly limits in good conscience? If both are true, then the limits could be lowered. We worked on requests with a score of 91. I recommend a basically conservative approach and would put the rules into production and then watch it for a week or two. If there are no unhappy surprises, then I would lower the limit to 100 or even down to 90. However, at the same time I would perform the next round of fine tuning and again handle the legitimate requests with the highest scores.
+It would now be appropriate to put these few rules into production and monitor the system for a while. Does a reduction in the anomaly scores actually take place? Can we reduce the anomaly limits in good conscience? If both are true, then the limits could be lowered. We worked on requests with a score of 91. I recommend a conservative approach and would put the rules into production and then watch it for a week or two. If there are no unhappy surprises, then I would lower the limit to 100 or even down to 90. However, at the same time I would perform the next round of tuning and again deal with the legitimate requests with the highest scores.
 
-It is in fact very well possible for new, similar scores to show up. This is primarily due to the original sample not being large enough to really cover everything. This means that you simply have to fine tune. Using the same pattern again: The legitimate requests with the highest scores as the object of the round of fine tuning.
+It is in fact very well possible for new, similar scores to show up. This is primarily due to the original sample not being large enough to really cover everything. This means that you simply have to tune. Using the same pattern again: The legitimate requests with the highest scores as the object of the round of tuning.
 
 ###Step 7: Repeating Steps 5 and 6
 
-Successfully fine tuning the *ModSecurity Core Rules* entails iterative repetition of the steps: Inspect a group of legitimate requests, derive the *ignore rules* from them, put them into production, monitor and lower anomaly limits as required. What’s important is a systematic approach and a fixed interval, i.e. adding a new group of *ignore rules* every two weeks, watching them for a few days, then deriving new *ignore rules* and adding them along with a lower limit.
+Successfully tuning the *ModSecurity Core Rules* entails iterative repetition of the steps: Inspect a group of legitimate requests, derive the *ignore rules* from them, put them into production, monitor and lower anomaly limits as required. What’s important is a systematic approach and a fixed interval, i.e. add a new group of *ignore rules* every two weeks, watch them for a few days, then derive new *ignore rules* and add them along with a lower limit. I usually try and make a project plan and run over five or six iterations or as many as it takes to reach a limit of 10 or even 5.
 
 ###Step 8: Deriving additional ignore rules (scores 50-89)
 
-However, because we are working through this tutorial for practice and are not in a production environment, we won’t be putting the ready-made *ignore rules* on the server, but will instead practice writing these rules a bit. In this second round we’ll be tackling the requests with a score in the 50s to 80s. A sample log file from which the rules suppressed above have been filtered out will serve as the basis ([tutorial-8-example-error.log-step-7](https://raw.githubusercontent.com/Apache-Labor/labor/master/tutorial-8/labor-04-example-error.log-step-7)). There were very many rule violations from 50 to 89 in the original statistics, but it will appear that not many more are added to our existing rule violations. To avoid having to handle the same rule violations again and again, we suppress the combinations already handled using a somewhat demanding *one-liner*:
+However, because we are working through this tutorial for practice and are not in a production environment, we won’t be putting the ready-made *ignore rules* on the server, but will instead practice a bit writing these rules. In this second round we’ll be tackling the requests with a score in the 50s to 80s. A sample log file from which the alerts suppressed above have been filtered out will serve as the basis ([labor-07-example-error.log-step-7](https://raw.githubusercontent.com/Apache-Labor/labor/master/labor-07/labor-04-example-error.log-step-7)). There were very many rule violations from 50 to 89 in the original statistics, but it will appear that not many more are added to our existing rule violations. To avoid having to deal with the same rule violations again and again, we suppress the combinations already dealt with using a somewhat demanding *one-liner*:
 
 ```bash
 $> cat tutorial-8-example-access.log | grep -E "[5-8][0-9] [0-9-]$" | alreqid > ids
@@ -592,7 +594,7 @@ Here’s a summary:
 ```
 It’s important to select a new ID for these rules. By default, the script always starts its count at 10000. I manually set the ID to 10001 in this case.
 
-There are still three individual rule violations to handle in our group:
+There are still three individual rule violations to deal with in our group:
 
 ```bash
 $> grep -F -f ids tutorial-8-example-error.log | grep -v -E "ARGS:message.*(950911|960024|973300|973304\
@@ -612,7 +614,7 @@ $> grep -F -f ids tutorial-8-example-error.log | grep -v -E "ARGS:message.*(9509
       	"phase:2,nolog,pass,id:10001,ctl:ruleRemoveTargetById=981249;ARGS:message"
 ```
 
-This draws attention to the *subject* text field, that you also fill in when writing an e-mail. Only one rule violation was found there. But we can assume that in general the same rules will be violated in this text field, e.g. *message* and the fact that this has not yet happened shows that our log file has not yet covered all of the possibilities. If we want to handle *subject* similar to *message*, then we can derive a block of *ignore rules* from the *message ignore rules*. But, before we do this, we add the new suppression rule for rule ID `981249` to the latter:
+This puts the focus on the *subject* free text field, that you also fill in when writing an e-mail. Only one rule violation was found there. But we can assume that in general the same rules will be violated in this free text field, e.g. *message* and the fact that this has not yet happened shows that our log file has not yet covered all of the possibilities. If we want to deal with *subject* similar to *message*, then we can derive a block of *ignore rules* from the *message ignore rules*. But, before we do this, we add the new suppression rule for rule ID `981249` to the latter:
 
 ```bash
       # Ignore-Rules for ARGS:subject
@@ -661,7 +663,7 @@ What's left in our group of false alarms is the cryptic *TX:sqli_select_statemen
 [hostname "www.example.com"] [uri "/EMail/MailHandler"] [unique_id "Vi6XgKwxQzZrjFreMRsAAAB3"]
 ```
 
-The engine counts out the *SQL statements*, saves them to an internal transaction variable and an alarm goes off when there are three or more. We are once more confronted by the path */EMail/MailHandler*. I suggest handling the internal variable like any other argument and disabling this counter (which by the way rarely applies) when writing e-mails:
+The engine counts out the *SQL statements*, saves them to an internal transaction variable and there’s an alarm when there are three or more. We are once more confronted by the path */EMail/MailHandler*. I suggest dealing with the internal variable like any other argument and disabling this counter (which by the way rarely applies) when capturing e-mails:
 
 ```bash
       # Ignore-Rules for TX:sqli_select_statement_count (SQL Statement counter)
@@ -685,7 +687,7 @@ $> grep -F -f ids tutorial-8-example-error.log-step-8 | melmatch
 FILES:upFile
 ```
 
-We are slowly getting the impression that the further down we go, the easier fine tuning work is becoming: In this respectably large block of rule violations we actually have only one new false alarm to handle: A file upload violation. This can easily be derived with our script.
+We are slowly getting the impression that the further down we go, the easier tuning work is becoming: In this respectably large block of rule violations we actually have only one new false alarm to deal with: A file upload violation. This can easily be derived with our script.
 
 ```bash
       # Ignore-Rules for FILES:upFile
@@ -718,7 +720,7 @@ We are in fact getting off just as easy. There’s only one problem left and it 
       	"phase:2,nolog,pass,id:10005,ctl:ruleRemoveTargetById=981000;RESPONSE_BODY"
 ```
 
-This brings us to the end. We have completed handling our inventory of 10000 requests and over 5000 false alarms. When we put these rules into production we can still expect to see a few new false positives. We can however be certain that they will only occur now and then. It would be too early to set a very low anomaly limit at this time. But a score of 5 or 10 on the production system I recommend can be achieved in a few reduction steps with shorter rounds of tuning done in between.
+This brings us to the end. We have completed dealing with our inventory of 10,000 requests and over 5,000 false alarms. When we put these rules into production we can still expect to see a few new false positives. We can however be certain that they will only occur now and then. It would be too early to set a very low anomaly limit at this time. But a score of 5 or 10 on the production system I recommend can be achieved in a few reduction steps with shorter rounds of tuning done in between.
 
 ###Step 11: Summarizing all ignore rules
 
@@ -1134,7 +1136,7 @@ INCOMING SCORE 91
       5 981257 Detects MySQL comment-/space-obfuscated injections and backtick termination
 ```
 
-Strictly speaking, the responses to the requests are also listed for the low *scores* along with the error messages; in cases where they were triggered on requests they encountered rule violations in the requests themselves. However, this detail does not make the construct above any less useful. A similar script that has been slight extended is part of my toolbox.
+Strictly speaking, the responses to the requests are also listed for the low *scores* along with the error messages; in cases where they were triggered on requests they encountered rule violations in the requests themselves. However, this detail does not negate the usefulness of the construct above. A similar script that has been slight extended is part of my private toolbox.
 
 We have now reached the end of the block consisting of three *ModSecurity tutorials*. We will now be turning to how a *reverse proxy* is set up.
 
