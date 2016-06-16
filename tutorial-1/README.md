@@ -198,7 +198,7 @@ This is unimportant and we can ignore the warning for the time being.
 
 The engine is running. But is it also working? Time for the function test: We access Apache by entering the following URL in our browser:
 
-[http://127.0.0.1](http://127.0.0.1)
+[http://127.0.0.1/index.html](http://127.0.0.1/index.html)
 
 We then expect the following:
 
