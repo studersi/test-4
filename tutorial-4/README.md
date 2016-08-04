@@ -56,6 +56,7 @@ LoadModule              authn_core_module       modules/mod_authn_core.so
 LoadModule              authz_core_module       modules/mod_authz_core.so
 
 LoadModule              ssl_module              modules/mod_ssl.so
+LoadModule              headers_module         	modules/mod_headers.so
 
 ErrorLogFormat          "[%{cu}t] [%-m:%-l] %-a %-L %M"
 LogFormat               "%h %l %u [%{%Y-%m-%d %H:%M:%S}t.%{usec_frac}t] \"%r\" %>s %b \
@@ -117,7 +118,7 @@ DocumentRoot            /apache/htdocs
 
 ```
 
-I won’t be describing the entire configuration, only the directives that have been added since Tutorial 2. What’s new is that in addition to port 80 we are also listening to _HTTPS port_ 443. As expected, the *SSL* module is the new one to be loaded. We then configure the key and the certificate by using the _SSLCertificateKeyFile_ and _SSLCertificateFile_ directives. On the protocol line (_SSLProtocol_) it is very important for us to disable the older and insecure _SSLv2_ protocol, but since the _POODLE_ attack even _SSLv3_ is also no longer secure. It would be best to permit only _TLSv1.2_, but not all browsers can handle it yet. So, we simply exclude _SSLv2_ and _SSLv3_ from use and for the time being are allowing TLSv1, very infrequent TLSv1.1 and quantitatively dominating TLSv1.2. The handshake and encryption is done using a set of several algorithms. We use these cryptograph algorithms to define the _cipher suite_. It’s important to use a clean _cipher suite_, because this is where snooping attacks typically take place: They exploit the vulnerabilities and the insufficient key length of older algorithms. However, a very limited suite may prevent older browsers from accessing our server. The proposed _cipher suite_ has a high level of security and also takes into account some older browsers starting from Windows Vista. We are thus excluding Windows XP and very old versions of Android from communication.
+I won’t be describing the entire configuration, only the directives that have been added since Tutorial 2. What’s new is that in addition to port 80 we are also listening to _HTTPS port_ 443. As expected, the *SSL* module is the new one to be loaded; and additionally the Headers-module, which we'll use below. Then we configure the key and the certificate by using the _SSLCertificateKeyFile_ and _SSLCertificateFile_ directives. On the protocol line (_SSLProtocol_) it is very important for us to disable the older and insecure _SSLv2_ protocol, but since the _POODLE_ attack even _SSLv3_ is also no longer secure. It would be best to permit only _TLSv1.2_, but not all browsers can handle it yet. So, we simply exclude _SSLv2_ and _SSLv3_ from use and for the time being are allowing TLSv1, very infrequent TLSv1.1 and quantitatively dominating TLSv1.2. The handshake and encryption is done using a set of several algorithms. We use these cryptograph algorithms to define the _cipher suite_. It’s important to use a clean _cipher suite_, because this is where snooping attacks typically take place: They exploit the vulnerabilities and the insufficient key length of older algorithms. However, a very limited suite may prevent older browsers from accessing our server. The proposed _cipher suite_ has a high level of security and also takes into account some older browsers starting from Windows Vista. We are thus excluding Windows XP and very old versions of Android from communication.
 
 The _HIGH_ group of algorithms is the core of the _cipher suite_. This is the group of high encryption ciphers which _OpenSSL_ provides to us via the _SSL module_. The algorithms listed in front of this keyword, which are also a part of the _HIGH_ group, are given higher priority by being listed first. Afterwards we add the _SHA_ hashing algorithm and exclude a number of algorithms that for one reason or another are not wanted in our _cipher suite_.
 
@@ -125,7 +126,14 @@ Then comes the _SSLHonorCipherOrder_ directive. It is of immense importance. We 
 
 Encryption works with random numbers. The random number generator should be properly started and used, which is the purpose of the _SSLRandomSeed_ directive. This is another place where performance and security have to be considered. When starting the server we access the operating system’s random numbers in _/dev/urandom_. While operating the server, for the _SSL handshake_ we then use Apache’s own source for random numbers (_builtin_), seeded from the server’s traffic. Although _/dev/urandom_ is not the best source for random numbers, it is a quick source and also one that guarantees a certain amount of entropy. The qualitatively better source, _/dev/random_, could in adverse circumstances block our server when starting, because not enough data are present, which is why _/dev/urandom_ is generally preferred.
 
-We have also introduced a second _virtual host_. It is very similar to the _virtual host_ for port 80. But the port number is _443_ and we are enabling the _SSL engine_, which encrypts traffic for us and first enables the configuration defined above.
+We have also introduced a second _virtual host_. It is very similar to the _virtual host_ for port 80. But the port number is _443_ and we are enabling the _SSL engine_, which encrypts traffic for us and first enables the configuration defined above. 
+
+Additionally, we use the Header-Module loaded above cwin order to set the _Strict-Transport-Security_-header (short _STS_-Header). This HTTP header is part of the response and tells the client to use encryption for a duration of one year (this equals 31536000 seconds) when connection to our server. The flag _include_SubDomains_ means, that all subdomains below our hostname are included in this instruction.
+
+The _STS_-header is the most prominent from a group of newer security related headers. Various browsers implement different headers, so it is not very easy to keep an overview. But the _STS_-header should never be omitted. If we look at the _Header_ directive in more detail, then we see the additional flag _always_. There are cases where the module is not springing into action (for example when we return an error as a response) without this flag. With _always_, we make sure the header is always sent.
+
+That's all the changes to our configuration. Time to kick off the server!
+
 
 ###Step 2: Trying it out
 
