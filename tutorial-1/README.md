@@ -55,7 +55,7 @@ Things typically missing:
 - gcc
 
 These are the package names on Debian-based distributions. The packages may have different names elsewhere. 
-The absence of these files can be easily rectified by re-installing them using the utilities from your own distribution. Afterwards, run _configure_ again, perhaps re-install something again and eventually the script will run successfully.
+The absence of these files can be easily rectified by re-installing them using the utilities from your own distribution. Afterwards, run _configure_ again, perhaps re-install something again and eventually the script will run successfully (individual warnings during the _configure_ steps are no big problem. We just need to be sure the script did not die unexpectedly).
 
 Once it runs without a problem, we can assume that the time for compiling has come.
 

@@ -711,13 +711,13 @@ Such a script is also available for download: [basicstats.awk](https://github.co
 
 ```bash
 $> cat tutorial-5-example-access.log | alioout | basicstats.awk
-Num of values:        10000
-      Average:        15375
-       Median:         6646
-          Min:            0
-          Max:       340179
-        Range:       340179
-Std deviation:        25913
+Num of values:          10'000.00
+      Average:          15'375.98
+       Median:           6'646.00
+          Min:               0.00
+          Max:         340'179.00
+        Range:         340'179.00
+Std deviation:          25'913.14
 ```
 
 These numbers give a clear picture of the service. With an average response size of 15 KB and a median of 6.6 KB we have a typical web service. Specifically, the median means that half of the responses were smaller than 6.6 KB. The largest response came in at 340 KB, the standard deviation of just under 26 KB means that the large values were less frequent overall.
@@ -726,13 +726,13 @@ How does the duration of the requests look? Do we have a similar homogenous pict
 
 ```bash
 $> cat tutorial-5-example-access.log | alduration | basicstats.awk
-Num of values:        10000
-      Average:        91306
-       Median:         2431
-          Min:           18
-          Max:    301455050
-        Range:    301455032
-Std deviation:      3023884
+Num of values:          10'000.00
+      Average:          91'306.41
+       Median:           2'431.50
+          Min:              18.00
+          Max:     301'455'050.00
+        Range:     301'455'032.00
+Std deviation:       3'023'884.17
 ```
 
 It’s important to remember that we are dealing in microseconds here. The median was 2400 microseconds, which is just over 2 milliseconds. At 91 milliseconds, the average is much larger. We obviously have a lot of outliers which have pushed up the average. In fact, we have a maximum value of 301 seconds and less surprisingly a standard deviation of 3 seconds. The picture is thus less homogenous and we have at least some requests that should be investigated. But this is now getting a bit more complicated. The suggested method is only one of many possible and is included here as a suggestion and inspiration for further work with the log file:
