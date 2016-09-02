@@ -561,16 +561,6 @@ $> head -10 tutorial-8-example-access.log | alduration
 1048915
 1057174
 826016
-825618
-859946
-1304401
-931587
-957446
-1473020
-1719549
-857138
-630606
-1051057
 ``` 
 
 What we find here is on the order of 1 million microseconds. How does that look statistically (we are still familiar with the routines from earlier tutorials)?
