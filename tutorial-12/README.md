@@ -37,7 +37,7 @@ In Tutorial 6 we saw how we are able to configure ModSecurity to capture the ent
 In Tutorial 6 we made the following selection for the individual headers:
 
 ```bash
-SecAuditLogParts        ABIJEFHKZ
+SecAuditLogParts        ABEFHIJKZ
 ```
 
 We have defined a very comprehensive log. This is the right approach in a lab-like setup. However, in a production environment this is only useful in exceptional cases. A typical variation of this directive in a production environment would thus be:
@@ -178,7 +178,7 @@ Let’s try to decrypt the `PCAP` file. We’ll again be using `tshark` from the
 ```bash
 $> sudo tshark -r /tmp/localhost-port443.pcap -o "ssl.desegment_ssl_records: TRUE"\
 -o "ssl.desegment_ssl_application_data: TRUE" \
--o "ssl.keys_list: 127.0.0.1,443,http,/etc/ssl/private/ssl-cert-snakeoil.key" \
+-o "ssl.keys_list: 0.0.0.0,443,http,/etc/ssl/private/ssl-cert-snakeoil.key" \
 -o "ssl.debug_file: /tmp/ssl-debug.log"
 Running as user "root" and group "root". This could be dangerous.
   1   0.000000    127.0.0.1 -> 127.0.0.1    TCP 74 33517 > https [SYN] Seq=0 Win=43690 Len=0 MSS=65495 SACK_PERM=1 TSval=42610003 TSecr=0 WS=128
