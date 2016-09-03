@@ -503,7 +503,7 @@ Successfully tuning the *ModSecurity Core Rules* entails iterative repetition of
 
 ###Step 8: Deriving additional ignore rules (scores 50-89)
 
-However, because we are working through this tutorial for practice and are not in a production environment, we won’t be putting the ready-made *ignore rules* on the server, but will instead practice a bit writing these rules. In this second round we’ll be tackling the requests with a score in the 50s to 80s. A sample log file from which the alerts suppressed above have been filtered out will serve as the basis ([labor-07-example-error.log-step-7](https://raw.githubusercontent.com/Apache-Labor/labor/master/labor-07/labor-04-example-error.log-step-7)). There were very many rule violations from 50 to 89 in the original statistics, but it will appear that not many more are added to our existing rule violations. To avoid having to deal with the same rule violations again and again, we suppress the combinations already dealt with using a somewhat demanding *one-liner*:
+However, because we are working through this tutorial for practice and are not in a production environment, we won’t be putting the ready-made *ignore rules* on the server, but will instead practice a bit writing these rules. In this second round we’ll be tackling the requests with a score in the 50s to 80s. A sample log file from which the alerts suppressed above have been filtered out will serve as the basis ([labor-07-example-error.log-step-7](https://raw.githubusercontent.com/Apache-Labor/labor/master/labor-07/labor-04-example-error.log-step-7)). There were very many rule violations from 50 to 89 in the original statistics, but it will appear that not many more are added to our existing rule violations:
 
 ```bash
 $> cat tutorial-8-example-access.log | grep -E "[5-8][0-9] [0-9-]$" | alreqid > ids
@@ -527,9 +527,7 @@ $> grep -F -f ids tutorial-8-example-error.log | melmatch | sucs
 *utag_main* indicates that we have another cookie here. We’ll handle that separately:
 
 ```bash
-$> grep -F -f ids tutorial-8-example-error.log | grep -v -E "ARGS:message.*(950911|960024|973300|973304\
-|973306|973314|973316|973332|973333|973335|973338|981231|981243|981244|981245|981246|981248|981257)" \
-| grep -v -E "REQUEST_COOKIES:X0_org.*981172" | grep "REQUEST_COOKIES:utag_main" \
+$> grep -F -f ids tutorial-8-example-error.log-step-7 | grep "REQUEST_COOKIES:utag_main" \
 | modsec-rulereport.rb -m parameter
 5 x 981172 Restricted SQL Character Anomaly Detection Alert - Total # of special characters exceeded (severity:  NONE/UNKOWN)
 -----------------------------------------------------------------------------------------------------------------------------
@@ -540,9 +538,8 @@ $> grep -F -f ids tutorial-8-example-error.log | grep -v -E "ARGS:message.*(9509
 The argument *attachInfo* violates multiple rules. We have *ignore rules* proposed to us and summarize them manually:
 
 ```bash
-$> grep -F -f ids tutorial-8-example-error.log | grep -v -E "ARGS:message.*(950911|960024|973300|973304\
-|973306|973314|973316|973332|973333|973335|973338|981231|981243|981244|981245|981246|981248|981257)" \
-| grep -v -E "REQUEST_COOKIES:X0_org.*981172" | grep "ARGS:attachInfo" | modsec-rulereport.rb -m combined
+$> grep -F -f ids tutorial-8-example-error.log-step-7 | grep "ARGS:attachInfo" | \
+modsec-rulereport.rb -m combined
 
 1 x 960024 Meta-Character Anomaly Detection Alert - Repetative Non-Word Characters (severity:  NONE/UNKOWN)
 -----------------------------------------------------------------------------------------------------------
@@ -597,10 +594,8 @@ It’s important to select a new ID for these rules. By default, the script alwa
 There are still three individual rule violations to deal with in our group:
 
 ```bash
-$> grep -F -f ids tutorial-8-example-error.log | grep -v -E "ARGS:message.*(950911|960024|973300|973304\
-|973306|973314|973316|973332|973333|973335|973338|981231|981243|981244|981245|981246|981248|981257)" \
-| grep -v -E "REQUEST_COOKIES:X0_org.*981172" | grep -E "ARGS:(message|subject)" \
-| modsec-rulereport.rb -m combined
+$> grep -F -f ids tutorial-8-example-error.log-step-7 | grep -E "ARGS:(message|subject)" | \
+modsec-rulereport.rb -m combined
 1 x 960024 Meta-Character Anomaly Detection Alert - Repetative Non-Word Characters (severity:  NONE/UNKOWN)
 -----------------------------------------------------------------------------------------------------------
       # ModSec Rule Exclusion: 960024 : Meta-Character Anomaly Detection Alert - Repetative Non-Word Characters (severity:  NONE/UNKOWN)
