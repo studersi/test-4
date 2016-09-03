@@ -115,7 +115,7 @@ However, in order to be able to configure the log format below, we first have to
 If the server has been compiled as described in Tutorial 1, then these modules are already present and only have to be added to the list of modules being loaded in the server’s configuration file.
 
 ```bash
-LoadModule		logio_module		modules/mod_logio.so
+LoadModule              logio_module            modules/mod_logio.so
 LoadModule              unique_id_module        modules/mod_unique_id.so
 ```
 
