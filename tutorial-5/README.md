@@ -104,21 +104,22 @@ _"%{Referer}i"_ is used for the referrer. It is output in quotes. The referrer m
 Finally, _"%{User-agent}i"_ means the client user agent, which is also placed in quotes. This is also a value controlled by the client and which we should not rely on too much. The user agent is the client browser software, normally including the version, the rendering engine, information about compatibility with other browsers and various installed plugins. This results in very long user agent entries which can in some cases include so much information that an individual client can be uniquely identified, because they feature a particular combination of different add-ons of specific versions.
 
 
-###Step 3: Enabling the Logio module
+###Step 3: Enabling the Logio and Unique-ID modules
 
 We have become familiar with the _combined_ format, the most widespread Apache log format. However, to simplify day-to-day work, the information shown is just not enough. Additional useful information has to be included in the log file.
 
 It is advisable to use the same log format on all servers. Now, instead of just propagating one or two additional values, these instructions describe a comprehensive log format that has proven useful in a variety of scenarios.
 
-However, in order to be able to configure the log format below, we first have to enable the _Logio_ module.
+However, in order to be able to configure the log format below, we first have to enable the _Logio_ module. And on top if the the Unique-ID module, which useful from the start.
 
-If the server has been compiled as described in Tutorial 1, then this module is already present and only has to be added to the list of modules being loaded in the server’s configuration file.
+If the server has been compiled as described in Tutorial 1, then these modules are already present and only have to be added to the list of modules being loaded in the server’s configuration file.
 
 ```bash
 LoadModule		logio_module		modules/mod_logio.so
+LoadModule              unique_id_module        modules/mod_unique_id.so
 ```
 
-We need this module to be able to write two values. _IO In_ and _IO Out_. This means the total number of bytes of the HTTP request including header lines and the total number of bytes in the response, also including header lines.
+We need this module to be able to write two values. _IO In_ and _IO Out_. This means the total number of bytes of the HTTP request including header lines and the total number of bytes in the response, also including header lines. The Unique-ID module is calculating a unique identifier for every request. We'll return to this later on.
 
 
 ###Step 4: Configuring the new, extended log format
