@@ -721,7 +721,7 @@ Interestingly, there is something like a checking instance in the internet, wher
 
 ###Step 9 (Goodie): Checking the quality of SSL externally
 
-Ivan Ristić, mentioned above as the author of several books on Apache and SSL, launched an analysis service that checks _SSL web servers_. He has sold the site to Qualys in the meantime, but is is still being maintained and actively expanded. It is available at [www.ssllabs.com](https://www.ssllabs.com/ssldb/index.html). A web server configured like the one above earned me the highest grade of _A+_ on the test.
+Ivan Ristić, mentioned above as the author of several books on Apache and SSL, launched an analysis service that checks _SSL web servers_. He has sold the site to Qualys in the meantime, but it is still being maintained and actively expanded. It is available at [www.ssllabs.com](https://www.ssllabs.com/ssldb/index.html). A web server configured like the one above earned me the highest grade of _A+_ on the test.
 
 ![Screenshot: SSLLabs](./apache-tutorial-4-screenshot-ssllabs.png)
 
