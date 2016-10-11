@@ -1,4 +1,4 @@
-##Tutorial 7 - Embedding OWASP ModSecurity Core Rules
+##Tutorial 7 - Including OWASP ModSecurity Core Rules
 
 ###What are we doing?
 

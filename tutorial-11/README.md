@@ -1,4 +1,4 @@
-##Tutorial 11 - Visualizing Apache and ModSecurity log files
+##Tutorial 11 - Visualizing Apache and ModSecurity Log Files
 
 ###What are we doing?
 

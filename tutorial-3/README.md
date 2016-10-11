@@ -10,8 +10,8 @@ A bare bones Apache server is suitable for delivering static files. More complex
 
 ###Requirements
 
-* An Apache web server, ideally one created using the file structure shown in [Tutorial 1 (Compiling an Apache web server)](http://www.netnea.com/cms/apache_tutorial_1_apache_compilieren/).
-* Understanding of the minimal configuration in [Tutorial 2 (Configuring a minimal Apache server)](http://www.netnea.com/cms/apache_tutorial_2_apache_minimal_konfigurieren/).
+* An Apache web server, ideally one created using the file structure shown in [Tutorial 1 (Compiling an Apache web server)](https://www.netnea.com/cms/apache-tutorial-1_compiling-apache/).
+* Understanding of the minimal configuration in [Tutorial 2 (Configuring a minimal Apache server)](http://www.netnea.com/cms/apache-tutorial-2_minimal-apache-configuration).
 
 
 ###Step 1: Configuring Apache

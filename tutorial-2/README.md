@@ -11,7 +11,7 @@ Starting with a minimal system is also helpful in debugging. If the error is sti
 
 ###Requirements
 
-* An Apache web server, ideally one created using the file structure shown in [Tutorial 1 (Compiling an Apache web server)](http://www.netnea.com/cms/apache_tutorial_1_apache_compilieren/).
+* An Apache web server, ideally one created using the file structure shown in [Tutorial 1 (Compiling an Apache web server)](https://www.netnea.com/cms/apache-tutorial-1_compiling-apache).
 
 ###Step 1: Creating a minimal configuration
 

@@ -1,4 +1,4 @@
-##Tutorial 4 - Configuring an SSL/TLS server
+##Tutorial 4 - Enabling Encryption with SSL/TLS
 
 ###What are we doing?
 
@@ -10,8 +10,8 @@ The HTTP protocol uses plain text, which can very easily be spied on. The HTTPS 
 
 ###Requirements
 
-* An Apache web server, ideally one created using the file structure shown in [Tutorial 1 (Compiling an Apache web server)](http://www.netnea.com/cms/apache_tutorial_1_apache_compilieren/).
-* Understanding of the minimal configuration in [Tutorial 2 (Configuring a minimal Apache server)](http://www.netnea.com/cms/apache_tutorial_2_apache_minimal_konfigurieren/).
+* An Apache web server, ideally one created using the file structure shown in [Tutorial 1 (Compiling an Apache web server)](https://www.netnea.com/cms/apache-tutorial-1_compiling-apache/).
+* Understanding of the minimal configuration in [Tutorial 2 (Configuring a minimal Apache server)](http://www.netnea.com/cms/apache-tutorial-2_minimal-apache-configuration).
 
 First, we are going to enable the server to use SSL with a self-signed certificate. Afterwards, I will explain how to get an officially signed certificate. In order to perform this step, you need to control a domain and a webserver, which is being routed and thus accessible from the internet. In this tutorial, I am going to work with the example domain `christian-folini.ch`.
 
