@@ -6,7 +6,7 @@ We are setting up an Apache web server secured by a server certificate.
 
 ###Why are we doing this?
 
-The HTTP protocol uses plain text, which can very easily be spied on. The HTTPS extension surrounds HTTP traffic in a protective SSL/TLS layer, preventing snooping and ensuring that we are really talking to the server we entered in the URL. All data is sent encrypted. This still doesn’t mean that the web server is secure, but it is the basis for secure HTTP traffic.
+The HTTP protocol uses plain text, which can easily be spied on. The HTTPS extension surrounds HTTP traffic in a protective SSL/TLS layer, preventing snooping and ensuring that we are really talking to the server we entered in the URL. All data is sent encrypted. This still doesn’t mean that the web server is secure, but it is the basis for secure HTTP traffic.
 
 ###Requirements
 
@@ -15,15 +15,15 @@ The HTTP protocol uses plain text, which can very easily be spied on. The HTTPS 
 
 First, we are going to enable the server to use SSL with a self-signed certificate. Afterwards, I will explain how to get an officially signed certificate. In order to perform this step, you need to control a domain and a webserver, which is being routed and thus accessible from the internet. In this tutorial, I am going to work with the example domain `christian-folini.ch`.
 
-This whole series of tutorials is meant as a guide to a successful lab setup. The idea is to really, really understand Apache. This tutorial here is a bit of an exception, as we need to be accessible from the internet in order to get the signed certificate. The following tutorials will return to the lab setup though.
+This whole series of tutorials is meant as a guide to a successful lab setup. The idea is to really, really understand Apache. This tutorial is a bit of an exception, as we need to be accessible from the internet in order to get the signed certificate. Later tutorials will return to the lab setup though.
 
 ###Step 1: Configuring a server using SSL/TLS, but without an officially signed certificate
 
-Die inner working of the _SSL-/TLS_-protocol is complex. The free _OpenSSL Cookbook_ by Ivan Ristić (see links below) explains this topic. His bigger work _Bulletproof SSL and TLS_, which explains the trust relationships in great detail, is another good introduction. The minimal knowledge can be found in this tutorial though.
+The inner working of the _SSL-/TLS_-protocol is complex. The free _OpenSSL Cookbook_ by Ivan Ristić (see links below) explains this topic. His bigger work _Bulletproof SSL and TLS_, which explains the trust relationships in great detail, is another good introduction. The minimal knowledge required can be found in this tutorial though.
 
-When contacted by a client, an SSL server must use a signed certificate to identify itself. For a successful connection, the client must be familiar with the signing authority, which it does by checking the certificate chain from the server to the root certificate of the signing authority, the certificate authority. Officially signed certificates are acquired from a public (or private) provider whose root certificate is one the browser is familiar with.
+When contacted by a client, an SSL server must use a signed certificate to identify itself. For a successful connection, the client must be familiar with the signing authority, which it does by checking the certificate chain from the server to the root certificate of the signing authority, also called the certificate authority. Officially signed certificates are acquired from a public (or private) provider whose root certificate is one the browser is familiar with.
 
-The configuration of an SSL server therefore comprises two steps: Obtaining an officially signed certificate and configuring the server. The configuration of the server is the more interesting and easier part, which is why we’ll do that first. In doing so, we’ll be using an unofficial certificate present on our system (at least if it’s from the Debian family and the _ssl-cert_ package is installed).
+The configuration of an SSL server therefore comprises of two steps: Obtaining an officially signed certificate and configuring the server. The configuration of the server is the more interesting and easier part, which is why we’ll do that first. In doing so, we’ll be using an unofficial certificate present on our system (at least if it’s from the Debian family and the _ssl-cert_ package is installed).
 
 The certificate and related key are located here:
 
@@ -32,7 +32,7 @@ The certificate and related key are located here:
 /etc/ssl/private/ssl-cert-snakeoil.key
 ```
 
-The names of the files are an indication that this pair is one that should inspire little confidence. The browser will then put up a warning about the certificate if it’s being used for a server.
+The names of the files are an indication that this pair is one that shouldn't inspire confidence. The browser will then put up a warning about the certificate if it’s being used for a server.
 
 But they are perfectly fine for an initial attempt at configuration:
 
@@ -127,19 +127,21 @@ DocumentRoot            /apache/htdocs
 
 I won’t be describing the entire configuration, only the directives that have been added since Tutorial 2. We are now listening on the port 80, but also on the _HTTPS-port_ 443. As we have to be accessible from the internet in the subsequent steps, we are no longer limiting the server to listen only on the _localhost_ address, but on all the configured IP addresses instead. This setup is also used with the _VirtualHosts_.
 
-As expected, the *SSL* module is the new one to be loaded; and additionally the Headers-module, which we'll use below. Then we configure the key and the certificate by using the _SSLCertificateKeyFile_ and _SSLCertificateFile_ directives. On the protocol line (_SSLProtocol_) it is very important for us to disable the older and insecure _SSLv2_ protocol, but since the _POODLE_ attack even _SSLv3_ is also no longer secure. It would be best to permit only _TLSv1.2_, but not all browsers can handle it yet. So, we simply exclude _SSLv2_ and _SSLv3_ from use and for the time being are allowing _TLSv1_, very infrequent _TLSv1.1_ and quantitatively dominating _TLSv1.2_. The handshake and encryption is done using a set of several algorithms. We use these cryptograph algorithms to define the _cipher suite_. It’s important to use a clean _cipher suite_, because this is where snooping attacks typically take place: They exploit the vulnerabilities and the insufficient key length of older algorithms. However, a very limited suite may prevent older browsers from accessing our server. The proposed _cipher suite_ has a high level of security and also takes into account some older browsers starting from Windows Vista. We are thus excluding Windows XP and very old versions of Android from communication.
+As expected, the *SSL* module is the new one to be loaded; and additionally the Headers-module, which we'll use below. Then we configure the key and the certificate by using the _SSLCertificateKeyFile_ and _SSLCertificateFile_ directives. On the protocol line (_SSLProtocol_) it is very important for us to disable the older and insecure _SSLv2_ protocol. But since the _POODLE_ attack even _SSLv3_ is also no longer secure. It would be best to permit only _TLSv1.2_, but not all browsers can handle it yet. So, we simply exclude _SSLv2_ and _SSLv3_ from use and for the time being are allowing _TLSv1_, very infrequent _TLSv1.1_ and quantitatively dominating _TLSv1.2_. The handshake and encryption is done using a set of several algorithms. We use these cryptograph algorithms to define the _cipher suite_. It’s important to use a clean _cipher suite_, because this is where snooping attacks typically take place: They exploit the vulnerabilities and the insufficient key length of older algorithms. However, a very limited suite may prevent older browsers from accessing our server. The proposed _cipher suite_ has a high level of security and also takes into account some older browsers starting with Windows Vista. We are thus excluding Windows XP and very old versions of Android from communication.
 
 The _HIGH_ group of algorithms is the core of the _cipher suite_. This is the group of high encryption ciphers which _OpenSSL_ provides to us via the _SSL module_. The algorithms listed in front of this keyword, which are also a part of the _HIGH_ group, are given higher priority by being listed first. Afterwards we add the _SHA_ hashing algorithm and exclude a number of algorithms that for one reason or another are not wanted in our _cipher suite_.
 
-Then comes the _SSLHonorCipherOrder_ directive. It is of immense importance. We often hear about _downgrade attacks_ in SSL. This is when the attacker, a man-in-the-middle, attempts to inject himself into traffic and influence the parameters during the handshake in such a way that a protocol less secure than actually possible is used. Specifically, the prioritization defined in the _cipher suite_ is defeated. The _SSLHonorCipherOrder_ directive prevents this type of attack by insisting on our server’s algorithm preference.
+When I talked about this definition of a _cipher suite_ with Ivan Ristić, he made it clear he prefers to define the list by naming all the desired ciphers explicitly and in right order. So he will not use the keyword `HIGH` at all. My approach is different as it is based on the `HIGH` keyword with some manual tweaks on the cipher order by hand. The point with my approach is, that new ciphers appearing within the group `HIGH` will be added to the _cipher list_ automatically. But this might not always be desired and also the order of the ciphers could be rearranged within the `HIGH` group. We depend on _OpenSSL_ and on the operating system's compiled _OpenSSL_ in this regard. Ivan's approach keeps total control, but you might miss out new strong ciphers when they become available unless you reconfigure the _cipher list_. So there is a tradeoff between convenience for the maintainer and control over the _cipher suite_.
 
-Encryption works with random numbers. The random number generator should be properly started and used, which is the purpose of the _SSLRandomSeed_ directive. This is another place where performance and security have to be considered. When starting the server we access the operating system’s random numbers in _/dev/urandom_. While operating the server, for the _SSL handshake_ we then use Apache’s own source for random numbers (_builtin_), seeded from the server’s traffic. Although _/dev/urandom_ is not the best source for random numbers, it is a quick source and also one that guarantees a certain amount of entropy. The qualitatively better source, _/dev/random_, could in adverse circumstances block our server when starting, because not enough entropy data is present, which is why _/dev/urandom_ is generally preferred.
+After the _cipher suite_ we follow with the _SSLHonorCipherOrder_ directive. It is of immense importance. We often hear about _downgrade attacks_ in SSL. This is when the attacker, a man-in-the-middle, attempts to inject himself into traffic and influence the parameters during the handshake in such a way that a less secure protocol is used. Specifically, the prioritization defined in the _cipher suite_ is defeated. The _SSLHonorCipherOrder_ directive prevents this type of attack by insisting on our server’s algorithm preference.
 
-We have also introduced a second _virtual host_. It is very similar to the _virtual host_ for port 80. But the port number is _443_ and we are enabling the _SSL engine_, which encrypts traffic for us and first enables the configuration defined above. Additionally, we use the Header-Module loaded above in order to set the _Strict-Transport-Security_-header (short _STS_-Header). This HTTP header is part of the response and tells the client to use encryption for a duration of one year (this equals 31536000 seconds) when connection to our server. This happens regardless of the presence of the `https` string in links. So any attempt to lure the browser to talk cleartext to our server will be rewritten to `https`. The flag _includeSubDomains_ means, that all subdomains below our hostname are included in this instruction.
+Encryption works with random numbers. The random number generator should be properly started and used, which is the purpose of the _SSLRandomSeed_ directive. This is another place where performance and security have to be considered. When starting the server we access the operating system’s random numbers in _/dev/urandom_. While operating the server, we use Apache’s own source for random numbers (builtin), seeded from the server’s traffic for the _SSL handshake_. The _/dev/urandom_ source is the best source for random numbers in almost all situations: it is a quick source and also one that guarantees a certain amount of entropy. The qualitatively even better source, _/dev/random_, could in adverse circumstances block our server when starting, because not enough entropy data is present. This is why _/dev/urandom_ is generally preferred outside of very rare and special situations.
 
-The _STS_-header is the most prominent from a group of newer security related headers. Various browsers implement different headers, so it is not very easy to keep an overview. But the _STS_-header should never be omitted. If we look at the _Header_ directive in more detail, then we see the additional flag _always_. There are cases where the module is not springing into action (for example when we return an error as a response) without this flag. With _always_, we make sure the header is always sent.
+We have also introduced a second _virtual host_. It is very similar to the _virtual host_ for port 80. But the port number is _443_ and we are enabling the _SSL engine_, which encrypts traffic for us and first enables the configuration defined above. Additionally, we use the Header-Module loaded above in order to set the _Strict-Transport-Security_-header (short _STS_-Header). This HTTP header is part of the response and tells the client to use encryption for a duration of one year (this equals 31536000 seconds) when connected to our server. This happens regardless of the presence of the `https` string in links. So any attempt to lure the browser to talk to our server in cleartext will be rewritten to `https`. The flag _includeSubDomains_ means, that all subdomains below our hostname are included in this instruction. Be careful here: Working with the domain `christian-folini.ch`, we will be calling the server with this naked hostname without the leading `www`. Setting the flag _includeSubDomains_ on such a request effectively means, that every hostname within the `christian-folini.ch` domain will only be addressed via `https` in the future. If you continue to run other services on port 80 only, this is dangerous. The flag _includeSubDomains_ should only be used if you are really sure all subdomains of your domain run on `https` and this policy is here to stay.
 
-That's all the changes to our configuration. Time to kick off the server!
+The _STS_-header is the most prominent from a group of newer security related headers. Various browsers implement different headers, so it is not very easy to maintain an overview, but the _STS_-header should never be omitted. If we look at the _Header_ directive in more detail, we see the additional flag _always_. There are cases where the module is not springing into action (for example when we return an error as a response) without this flag. With _always_, we make sure the header is always sent.
+
+That's all the changes to our configuration. Time to start the server!
 
 
 ###Step 2: Trying it out
@@ -173,7 +175,7 @@ $> curl -v https://127.0.0.1/index.html
 curl: (51) SSL: certificate subject name 'myhost.home' does not match target host name '127.0.0.1'
 ```
  
-Unfortunately, we were not successful. It’s no wonder, because we were talking to a server at IP address _127.0.0.1_ and it replied to us with a certificate for _myhost.home_. A typical case of a handshake error.
+Unfortunately, we were not successful. It’s no wonder, because we were talking to a server at IP address _127.0.0.1_ and it replied to us with a certificate for _myhost.home_. This is a typical case of a handshake error.
 
 We can instruct _curl_ to ignore the error and open the connection nonetheless. This is done using the _--insecure_, or _-k_ flag:
 
@@ -221,7 +223,7 @@ curl -v -k https://127.0.0.1/index.html
 
 ```
 
-It works now and our SSL server is running. Admittedly with a lazy certificate and we are still far from use in production.
+It works now and our SSL server is running. Admittedly with a lazy certificate and we are still far from being able to use it in production.
 
 Below we will be discussing how to obtain an official certificate, how to install it correctly and how to tweak our configuration a bit.
 
@@ -229,15 +231,15 @@ Below we will be discussing how to obtain an official certificate, how to instal
 
 ###Step 3: Preparing to get an SSL key and certificate
 
-HTTPS adds an SSL layer to the familiar HTTP protocol. Technically, SSL (_Secure Socket Layer_) has been replaced by TLS (_Transport Security Layer_), but people still refer to it as SSL. The protocol guarantees encrypted and thus data traffic secured from eavesdropping. Traffic is encrypted symmetrically, guaranteeing greater performance, but in the case of HTTPS requires a public/private key setup for the exchange of symmetric keys by previously unknown communication partners. This public/private key handshake is done by using a server certificate which must be signed by an official authority. The handshake is thus meant to extend browser's trust in the signing authority to the webserver being contacted. This is being done with the help of a chain of trust over multiple certificates.
+HTTPS adds an SSL layer to the familiar HTTP protocol. Technically, SSL (_Secure Socket Layer_) has been replaced by TLS (_Transport Security Layer_), but people still refer to it as SSL. The protocol guarantees encryption and thus data traffic is secured from eavesdropping. Traffic is encrypted symmetrically, guaranteeing greater performance, but in the case of HTTPS requires a public/private key setup for the exchange of symmetric keys by previously unknown communication partners. This public/private key handshake is done by using a server certificate which must be signed by an official authority. The handshake is thus meant to extend browser's trust in the signing authority to the webserver being contacted. This is being done with the help of a chain of trust over multiple certificates.
 
 Server certificates exist in a variety of forms, validations and scopes of application. Not every feature is really of a technical nature and marketing also plays a role. The price differences are very large, which is why a comparison is worthwhile. For our test setup we’ll be using a free certificate that we will nonetheless have officially certified. This is being done with the help of _Let's Encrypt_. This new certificate authority was born in 2015. It hands out official certificates for free and it has simplified the signing process in a very elegant way if you compare it to the traditional commercial certificate authorities.
 
-Before _Let's Encrypt_ will give us a validated certificate for our server, the certificate authority has to be sure, we are really the owners of the domain for which we asked for a certificate. This is being done as follows: We have to put a test file with a secret token on the webserver. Then we call a special URL on _Let's Encrypt_'s server and tell the certificate authority to check the token, which is also part of the call. _Let's Encrypt_ will then make a request to our webserver and it compares the content of the test file with the token in our call. If the two values are identical, then we have proven that we do in fact control the domain in question and _Let's Encrypt_ will accept us as the owner of the said domain. This will be followed by signing a certificate for the domain in question on our behalf. We will then take this certificate and install it on the webserver.
+Before _Let's Encrypt_ will give us a validated certificate for our server, the certificate authority has to be sure, we are really the owners of the domain for which we've requested a certificate. This is done as follows: We have to put a test file with a secret token on the webserver. Then we call a special URL on _Let's Encrypt_'s server and tell the certificate authority to check the token, which is also part of the call. _Let's Encrypt_ will then make a request to our server and compare the contents of the test file with the token in our call. If the two values are identical, then we have proven that we do in fact control the domain in question and _Let's Encrypt_ will accept us as the owner of said domain. This will be followed by signing a certificate for the domain in question on our behalf. We will then take this certificate and install it on the server.
 
-There are multiple clients to work with _Let's Encrypt_. Luca Käser has mentioned `getssl` which features simple command line use and a maximum of control. It is also fit for production use, as it has the option to deploy the token file not only on the local host, but also on a remote server via `ssh`. This is an advantage if you have blocked the webserver from sending requests to the internet and the webserver is thus not allowed to call _Let's Encrypt_ itself.
+There are multiple clients to work with _Let's Encrypt_. Luca Käser has mentioned `getssl` which features simple command line use and maximum of control. It is also fit for production use, as it has the option to deploy the token file not only on the local host, but also on a remote server via `ssh`. This is an advantage if you have blocked the server from sending requests to the internet and the server is thus not allowed to call _Let's Encrypt_ itself.
 
-But this is an advanced scenario. For a first try, we call _Let's Encrypt_ directly from the webserver. As a precondition, we need to get `getssl` ourselves. The tool is so new, it is not yet part of the official Linux distributions. We will download the script. In my case, I will put it in the private `bin`-folder. Depending on your setup, you will want to use an alternative place. What is important, is that `getssl` can be found via the standard shell path from now on. We fetch the script from _GitHub_. There is the option to clone the whole project directory. But we simplify things by downloading the raw script and making it executable.
+But this is an advanced scenario. For a first try, we call _Let's Encrypt_ directly from the server. As a precondition, we need to get `getssl` ourselves. The tool is so new that it is not yet part of the official Linux distributions. We will download the script. In my case, I will put it in the private `bin`-folder. Depending on your setup, you may want to use an alternate location. It's important that `getssl` can be found via the standard shell path from now on. We fetch the script from _GitHub_. There is the option to clone the whole project directory. But we will simplify things by downloading the raw script and making it executable.
 
 ```bash
 $> wget https://raw.githubusercontent.com/srvrco/getssl/master/getssl -O $HOME/bin/getssl 
@@ -246,7 +248,7 @@ $> chmod +x $HOME/bin/getssl
 ...
 ```
 
-I will use `christian-folini.ch` as my example domain. This will show in the shell commands. Of course, all these commands need to be adopted to your own domain, if they are meant to work.
+I will use `christian-folini.ch` as my example domain. This will show in the shell commands. Of course, all these commands need to be adapted to your own domain, if they are meant to work.
 
 We will now create the base configuration for our domain.
 
@@ -264,9 +266,9 @@ This tells the script to create a file tree. These are the folders and files bei
 .getssl/christian-folini.ch/getssl.cfg
 ```
 
-Before we can call for the creation of a certificate, it is important to edit the two `getssl.cfg` files a bit. First the base configuration in the file `.getssl/getssl.cfg`. In this file, you need to know that _Let's Encrypt_ runs a test certificate authority at the URL `https://acme-staging.api.letsencrypt.org` where you can check your setup - and then the real certificate authority which creates the official certificates. It is useful to create your setup with the test CA first and then, when the paths are correct and the validation worked, enable the official CA at `https://acme-v01.api.letsencrypt.org`. In `.getssl/getssl.cfg`, the test CA is active by default. At the start, there is not really much to do; entering a correct address for `ACCOUNT_EMAIL` sounds good, though.
+Before we can call for the creation of a certificate, it is important to edit the two `getssl.cfg` files a bit. First the base configuration in the file `.getssl/getssl.cfg`. In this file, you need to know that _Let's Encrypt_ runs a test certificate authority at the URL `https://acme-staging.api.letsencrypt.org` where you can check your setup - and then the real certificate authority which creates the official certificates. It is useful to create your setup with the test CA first and then, when the paths are correct and the validation has worked, enable the official CA at `https://acme-v01.api.letsencrypt.org`. In `.getssl/getssl.cfg`, the test CA is active by default. At the beginning, there is not really much to do; entering a correct address for `ACCOUNT_EMAIL` sounds good, though.
 
-Let's move on to the configuration file of the domain `.getssl/christian-folini.ch/getssl.cfg`. Here, we check the value for `SANS`. I suspect this means `Subject Alternative NameS` and defines additional host names - or in the CA language `Subject-Names`, which will be added to the certificate. In the case of the domain `christian-folini.ch` we expect `SANS=www.christian-folini.ch`, which really is a different hostname which needs to be declared separately. Most of the other values are commented out, which means that the values, defined in the main configuration file, will be inherited and we do not have to set them. An important value has to be set though: `acl`. For our tutorial, I am setting it as follows:
+Let's move on to the configuration file for the domain `.getssl/christian-folini.ch/getssl.cfg`. Here, we check the value for `SANS`. I suspect this means `Subject Alternative NameS` and defines additional host names - or in the CA language `Subject-Names`, which will be added to the certificate. In the case of the domain `christian-folini.ch` we expect `SANS=www.christian-folini.ch`, which really is a different hostname which needs to be declared separately. Most of the other values are commented out, which means that the values, defined in the main configuration file, will be inherited and we do not have to set them. An important value has to be set though: `acl`. For our tutorial, I am setting it as follows:
 
 ```bash
 acl='/apache/htdocs/.well-known/acme-challenge'
@@ -274,11 +276,11 @@ acl='/apache/htdocs/.well-known/acme-challenge'
 
 This defines the path of the token, that `getssl` will place in the file system in order to have it checked by _Let's Encrypt_. In other words, the script will place the token in this location and tell the certificate authority to fetch the token via the webserver. If that works and the token is correct, we are confirmed as owners of the domain and we will get the valid certificate. The part of the `acl` path from `.well-known` on to the end corresponds with the _Let's Encrypt_ standard. Any other value is possible, though.
 
-Outside of our domain name, we have entered an alternative name in the variable `SANS`. _Let's Encrypt_ will check both names and it will place an individual token for both names. We can handle this by entering the same path twice under `acl`, or we enable the variable `USE_SINGLE_ACL`, which is much more elegant.
+Outside of our domain name, we have entered an alternate name in the variable `SANS`. _Let's Encrypt_ will check both names and it will place an individual token for both names. We can handle this by entering the same path twice under `acl`, or we can enable the variable `USE_SINGLE_ACL`, which is much more elegant.
 
 ###Step 4: Getting the SSL key and certificate
 
-Let's start our call of _Let's Encrypt_:
+Let's start our call to _Let's Encrypt_:
 
 
 ```bash
@@ -311,14 +313,14 @@ The intermediate CA cert is in /home/folini/.getssl/christian-folini.ch/chain.cr
 getssl: christian-folini.ch - certificate obtained but certificate on server is different from the new certificate
 ```
 
-It is visible nicely how a new key was first created. Then the script created a `Certificate Signing Request` with the file ending `csr` and the test file `/apache/htdocs/.well-known/acme-challenge/xiM4FlHAqxo9fuAG-Ag-BTV_DsUJAbegPoZ6-l_luSA`. This was followed by the request to check the domain and sign the certificate. In the access log of the server, we will then see the following entry (the IP addresses of the validation server and the exact filename can vary):
+You can see how a new key was first created. Then the script created a `Certificate Signing Request` with the file ending `csr` and the test file `/apache/htdocs/.well-known/acme-challenge/xiM4FlHAqxo9fuAG-Ag-BTV_DsUJAbegPoZ6-l_luSA`. This was followed by the request to check the domain and sign the certificate. In the server's access log, we will then see the following entry (the IP addresses of the validation server and the exact filename can vary):
 
 ```bash
 66.133.109.36 US - [2016-10-02 06:26:40.635068] …
 "GET /.well-known/acme-challenge/zg0bwpHNmRmFdXS4YeTgjBKiy84JoYDpu-cHON2mC9k HTTP/1.1" …
 200 87 "-" "Mozilla/5.0 (compatible; Let's Encrypt validation server; +https://www.letsencrypt.org)"
 ``` 
-If we check the output of the `getssl` command again, then we see that the verification was performed twice. Also a certificate has been signed and was delivered. But still, there was something wrong, as on the last line, the script reports that the certificate on the server does not correspond to the one we have been given. That really is the case, because we do not yet have the new certificate installed on the server. In fact, the script is able to perform this in a single run (the special variables used for this feature will be explained further down below).
+If we check the output of the `getssl` command again, we see that the verification was performed twice. Also a certificate has been signed and was delivered. But still, there was something wrong, as on the last line, the script reports that the certificate on the server does not correspond to the one we have been given. That really is the case, because we do not yet have the new certificate installed on the server. In fact, the script is able to perform this in a single run (the special variables used for this feature will be explained further down below).
 
 I have proposed to do a first test run with the test certificate authority of _Let's Encrypt_. If the script runs smoothly, then you can enter the production certificate authority. The call remains the same and we will get an official certificate signed for public use, ready to be deployed on the server.
 
@@ -457,7 +459,7 @@ a1fOnvtDjO/Gp/S+Of00YUyEIeD7dE0xvUXDGliXx7sVvip0wHrd
 -----END CERTIFICATE-----
 ```
 
-If the certificate meets our expectations, we will copy it together with the key to the right location on the webserver. We will do this by hand first. Outside of the certificate and the key we also have to transfer the chain file. What's that, you may wonder. As we have seen, the browser trusts a series of certificate authorities from the start. When performing an _SSL_-handshake, this trust is being extended to the webserver. To perform this, the browser will try and build a chain of trust to one of the certificate authorities known to him. After the server certificate, the chains runs via the intermediate certificates we deliver in the form of the chain file. This means, that the root certificate known to the browser has signed the first element of the chain file. This certificat has been used to sign the next certificate and so forth down to the server certificate, we recently obtained. If the signatures are all valid, then the chain is intact and the browser assumes, he is speaking to the correct server. This means the chain file has an important role as a link between the certificate authority and our server. That's why `getssl` has downloaded the file for us and stored it under `~/.getssl/christian-folini.ch/chain.crt`, as reported to us above. So, let's take these three files and let's copy them onto the server. The exact position is not that important. That's why I decide to use a location with the already well protected keys and certificates of the system under `/etc/ssl`.
+If the certificate meets our expectations, we will copy it together with the key to the right location on the server. We will do this by hand first. Outside of the certificate and the key we also have to transfer the chain file. What's that, you may wonder. As we have seen, the browser trusts a series of certificate authorities from the start. When performing an _SSL_-handshake, this trust is being extended to the webserver. To perform this, the browser will try and build a chain of trust to one of the certificate authorities known to it. After the server certificate, the chains runs via the intermediate certificates we deliver in the form of the chain file. This means, that the root certificate known to the browser has signed the first element of the chain file. This certificate has been used to sign the next certificate and so forth down to the server certificate, we recently obtained. If the signatures are all valid, then the chain is intact and the browser assumes, it is speaking to the correct server. This means the chain file has an important role as a link between the certificate authority and our server. That's why `getssl` has downloaded the file for us and stored it under `~/.getssl/christian-folini.ch/chain.crt`, as reported to us above. So, let's take these three files and let's copy them onto the server. The exact position is not that important. That's why I decide to use a location with the already well protected keys and certificates of the system under `/etc/ssl`.
 
 
 ```bash
@@ -466,7 +468,7 @@ $> sudo cp ~/.getssl/christian-folini.ch/christian-folini.ch.crt /etc/ssl/certs/
 $> sudo cp ~/.getssl/christian-folini.ch/chain.crt /etc/ssl/certs/lets-encrypt-chain.crt
 ``` 
 
-It is important to get the permission right (and to make sure ~/.getssl/christian-folini.ch/christian-folini.ch.key is not accessible either). Only the key has to remain really secret from everybody outside of root. It is only being used during the start of the server. The certificate files are less delicate and in fact we will also hand them out to the clients when they perform their requests.
+It is important to get the permission right (and to make sure ~/.getssl/christian-folini.ch/christian-folini.ch.key is not accessible either). Only the key has to remain really secret from everybody outside of root. It is only being used when starting the server. The certificate files are less delicate and in fact we will also hand them out to the clients when they perform their requests.
 
 ```bash
 $> sudo chmod 400 /etc/ssl/private/christian-folini.key
@@ -485,9 +487,9 @@ SSLCertificateFile      /etc/ssl/certs/christian-folini.ch.crt
 SSLCertificateChainFile /etc/ssl/certs/lets-encrypt-chain.crt
 ```
 
-###Step 5: Examine the chain of trust
+###Step 5: Examining the chain of trust
 
-Before we can use the browser or curl to call our server, it is a good practice to check the chain of trust and to make sure the encryption is well configured. Let's start the server and check it out. We will use the command line tool `openssl` again. It really shines with all the options it features. However, _OpenSSL_ does not have a list of known and trusted certificate authorities. We have to tell the tool about the _Let's Encrypt_ certificate authority or it's root certificate respectively. We will fetch it from _Let's Encrypt_ and we will then call `openssl` with the root CA as parameter:
+Before we can start using the browser or curl to call our server, it is a good practice to check the chain of trust and to make sure the encryption is properly configured. Let's start the server and check it out. We will use the command line tool `openssl` again. It really shines with all the options it has. However, _OpenSSL_ does not have a list of known and trusted certificate authorities. We have to tell the tool about the _Let's Encrypt_ certificate authority and its root certificate respectively. We will fetch it from _Let's Encrypt_ and we will then call `openssl` with the root CA as a parameter:
 
 ```bash
 $> wget https://letsencrypt.org/certs/isrgrootx1.pem -O /tmp/ca-lets-encrypt.crt
@@ -496,7 +498,7 @@ $> openssl s_client -showcerts -CAfile /tmp/ca-lets-encrypt.crt \
 -connect 127.0.0.1:443 -servername www.christian-folini.ch
 ```
 
-This instructs `openssl` to use it's internal HTTP client, to show us the full certificate information, to use the CA file we just downloaded, to connect to our localhost server and to use `www.christian-folini.ch` as the name for the server. If all went smooth, we will see an output similar to the following:
+This instructs `openssl` to use it's internal HTTP client, to show us the full certificate information, to use the CA file we just downloaded, to connect to our localhost server and to use `www.christian-folini.ch` as the name for the server. If all went smoothly, we will see an output similar to the following:
 
 ```bash
 depth=2 O = Digital Signature Trust Co., CN = DST Root CA X3
@@ -620,9 +622,9 @@ SSL-Session:
 ---
 ```
 
-The first few lines are very important as they list the chain. Of equal importance is the last line with the _ok_. This proofs that the chain has been checked successfully and that a secure communication channel with the server has been built.
+The first few lines are very important as they list the chain. Of equal importance is the last line with the _ok_. This prooves that the chain has been checked successfully and that a secure communication channel with the server has been built.
 
-If we examine the chain on top carefully, we will see that _Let's Encrypt_ is depending on an additional  certificate authority. This is necessary as _Let's Encrypt_ is a very young certificate authority and it has not yet found the way in all browsers. This forces _Let's Encrypt_ to have it's certificate signed by a different certificate authority known to the browser.
+If we examine the chain on top carefully, we will see that _Let's Encrypt_ is depending on an additional  certificate authority. This is necessary as _Let's Encrypt_ is a very young certificate authority and it has not yet found its way into all browsers. This forces _Let's Encrypt_ to have it's certificate signed by a different certificate authority known to the browser.
 
 ###Step 6: Enhancing the Apache configuration a bit
 
@@ -669,9 +671,9 @@ SSLSessionTickets       On
 
 It’s also useful to enter the _ServerName_ matching the certificate in the _VirtualHost_. If we don’t do that, Apache will put up a warning (and then still select the only configured virtual host and continue to work correctly).
 
-The _SSLSessionCache_ and _SSLSessionTickets_ options are new. These two directives control the behavior of the _SSL session cache_. The cache requires the *socache_shmcb* module, which provides caching functionality and is addressed using *mod_ssl*. It works as follows: During the SSL handshake the parameters of the connection such as the key and an encryption algorithm are negotiated. This takes place in public key mode, which is very CPU intense. Once the handshake is successfully completed, the server communicates with the client via higher performance symmetric encryption using the parameters that were just negotiated. Once the request has been completed and the _keep-alive_ period in the new request has been exceeded, the TCP connection and the parameters imposed along with the connection are lost. If the connection is reopened just a short time later, the parameters will have to be negotiated once again. This is time-consuming, as we have just seen. It would be better if the parameters that were previously negotiated could be reactivated. This option exists in the form of the _SSL session cache_. This cache has traditionally been managed on the server side.
+The _SSLSessionCache_ and _SSLSessionTickets_ options are new. These two directives control the behavior of the _SSL session cache_. The cache requires the *socache_shmcb* module, which provides caching functionality and is addressed using *mod_ssl*. It works as follows: During the SSL handshake the parameters of the connection such as the key and an encryption algorithm are negotiated. This takes place in public key mode, which is very CPU intense. Once the handshake is successfully completed, the server communicates with the client via higher performance symmetric encryption using the parameters that were just negotiated. Once the request has been completed and the _keep-alive_ period in the new request has been exceeded, the TCP connection and the parameters imposed along with the connection are lost. If the connection is reopened just a short time later, the parameters will have to be negotiated again. This is time-consuming, as we have just seen. It would be better if the parameters that were previously negotiated could be reactivated. This option exists in the form of the _SSL session cache_. This cache has traditionally been managed on the server side.
 
-For a session cache via tickets, the parameters are combined in a session ticket and sent to the client, where it is stored on the client side, saving disk space on the web server. When opening a new connection the client sends the parameters to the server and it configures the connection accordingly. To prevent manipulation of the parameters in the ticket, the server temporarily signs the ticket and again verifies it when opening a connection. Something to consider in this mechanism is that the signature depends on a signing key and it is a good idea to regularly update the key that is for the most part dynamically generated. Restarting the server guarantees this.
+For a session cache via tickets, the parameters are combined in a session ticket and sent to the client, where they are stored on the client side, saving disk space on the web server. When opening a new connection the client sends the parameters to the server and it configures the connection accordingly. To prevent manipulation of the parameters in the ticket, the server temporarily signs the ticket and again verifies it when opening a connection. Something to consider with this mechanism is that the signature depends on a signing key and it is a good idea to regularly update the key that is for the most part dynamically generated. Restarting the server guarantees this.
 
 SSL session tickets are recent and are now supported by all major browsers. They are also considered secure thanks to the signing process. However, this does not change the fact that there is a theoretical vulnerability in which session parameters are stolen on the client side.
 
@@ -682,12 +684,12 @@ SSLSessionCache         nonenotnull
 SSLSessionTickets       Off
 ```
 
-Of course, this adjustment will have consequences in terms of performance. The loss of performance is however very small. It would be surprising if a performance test would react to them being disabled with a performance drop of more than 5 or 10%.
+Of course, this adjustment will have consequences in terms of performance. You will see a small drop of throughput on the server, but the clients will encounter bigger latency, as the SSL/TLS handshake has to be performed anew and from scratch. So it is again a trade off between reducing your attack surface and performance: Most people leave the caching in place and I think this is generally the best advice which you should follow.
 
 
 ###Step 7: Trying it out
 
-Now that we are sure to own an officially signed certificate with a valid chain of trust and now that we have understood all the other configuration options in detail, we can turn to the browser and call the domain we configured. In my case, this is [https://www.christian-folini.ch](https://www.christian-folini.ch).
+Now that we are sure to own an officially signed certificate with a valid chain of trust and now that we understand all the other configuration options in detail, we can turn to the browser and call the domain we configured. In my case, this is [https://www.christian-folini.ch](https://www.christian-folini.ch).
 
 ![Screenshot: christian-folini.ch](./apache-tutorial-4-screenshot-christian-folini.ch.png)
 
@@ -698,7 +700,7 @@ The browser confirms, this is a secure connection.
 
 _Let's Encrypt_ creates the certificates for a period of 90 days per default. This means we will have to perform the manual call as outlined above every three months. This can be automated, though. As the `getssl` process needs to access the certificate key, the process has to operate as the `root` user. Additionally, the certificate authority _Let's Encrypt_ has to be called via the internet. As a matter of fact, this means that we have to tell `root` to access the internet. This is not without risks and has to be considered carefully.
 
-The script `getssl` offers the feature, to make this call from a different host than the webserver; typically an administration host. This will only work if the certificate key is being stored on multiple servers. Another inherent risk.
+The script `getssl` offers a feature, to make this call from a different host than the webserver; typically an administration host. This will only work if the certificate key is being stored on multiple servers. That's another risk.
 
 It is important to weigh the various risks and to come to a conclusion for the specific case. If you have defined a good solution, then you can automate the process by performing the following edits in the configuration of `getssl`:
 
