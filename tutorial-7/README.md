@@ -943,32 +943,68 @@ We do the same with the *outbound anomaly score*. In practice, you’ll have to 
 
 We have become familiar with four different ways of suppressing a false alarm. I’m presenting them here again along with specific examples:
 
-**Case 1 : Disabling the rule for a specific path** </br>
+
+**Case 1 : Disabling a rule completely** </br>
+
 ```bash
-SecRule REQUEST_FILENAME "@beginsWith /app/submit.do" \
-	"phase:1,nolog,pass,t:none,id:10001,ctl:ruleRemoveById=950005"
+# ModSecurity Rule Exclusion: 920350 Host header is a numeric IP address
+SecRuleRemoveById 920350
+```
+
+This is the most simple form of an exclusion rule that disables a rule completely. 
+
+The directive has to
+be placed after the `Include` directive loading the rule with the ID in question. The rule will thus
+be disabled during the startup of the server.
+
+The rule IDs can be comma separated, or you can issue a range (e.g. `920000-920999`).
+
+Alternatives exist in the form of `SecRuleRemoveByMsg` and `SecRuleRemoveByTag` which both allow for regular expression patterns.
+
+
+
+**Case 2 : Disabling a rule for a specific parameter** </br>
+
+```bash
+# ModSecurity Rule Exclusion for cookie PHPSESSID: 942450 SQL Hex Encoding Identified
+SecRuleUpdateTargetById 942450 "!REQUEST_COOKIES:PHPSESSID"
+```
+This is the more advanced form of an exclusion rule that removes an individual parameter from the set of targets of an individual rule.
+
+The directive has to be placed after the `Include` directive loading the rule with the ID in question. The rule target will thus
+be disabled during the startup of the server.
+
+The rule IDs can be comma separated, or you can issue a range (e.g., `920000-920999`).
+
+The target can be defined with the help of a regular expression (e.g., `!REQUEST_COOKIES:/^.*SESS/`). 
+
+Alternatives exist in the form of `SecRuleUpdateTargetByMsg` and `SecRuleUpdateTargetByTag` which both allow for regular expression patterns.
+
+
+**Case 3 : Disabling the rule for a specific path** </br>
+
+```bash
+# ModSecurity Rule Exclusion: 920350 Host header is a numeric IP address
+SecRule REQUEST_FILENAME "@beginsWith /availability-check.do" \
+	"phase:1,nolog,pass,t:none,id:10001,ctl:ruleRemoveById=920350"
 ```
 Location in the configuration: Preferably in front of the *Core Rule Inclusion*, but for *phase:1* can also be placed after *include*. </br>
 Phase: Best in phase 1, because the path is known at this moment.</br>
 
 
-**Case 2 : Disabling rules for specific parameters** </br>
-```bash
-SecRuleUpdateTargetById 950005 "!ARGS:contact_form_name"
-```
-Location in the configuration: Generally placed after the *Core Rule Inclusion*. </br>
+**Case 4 : Disabling rules for specific parameters on a specific path** </br>
 
-
-**Case 3 : Disabling rules for specific parameters on a specific path** </br>
 ```bash
-SecRule REQUEST_FILENAME "@beginsWith /app/submit.do" \
-	"phase:2,nolog,pass,t:none,id:10002,ctl:ruleRemoveTargetById=950005;ARGS:contact_form_name"
+# ModSecurity Rule Exclusion for parameter password: 942450 SQL Hex Encoding Identified
+SecRule REQUEST_FILENAME "@beginsWith /login/submit.do" \
+	"phase:2,nolog,pass,t:none,id:10002,ctl:ruleRemoveTargetById=942450;ARGS:password"
 ```
 Location in the configuration: Preferably placed after the *Core Rule Inclusion*. </br>
 Phase: Required for *post parameter* in phase 2, otherwise conceivable in phase 1.</br>
 
 
-**Case 4 : Keep the rule enabled, but disable scoring for specific parameters on specific paths** </br>
+**Case 5 : Keep the rule enabled, but disable scoring for specific parameters on specific paths** </br>
+
 ```bash   
 SecRule REQUEST_FILENAME "@beginsWith /app/submit.do" \
 	"chain,phase:2,log,pass,t:none,id:10003,msg:'Adjusting inbound anomaly score for rule 950005'"
