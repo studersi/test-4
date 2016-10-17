@@ -23,20 +23,20 @@ We previously downloaded the source code for the web server to <i>/usr/src/apach
 $> sudo mkdir /usr/src/modsecurity
 $> sudo chown `whoami` /usr/src/modsecurity
 $> cd /usr/src/modsecurity
-$> wget https://www.modsecurity.org/tarball/2.9.0/modsecurity-2.9.0.tar.gz
+$> wget https://www.modsecurity.org/tarball/2.9.1/modsecurity-2.9.1.tar.gz
 ```
 
 Compressed, the source code is just over four megabytes in size. We now need to verify the checksum. It is provided in SHA256 format.
 
 ```bash
-$> wget https://www.modsecurity.org/tarball/2.9.0/modsecurity-2.9.0.tar.gz.sha256
-$> sha256sum --check modsecurity-2.9.0.tar.gz.sha256
+$> wget https://www.modsecurity.org/tarball/2.9.1/modsecurity-2.9.1.tar.gz.sha256
+$> sha256sum --check modsecurity-2.9.1.tar.gz.sha256
 ```
 
 We expect the following response:
 
 ```bash
-modsecurity-2.9.0.tar.gz: OK
+modsecurity-2.9.1.tar.gz: OK
 ```
 
 ###Step 2: Unpacking and configuring the compiler
@@ -46,15 +46,14 @@ We now unpack the source code and initiate the configuration. But before this it
 The stage is thus set and we are ready for ModSecurity.
 
 ```bash
-$> tar xvzf modsecurity-2.9.0.tar.gz
-$> cd modsecurity-2.9.0
+$> tar xvzf modsecurity-2.9.1.tar.gz
+$> cd modsecurity-2.9.1
 $> ./configure --with-apxs=/apache/bin/apxs \
 --with-apr=/usr/local/apr/bin/apr-1-config \
 --with-pcre=/usr/bin/pcre-config \
---enable-request-early
 ```
 
-We created the <i>/apache</i> symlink in the tutorial on compiling Apache. This again comes to our assistance, because independent from the Apache version being used, we can now have the ModSecurity configuration always work with the same parameters and always get access to the current Apache web server. The first two options establish the link to the Apache binary, since we have to make sure that ModSecurity is working with the right API version. The _with-pcre_ option defines that we are using the system’s own _PCRE-Library_, or Regular Expression Library, and not the one provided by Apache. This gives us a certain level of flexibility for updates, because we are becoming independent from Apache in this area, which has proven to work in practice. It requires the first installed _libpcre3-dev_ package. The last option, _enable-request-early_, intervenes in the behavior of ModSecurity. This results in our security system handling the first processing phase after receiving the request header. We are thus not waiting for the finished request including body data, but can instead intervene immediately. This may be only a detail, but in practice it gives us a bit more control.
+We created the <i>/apache</i> symlink in the tutorial on compiling Apache. This again comes to our assistance, because independent from the Apache version being used, we can now have the ModSecurity configuration always work with the same parameters and always get access to the current Apache web server. The first two options establish the link to the Apache binary, since we have to make sure that ModSecurity is working with the right API version. The _with-pcre_ option defines that we are using the system’s own _PCRE-Library_, or Regular Expression Library, and not the one provided by Apache. This gives us a certain level of flexibility for updates, because we are becoming independent from Apache in this area, which has proven to work in practice. It requires the first installed _libpcre3-dev_ package.
 
 ###Step 3: Compiling
 
@@ -243,18 +242,18 @@ SecAction "id:'90014',phase:5,pass,nolog,setvar:TX.ModSecTimestamp5end=%{DURATIO
 
 # === ModSec performance calculations and variable export (ids: 90100 - 90199)
 
-SecAction "id:'90100',phase:5,pass,nolog,setvar:TX.perf_modsecinbound=%{PERF_PHASE1}"
-SecAction "id:'90101',phase:5,pass,nolog,setvar:TX.perf_modsecinbound=+%{PERF_PHASE2}"
-SecAction "id:'90102',phase:5,pass,nolog,setvar:TX.perf_application=%{TX.ModSecTimestamp3start}"
-SecAction "id:'90103',phase:5,pass,nolog,setvar:TX.perf_application=-%{TX.ModSecTimestamp2end}"
-SecAction "id:'90104',phase:5,pass,nolog,setvar:TX.perf_modsecoutbound=%{PERF_PHASE3}"
-SecAction "id:'90105',phase:5,pass,nolog,setvar:TX.perf_modsecoutbound=+%{PERF_PHASE4}"
-SecAction "id:'90106',phase:5,pass,nolog,setenv:ModSecTimeIn=%{TX.perf_modsecinbound}"
-SecAction "id:'90107',phase:5,pass,nolog,setenv:ApplicationTime=%{TX.perf_application}"
-SecAction "id:'90108',phase:5,pass,nolog,setenv:ModSecTimeOut=%{TX.perf_modsecoutbound}"
-SecAction "id:'90109',phase:5,pass,nolog,setenv:ModSecAnomalyScoreIn=%{TX.inbound_anomaly_score}"
-SecAction "id:'90110',phase:5,pass,nolog,setenv:ModSecAnomalyScoreOut=%{TX.outbound_anomaly_score}"
-
+SecAction "id:'90100',phase:5,pass,nolog,\
+	setvar:TX.perf_modsecinbound=%{PERF_PHASE1},\
+	setvar:TX.perf_modsecinbound=+%{PERF_PHASE2},\
+	setvar:TX.perf_application=%{TX.ModSecTimestamp3start},\
+	setvar:TX.perf_application=-%{TX.ModSecTimestamp2end},\
+	setvar:TX.perf_modsecoutbound=%{PERF_PHASE3},\
+	setvar:TX.perf_modsecoutbound=+%{PERF_PHASE4},\
+	setenv:ModSecTimeIn=%{TX.perf_modsecinbound},\
+	setenv:ApplicationTime=%{TX.perf_application},\
+	setenv:ModSecTimeOut=%{TX.perf_modsecoutbound},\
+	setenv:ModSecAnomalyScoreIn=%{TX.inbound_anomaly_score},\
+	setenv:ModSecAnomalyScoreOut=%{TX.outbound_anomaly_score}"
 
 
 SSLCertificateKeyFile   /etc/ssl/private/ssl-cert-snakeoil.key
@@ -378,7 +377,7 @@ With 200004 comes another rule which intercepts internal processing errors. Unli
 
 We have now looked at a few rules and have become familiar with the principle functioning of the ModSecurity _WAF_. The rule language is demanding, but very systematic. The structure is unavoidably oriented to the structure of Apache directives. Because before ModSecurity is able to process the directives, they are read by Apache's configuration parser. This is also accompanied by complexity in the way they are expressed. *ModSecurity* is currently being developed in a direction making the module independent from Apache. We will hopefully be benefitting from a configuration that is easier to read.
 
-Now comes a comment in the configuration file which marks the spot for additional rules to be entered. Following this block, which in some circumstances can become very large, come yet more rules that provide performance data for the performance log defined above. The block containing rule IDs 90010 to 90014 stores the time of the end of the individual ModSecurity phases. This corresponds to the 90000 - 90004 block of IDs we became familiar with above. Calculations with the performance data collected are then performed in the last ModSecurity block. For us this means that we totaling up the time that phase 1 and phase 2 need in the *perf_modsecinbound* variable. In the rule with ID 90100 this variable is set to the performance of phase 1, in the following rule the performance of phase 2 is added to it. We have to calculate the variable *perf_application* from the timestamps. To do this, we subtract the end of phase 2 from the start of phase 3 (rule IDs 90102 and 90103). This is of course not an exact calculation of the time that the application itself needs on the server, because other Apache modules play a role (such as authentication), but the value is an indication that sheds light on whether ModSecurity is actually limiting performance or whether the problem more likely lies with the application. Finally, in rule IDs 90104 and 90105 the calculation of the time used in phases 3 and 4, similar to phases 1 and 2. This gives us three relevant values which simply summarize performance: *perf_modsecinbound*, *perf_application* and *perf_modsecoutbound*. They appear in a separate performance log. We have, however, provided enough space for these three values in the normal access log. There we have _ModSecTimeIn_, _ApplicationTime_ and _ModSecTimeOut_. In rules 90106 to 90108 we export our _perf_ values to the corresponding environment variables in order for them to appear in the _access log_. At the end come rules 90109 and 90110. In them we export the _OWASP ModSecurity Core Rules_ anomaly values. These values are not yet written, but because we will be making these rules available in the next tutorial, we can already prepare for variable export here.
+Now comes a comment in the configuration file which marks the spot for additional rules to be entered. Following this block, which in some circumstances can become very large, come yet more rules that provide performance data for the performance log defined above. The block containing rule IDs 90010 to 90014 stores the time of the end of the individual ModSecurity phases. This corresponds to the 90000 - 90004 block of IDs we became familiar with above. Calculations with the performance data collected are then performed in the last ModSecurity block. For us this means that we totaling up the time that phase 1 and phase 2 need in the *perf_modsecinbound* variable. In the rule with ID 90100 this variable is set to the performance of phase 1, in the following rule the performance of phase 2 is added to it. We have to calculate the variable *perf_application* from the timestamps. To do this, we subtract the end of phase 2 from the start of phase 3 in the subsequent `setvar` actions of the same rule. This is of course not an exact calculation of the time that the application itself needs on the server, because other Apache modules play a role (such as authentication), but the value is an indication that sheds light on whether ModSecurity is actually limiting performance or whether the problem more likely lies with the application. The final variable calculations in the rule work on phases 3 and 4, similar to phases 1 and 2. This gives us three relevant values which simply summarize performance: *perf_modsecinbound*, *perf_application* and *perf_modsecoutbound*. They appear in a separate performance log. We have, however, provided enough space for these three values in the normal access log. There we have _ModSecTimeIn_, _ApplicationTime_ and _ModSecTimeOut_. The following `setenv` actions, still in the same rule, are used to export our _perf_ values to the corresponding environment variables in order for them to appear in the _access log_. And finally, we export the _OWASP ModSecurity Core Rules_ anomaly values. These values are not yet written, but because we will be making these rules available in the next tutorial, we can already prepare for variable export here.
 
 We are now at the point that we can understand the performance log. The definition above is accompanied by the following parts:
 
