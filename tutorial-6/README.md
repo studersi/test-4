@@ -5,19 +5,19 @@ We are compiling the ModSecurity module, embedding it in the Apache web server, 
 
 ###Why are we doing this?
 
-ModSecurity is a security module for the web server. The tool enables the inspection of both the request and the response according to predefined rules. This is also called the _Web Application Firewall_. It gives the administrator direct control over the requests and the responses passing through the system. The module also provides new options for monitoring, because the entire traffic between client and server can be written 1:1 to the hard disk. This helps in debugging.
-A _WAF_ intervenes in HTTP traffic. This causes errors if a legitimate request is blocked. This is referred to as a _false positive_. Since the handling of these errors is an important part of working with _ModSecurity_, we will be starting off with this topic.
+ModSecurity is a security module for the web server. The tool enables the inspection of both the request and the response according to predefined rules. This is also called a _Web Application Firewall_. It gives the administrator direct control over the requests and the responses passing through the system. The module also provides new options for monitoring, because the entire traffic between client and server can be written 1:1 to the hard disk. This helps with debugging.
+
 
 ###Requirements
 
-* An Apache web server, ideally one created using the file structure shown in [Tutorial 1 (Compiling an Apache web server)](https://www.netnea.com/cms/apache_tutorial_1_apache_compilieren/).
-* Understanding of the minimal configuration in [Tutorial 2 (Configuring a minimal Apache server)](https://www.netnea.com/cms/apache_tutorial_2_apache_minimal_konfigurieren/).
-* An Apache web server with SSL/TLS support as in [Tutorial 4 (Configuring an SSL server)](https://www.netnea.com/cms/apache-tutorial-4-ssl-server-konfigurieren)
-* An expanded access log and a set of shell aliases as discussed in [Tutorial 5 (Extending and analyzing the access log)](https://www.netnea.com/cms/apache-tutorials/apache-tutorial-5-zugriffslog-ausbauen)
+* An Apache web server, ideally one created using the file structure shown in [Tutorial 1 (Compiling Apache)](https://www.netnea.com/cms/apache-tutorial-1_compiling-apache/).
+* Understanding of the minimal configuration in [Tutorial 2 (Configuring a Minimal Apache Web Server)](https://www.netnea.com/cms/apache-tutorial-2_minimal-apache-configuration/).
+* An Apache web server with SSL/TLS support as in [Tutorial 4 (Enabling Encryption with SSL/TLS)](https://www.netnea.com/cms/apache-tutorial-4_configuring-ssl-tls/).
+* An expanded access log and a set of shell aliases as discussed in [Tutorial 5 (Extending and analyzing the access log)](https://www.netnea.com/cms/apache-tutorial-5/apache-tutorial-5_extending-access-log/)
 
 ###Step 1: Downloading the source code and verifying the checksum
 
-We previously downloaded the source code for the web server to <i>/usr/src/apache</i>. We will now be doing the same with ModSecurity. To do so, as root we create the directory <i>/usr/src/modsecurity/</i>, transfer it to ourselves and then download the code. 
+We previously downloaded the source code for the web server to <i>/usr/src/apache</i>. We will now be doing the same with ModSecurity. To do so, we create the directory <i>/usr/src/modsecurity/</i> as root, we transfer it to ourselves and then download the code into the folder. 
 
 ```bash
 $> sudo mkdir /usr/src/modsecurity
@@ -41,7 +41,7 @@ modsecurity-2.9.1.tar.gz: OK
 
 ###Step 2: Unpacking and configuring the compiler
 
-We now unpack the source code and initiate the configuration. But before this it is essential to install three packages that constitute the prerequisite for compiling _ModSecurity_. A library for parsing XML structures and the base header files of the system’s own Regular Expression Library: _libxml2-dev_, _libexpat1-dev_ and _libpcre3-dev_.
+We now unpack the source code and initiate the configuration. But before this it is essential to install four packages that constitute the prerequisite for compiling _ModSecurity_. A library for parsing XML structures, the base header files of the system’s own Regular Expression Library and everything to work with JSON files. Like in the previous tutorials, we are working on a system from the Debian family. The packages are thus named _libxml2-dev_, _libexpat1-dev_, _libpcre3-dev_, and _libyajl-dev_.
 
 The stage is thus set and we are ready for ModSecurity.
 
@@ -478,9 +478,9 @@ We will also find more details about this information in the _audit log_ discuss
 
 ###Step 8: Writing simple whitelist rules
 
-Using the rules described in Step 7, we were able to prevent access to a specific URL. We will now be using the opposite approach: We want to make sure that only one specific URL can be accessed. In addition, we will we only be accepting previously known _POST parameters_ in a specified format. This is a very tight security technique which is also called positive security: Unless us trying to find known attacks in user submitted content, it is now the user who has to proof that his requests meets all our criteria.
+Using the rules described in Step 7, we were able to prevent access to a specific URL. We will now be using the opposite approach: We want to make sure that only one specific URL can be accessed. In addition, we will we only be accepting previously known _POST parameters_ in a specified format. This is a very tight security technique which is also called positive security: It is no longer us trying to find known attacks in user submitted content, it is now the user who has to proof that his request meets all our criteria.
 
-Out example is a whitelist for a login with display of the form, submission of the credentials and the logout. We do not have the said login in place, but this does not stop us from defining the ruleset to protect this hypothetical service in our lab. And if you have a login or any other simple application you want to protect, you can take the code as a template and adopt as it suits you.
+Our example is a whitelist for a login with display of the form, submission of the credentials and the logout. We do not have the said login in place, but this does not stop us from defining the ruleset to protect this hypothetical service in our lab. And if you have a login or any other simple application you want to protect, you can take the code as a template and adopt as suitable.
 
 So here are the rules (I will explain them in detail afterwards):
 
@@ -492,7 +492,7 @@ SecMarker BEGIN_WHITELIST_login
 SecRule REQUEST_URI_RAW  "@rx \.\." \
     "id:10000,phase:1,deny,log,msg:'Path evasion attempt via ..'"
 
-# START whitelisting block for URI /login (rule ids 3000-3499)
+# START whitelisting block for URI /login
 SecRule REQUEST_URI "!@beginsWith /login" \
     "id:10001,phase:1,pass,nolog,skipAfter:END_WHITELIST_login"
 SecRule REQUEST_URI "!@beginsWith /login" \
@@ -561,7 +561,7 @@ SecMarker END_WHITELIST_login
 
 Since this is a multi-line set of rules, we delimit the group of rules using two markers: *BEGIN_WHITELIST_login* and *END_WHITELIST_login*. We only need the first marker for readability, but the second one is a jump label. The first rule (ID 10000) enforces our policy to deny requests containing two dots in succession in the URI. Two dots in succession might serve as a way to evade our subsequent path criteria. E.g., constructing an URI which looks like accessing some other folder, but then uses `..` to escape from that folder and access `/login` nevertheless. This rule makes sure none of these games can be played with our server.
 
-In the two following rules (ID 10002 and 10003) we check whether our set of rules is affected at all. If the path written in lowercase and normalized does not begin with _/login_, we skip to the end marker - with no entry in the log file. It would be possible to place the entire block of rules within an Apache *Location* block, however, I prefer the rule style presented here. The whitelist we are constructing is a partial whitelist as it does not cover the whole server. Instead, it focuses on the login with the idea, that the login page will be accessed by anonymous users. Once they have performed the login, they have at least proved their credentials and a certain trust has been established. It is also likely that any application on the server is more complex than the login and writing a positive ruleset for an application would be much more complicated. Limiting ourselves to the login, though, is perfectly doable and adds a lot of security. The example serves as a template to use for other partial whitelists.
+In the two following rules (ID 10002 and 10003) we check whether our set of rules is affected at all. If the path written in lowercase and normalized does not begin with _/login_, we skip to the end marker - with no entry in the log file. It would be possible to place the entire block of rules within an Apache *Location* block, however, I prefer the rule style presented here. The whitelist we are constructing is a partial whitelist as it does not cover the whole server. Instead, it focuses on the login with the idea, that the login page will be accessed by anonymous users. Once they have performed the login, they have at least proved their credentials and a certain trust has been established. The login is thus a likely target for anonymous attackers and we want to secure it really well. It is also likely that any application on the server is more complex than the login and writing a positive ruleset for an advanced application would be too complicated for this tutorial. But the limited scope of the login makes it perfectly achievable and it adds a lot of security. The example serves as a template to use for other partial whitelists.
 
 Having established the fact that we are dealing with a login request, we can now write down our rules checking these request. An HTTP request has several characteristics that are of concern to us: The method, the path, the query string parameter as well as any post parameters (this concerns the submission of a login form). We will leave out the request headers including cookies in this example, but they could also become a vulnerability depending on the application and should also be queried then.
 
@@ -569,7 +569,7 @@ First, we look at the HTTP method in rule ID 10100. Displaying the login form is
 
 In the rule block starting at rule ID 10200, we examine the URL in detail. We establish three folders, where we allow access to static files: `/login/static/css/`, `/login/static/img/` and `/login/static/js/`. We do not want to micromanage the individual files retrieved from these folders, so we simply allow access to these folders. The rule ID 10250 is different. It defines the targets of the dynamic requests of the users. We construct a regular expression which allows exactly three URIs: `/login/displayLogin.do`, `/login/login.do` and `/login/logout.do`. Anything outside this list is going to be forbidden.
 
-But how is all this checked? After all, it's a complicated set of paths spread over several rules? The rules 10200, 10201, 10202 and 10250 check for the URI. If we have a match, we do not block, but we jump to the label `END_WHITELIST_URIBLOCK_login`. When we arrive at this label, we know that the URI is one of the predefined set: the request adheres to our rules. But if we pass 10250 and still no hit with the URI, then we know that the client looks like an offender and we can block it accordingly. This is performed in the fallback rule with ID 10299. Here is a twist: if we block in this rule, we do not tell the client his request was forbidden (HTTP status 403, which would be the default for a _deny_). We return a HTTP status 404 instead and leave the client in the dark about the existence of our ruleset.
+But how is all this checked? After all, it's a complicated set of paths spread over several rules! The rules 10200, 10201, 10202 and 10250 check for the URI. If we have a match, we do not block, but we jump to the label `END_WHITELIST_URIBLOCK_login`. When we arrive at this label, we know that the URI is one of the predefined set: the request adheres to our rules. But if we pass 10250 and still no hit with the URI, then we know that the client looks like an offender and we can block it accordingly. This is performed in the fallback rule with ID 10299. Notice, how this is not a conditional _SecRule_, but a _SecAction_ which is the same thing, but without an operator and without a parameter. The actions are executed immediately with the goal to block the request. Here is a twist: if we block in this rule, we do not tell the client his request was forbidden (HTTP status 403, which would be the default for a _deny_). We return a HTTP status 404 instead and leave the client in the dark about the existence of our ruleset.
 
 Now it is time to look at parameters. There are query string parameters and POST parameters. We could look at them separately, but it is more convenient to treat them as one group. The POST parameters will only be available in the 2nd phase, so all the rules from here to the end of our whitelist will work in phase 2.
 
