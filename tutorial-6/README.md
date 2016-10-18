@@ -186,28 +186,28 @@ SecDefaultAction              "phase:1,pass,log,tag:'Local Lab Service'"
 
 # === ModSec timestamps at the start of each phase (ids: 90000 - 90009)
 
-SecAction "id:'90000',phase:1,nolog,pass,setvar:TX.ModSecTimestamp1start=%{DURATION}"
-SecAction "id:'90001',phase:2,nolog,pass,setvar:TX.ModSecTimestamp2start=%{DURATION}"
-SecAction "id:'90002',phase:3,nolog,pass,setvar:TX.ModSecTimestamp3start=%{DURATION}"
-SecAction "id:'90003',phase:4,nolog,pass,setvar:TX.ModSecTimestamp4start=%{DURATION}"
-SecAction "id:'90004',phase:5,nolog,pass,setvar:TX.ModSecTimestamp5start=%{DURATION}"
+SecAction "id:90000,phase:1,nolog,pass,setvar:TX.ModSecTimestamp1start=%{DURATION}"
+SecAction "id:90001,phase:2,nolog,pass,setvar:TX.ModSecTimestamp2start=%{DURATION}"
+SecAction "id:90002,phase:3,nolog,pass,setvar:TX.ModSecTimestamp3start=%{DURATION}"
+SecAction "id:90003,phase:4,nolog,pass,setvar:TX.ModSecTimestamp4start=%{DURATION}"
+SecAction "id:90004,phase:5,nolog,pass,setvar:TX.ModSecTimestamp5start=%{DURATION}"
                       
 # SecRule REQUEST_FILENAME "@beginsWith /" \
-#	"id:'90005',phase:5,t:none,nolog,noauditlog,pass,setenv:write_perflog"
+#	"id:90005,phase:5,t:none,nolog,noauditlog,pass,setenv:write_perflog"
 
 
 
 # === ModSec Recommended Rules (in modsec src package) (ids: 200000-200010)
 
 SecRule REQUEST_HEADERS:Content-Type "text/xml" \
-  "id:'200000',phase:1,t:none,t:lowercase,pass,nolog,ctl:requestBodyProcessor=XML"
+  "id:200000,phase:1,t:none,t:lowercase,pass,nolog,ctl:requestBodyProcessor=XML"
 
 SecRule REQBODY_ERROR "!@eq 0" \
-  "id:'200001',phase:2,t:none,deny,status:400,log,msg:'Failed to parse request body.',\
+  "id:200001,phase:2,t:none,deny,status:400,log,msg:'Failed to parse request body.',\
 logdata:'%{reqbody_error_msg}',severity:2"
 
 SecRule MULTIPART_STRICT_ERROR "!@eq 0" \
-"id:'200002',phase:2,t:none,log,deny,status:403, \
+"id:200002,phase:2,t:none,log,deny,status:403, \
 msg:'Multipart request body failed strict validation: \
 PE %{REQBODY_PROCESSOR_ERROR}, \
 BQ %{MULTIPART_BOUNDARY_QUOTED}, \
@@ -223,7 +223,7 @@ IH %{MULTIPART_INVALID_HEADER_FOLDING}, \
 FL %{MULTIPART_FILE_LIMIT_EXCEEDED}'"
 
 SecRule TX:/^MSC_/ "!@streq 0" \
-  "id:'200004',phase:2,t:none,deny,status:500,msg:'ModSecurity internal error flagged: %{MATCHED_VAR_NAME}'"
+  "id:200004,phase:2,t:none,deny,status:500,msg:'ModSecurity internal error flagged: %{MATCHED_VAR_NAME}'"
 
 
 # === ModSecurity Rules 
@@ -233,27 +233,27 @@ SecRule TX:/^MSC_/ "!@streq 0" \
 
 # === ModSec timestamps at the end of each phase (ids: 90010 - 90019)
 
-SecAction "id:'90010',phase:1,pass,nolog,setvar:TX.ModSecTimestamp1end=%{DURATION}"
-SecAction "id:'90011',phase:2,pass,nolog,setvar:TX.ModSecTimestamp2end=%{DURATION}"
-SecAction "id:'90012',phase:3,pass,nolog,setvar:TX.ModSecTimestamp3end=%{DURATION}"
-SecAction "id:'90013',phase:4,pass,nolog,setvar:TX.ModSecTimestamp4end=%{DURATION}"
-SecAction "id:'90014',phase:5,pass,nolog,setvar:TX.ModSecTimestamp5end=%{DURATION}"
+SecAction "id:90010,phase:1,pass,nolog,setvar:TX.ModSecTimestamp1end=%{DURATION}"
+SecAction "id:90011,phase:2,pass,nolog,setvar:TX.ModSecTimestamp2end=%{DURATION}"
+SecAction "id:90012,phase:3,pass,nolog,setvar:TX.ModSecTimestamp3end=%{DURATION}"
+SecAction "id:90013,phase:4,pass,nolog,setvar:TX.ModSecTimestamp4end=%{DURATION}"
+SecAction "id:90014,phase:5,pass,nolog,setvar:TX.ModSecTimestamp5end=%{DURATION}"
 
 
 # === ModSec performance calculations and variable export (ids: 90100 - 90199)
 
-SecAction "id:'90100',phase:5,pass,nolog,\
-	setvar:TX.perf_modsecinbound=%{PERF_PHASE1},\
-	setvar:TX.perf_modsecinbound=+%{PERF_PHASE2},\
-	setvar:TX.perf_application=%{TX.ModSecTimestamp3start},\
-	setvar:TX.perf_application=-%{TX.ModSecTimestamp2end},\
-	setvar:TX.perf_modsecoutbound=%{PERF_PHASE3},\
-	setvar:TX.perf_modsecoutbound=+%{PERF_PHASE4},\
-	setenv:ModSecTimeIn=%{TX.perf_modsecinbound},\
-	setenv:ApplicationTime=%{TX.perf_application},\
-	setenv:ModSecTimeOut=%{TX.perf_modsecoutbound},\
-	setenv:ModSecAnomalyScoreIn=%{TX.inbound_anomaly_score},\
-	setenv:ModSecAnomalyScoreOut=%{TX.outbound_anomaly_score}"
+SecAction "id:90100,phase:5,pass,nolog,\
+  setvar:TX.perf_modsecinbound=%{PERF_PHASE1},\
+  setvar:TX.perf_modsecinbound=+%{PERF_PHASE2},\
+  setvar:TX.perf_application=%{TX.ModSecTimestamp3start},\
+  setvar:TX.perf_application=-%{TX.ModSecTimestamp2end},\
+  setvar:TX.perf_modsecoutbound=%{PERF_PHASE3},\
+  setvar:TX.perf_modsecoutbound=+%{PERF_PHASE4},\
+  setenv:ModSecTimeIn=%{TX.perf_modsecinbound},\
+  setenv:ApplicationTime=%{TX.perf_application},\
+  setenv:ModSecTimeOut=%{TX.perf_modsecoutbound},\
+  setenv:ModSecAnomalyScoreIn=%{TX.inbound_anomaly_score},\
+  setenv:ModSecAnomalyScoreOut=%{TX.outbound_anomaly_score}"
 
 
 SSLCertificateKeyFile   /etc/ssl/private/ssl-cert-snakeoil.key
@@ -434,8 +434,8 @@ ModSecurity is set up and configured using the configuration above. It can dilig
 Let’s take a simple case: We want to be sure that access to a specific URI on the server is blocked. We want to respond to such a request with _HTTP status 403_. We write the rule for this in the _ModSecurity rule_ section in the configuration and assign it ID 10000 (_service-specific before core-rules_).
 
 ```bash
-SecRule  REQUEST_FILENAME "/phpmyadmin" "id:'10000',phase:1,deny,t:lowercase,t:normalisePath,\
-msg:'Blocking access to %{MATCHED_VAR}.',tag:'Blacklist Rules'"
+SecRule  REQUEST_FILENAME "/phpmyadmin" "id:10000,phase:1,deny,t:lowercase,t:normalisePath,\
+  msg:'Blocking access to %{MATCHED_VAR}.',tag:'Blacklist Rules'"
 ```
 
 We start off the rule using _SecRule_. Then we say that we want to inspect the path of the request using the *REQUEST_FILENAME* variable. If _/phpmyadmin_ appears anywhere in this path we want to block it right away in the first processing phase. The keyword _deny_ does this for us. Our path criterion is maintained in lowercase letters. Because we are using the _t:lowercase_ transformation, we catch all possible lower and uppercase combinations in the path. The path could now of course also point to a subdirectory or be obfuscated in other ways. We remedy this by enabling the _t:normalisePath_ transformation. The path is thus transformed before our rule is applied. We enter a message in the _msg part_, which will then show up in the server’s _error log_ if the rule is triggered. Finally, we assign a tag. We already did this using _SecDefaultAction_ in the base configuration. There is now another tag here that can be used to group different rules.
@@ -478,50 +478,109 @@ We will also find more details about this information in the _audit log_ discuss
 
 ###Step 8: Writing simple whitelist rules
 
-Using the rules described in Step 7, we were able to prevent access to a specific URL. We will now be using the opposite approach: We want to make sure that only one specific URL can be accessed. In addition, we will we only be accepting previously known _POST parameters_ in a specified format. Writing a whitelist rule such as this is done as follows:
+Using the rules described in Step 7, we were able to prevent access to a specific URL. We will now be using the opposite approach: We want to make sure that only one specific URL can be accessed. In addition, we will we only be accepting previously known _POST parameters_ in a specified format. This is a very tight security technique which is also called positive security: Unless us trying to find known attacks in user submitted content, it is now the user who has to proof that his requests meets all our criteria.
+
+Out example is a whitelist for a login with display of the form, submission of the credentials and the logout. We do not have the said login in place, but this does not stop us from defining the ruleset to protect this hypothetical service in our lab. And if you have a login or any other simple application you want to protect, you can take the code as a template and adopt as it suits you.
+
+So here are the rules (I will explain them in detail afterwards):
 
 ```bash
 
-SecMarker "BEGIN_LOGIN_WHITELIST"
+SecMarker BEGIN_WHITELIST_login
 
-SecRule REQUEST_FILENAME     "!@beginsWith /login" \
-	"id:10001,phase:1,pass,t:lowercase,t:normalisePath,nolog,msg:'Skipping',skipAfter:END_LOGIN_WHITELIST"
-SecRule REQUEST_FILENAME     "!@beginsWith /login" \
-	"id:10002,phase:2,pass,t:lowercase,t:normalisePath,nolog,msg:'Skipping',skipAfter:END_LOGIN_WHITELIST"
+# Make sure there are no URI evasion attempts
+SecRule REQUEST_URI_RAW  "@rx \.\." \
+    "id:10000,phase:1,deny,log,msg:'Path evasion attempt via ..'"
 
-SecRule REQUEST_FILENAME     "!^/login/(index.html|login.do)$" \
-	"id:10003,phase:1,deny,log,msg:'Unknown Login URL',tag:'Whitelist Login'"
+# START whitelisting block for URI /login (rule ids 3000-3499)
+SecRule REQUEST_URI "!@beginsWith /login" \
+    "id:10001,phase:1,pass,nolog,skipAfter:END_WHITELIST_login"
+SecRule REQUEST_URI "!@beginsWith /login" \
+    "id:10002,phase:2,pass,nolog,skipAfter:END_WHITELIST_login"
 
-SecRule ARGS_GET_NAMES       "!^()$" \
-	"id:10004,phase:1,deny,log,msg:'Unknown Query-String Parameter',tag:'Whitelist Login'"
-SecRule ARGS_POST_NAMES      "!^(username|password)$" \
-	"id:10005,phase:2,deny,log,msg:'Unknown Post Parameter',tag:'Whitelist Login'"
+# Validate HTTP method
+SecRule REQUEST_METHOD "!@pm GET HEAD POST OPTIONS" \
+    "id:10100,phase:1,deny,log,tag:'Login Whitelist',\
+    msg:'Method %{MATCHED_VAR} not allowed'"
 
-SecRule &ARGS_POST:username  "@gt 1" \
-	"id:10006,phase:2,deny,log,msg:'%{MATCHED_VAR_NAME} occurring more than once',tag:'Whitelist Login'"
-SecRule &ARGS_POST:password  "@gt 1" \
-	"id:10007,phase:2,deny,log,msg:'%{MATCHED_VAR_NAME} occurring more than once',tag:'Whitelist Login'"
+# Validate URIs
+SecRule REQUEST_FILENAME "@beginsWith /login/static/css" \
+    "id:10200,phase:1,pass,nolog,tag:'Login Whitelist',\
+    skipAfter:END_WHITELIST_URIBLOCK_login"
+SecRule REQUEST_FILENAME "@beginsWith /login/static/img" \
+    "id:10201,phase:1,pass,nolog,tag:'Login Whitelist',\
+    skipAfter:END_WHITELIST_URIBLOCK_login"
+SecRule REQUEST_FILENAME "@beginsWith /login/static/js" \
+    "id:10202,phase:1,pass,nolog,tag:'Login Whitelist',\
+    skipAfter:END_WHITELIST_URIBLOCK_login"
+SecRule REQUEST_FILENAME \
+    "@rx ^/login/(displayLogin|login|logout|).do$" \
+    "id:10203,phase:1,pass,nolog,tag:'Login Whitelist',\
+    skipAfter:END_WHITELIST_URIBLOCK_login"
 
-SecRule ARGS_POST:username   "!^[a-zA-Z0-9_-]{1,16}$" \
-	"id:10008,phase:2,deny,log,msg:'%{MATCHED_VAR_NAME} parameter does not meet value domain'\
-	,tag:'Whitelist Login'"
-SecRule ARGS_POST:password   "!^[a-zA-Z0-9@#+<>_-]{1,16}$" \
-	"id:10009,phase:2,deny,log,msg:'%{MATCHED_VAR_NAME} parameter does not meet value domain'\
-	,tag:'Whitelist Login'"
+# If we land here, we are facing an unknown URI,
+# which is why we will respond using the 404 status code
+SecAction "id:10299,phase:1,deny,status:404,log,tag:'Login Whitelist',\
+    msg:'Unknown URI %{REQUEST_URI}'"
 
-SecMarker "END_LOGIN_WHITELIST"
+SecMarker END_WHITELIST_URIBLOCK_login
+
+# Validate parameter names
+SecRule ARGS_NAMES "!@pm username password sectoken" \
+    "id:10300,phase:2,deny,log,tag:'Login Whitelist',\
+    msg:'Unknown parameter: %{MATCHED_VAR_NAME}'"
+
+# Validate each parameter's cardinality
+SecRule &ARGS:username  "@gt 1" \
+    "id:10400,phase:2,deny,log,tag:'Login Whitelist',\
+    msg:'%{MATCHED_VAR_NAME} occurring more than once'"
+SecRule &ARGS:password  "@gt 1" \
+    "id:10401,phase:2,deny,log,tag:'Login Whitelist',\
+    msg:'%{MATCHED_VAR_NAME} occurring more than once'"
+SecRule &ARGS:sectoken  "@gt 1" \
+    "id:10402,phase:2,deny,log,tag:'Login Whitelist',\
+    msg:'%{MATCHED_VAR_NAME} occurring more than once'"
+
+# Check individual parameters
+SecRule ARGS:username "!@rx ^[a-zA-Z0-9.@-]{1,32}$" \
+    "id:10500,phase:2,deny,log,tag:'Login Whitelist',\
+    msg:'Invalid parameter format: %{MATCHED_VAR_NAME} (%{MATCHED_VAR})'"
+SecRule ARGS:sectoken "!@rx ^[a-zA-Z0-9]{32}$" \
+    "id:10501,phase:2,deny,log,tag:'Login Whitelist',\
+    msg:'Invalid parameter format: %{MATCHED_VAR_NAME} (%{MATCHED_VAR})'"
+SecRule ARGS:password "@gt 64" \
+    "id:10502,phase:2,deny,log,t:length,tag:'Login Whitelist',\
+    msg:'Invalid parameter format: %{MATCHED_VAR_NAME} too long (%{MATCHED_VAR} bytes)'"
+SecRule ARGS:password "@validateByteRange 33-244" \
+    "id:10503,phase:2,deny,log,tag:'Login Whitelist',\
+    msg:'Invalid parameter format: %{MATCHED_VAR_NAME} (%{MATCHED_VAR})'"
+
+SecMarker END_WHITELIST_login
 
 ```
 
-Since this is a multi-line set of rules, we delimit the group of rules using two markers: *BEGIN_LOGIN_WHITELIST* and *END_LOGIN_WHITELIST*. We only need the first marker for readability, the second as a jump label. In the first rule (ID 10001) we set whether our set of rules is affected at all. If the path written in lowercase and normalized does not begin with _/login_, we jump to the end marker - with no entry in the log file. This is how we circumvent the entire block of rules. (It would be possible to place the entire block of rules within an Apache *Location* block. However, I prefer the manner of writing presented here). Afterwards come our actual rules. An HTTP request has several characteristics that are of concern to us: The path, query string parameter as well as any post parameters (this concerns a login using a user name and password). We will leave out the request headers including cookies in this example, but they could also become a vulnerability depending on application and should also be queried then.
+Since this is a multi-line set of rules, we delimit the group of rules using two markers: *BEGIN_WHITELIST_login* and *END_WHITELIST_login*. We only need the first marker for readability, but the second one is a jump label. The first rule (ID 10000) establishes a rule that we do not want to see two dots in succession in the URI. Two dots in succession might serve as a way to evade our path criteria. E.g., constructing an URI which accesses `/login` without actually looking as if it would access `/login` at first sight. This rule makes sure none of these games are allowed.
 
-We first check the path (ID 10002). In */login* we are familiar with two paths that we accept: _/login/index.html_ and _/login/login.do_. Everything else fails at rule 10002. Unlike the _blacklisting rules_, we now no longer need to concern ourselves with transformations. Because every path that does not match our pattern will be blocked anyway.
+In the two following rules (ID 10002 and 10003) we set whether our set of rules is affected at all. If the path written in lowercase and normalized does not begin with _/login_, we jump to the end marker - with no entry in the log file. This is how we circumvent the entire block of rules. (It would be possible to place the entire block of rules within an Apache *Location* block. However, I prefer the manner of writing presented here). The whitelist we are constructing is a partial whitelist as it does not cover the whole server. Instead, it focuses on the login with the idea, that the login page will be accessed by anonymous users. Once they have performed the login, they have at least proved their credentials and a certain trust has been established. It is also likely that any application on the server is more complex than the login and writing a positive ruleset for an application would be much more complicated. Limiting ourselves to the login, though, is perfectly doable and adds a lot of security. The example serves as a template to use for other partial whitelists.
 
-We then concern ourselves with the permitted query string and post parameters (IDs 10003 and 10004). We don’t accept any query string parameters (the rule for this can also be simply written, but as it stands it is ready to be filled with permitted parameters). Our _username_ and _password_ qualify as post parameters. Any other parameter results in a blockade. Rules 10005 and 10006 handle a common method used by attackers to circumvent security rules: They send a parameter multiple times and hope that the Web Application Firewall does not check each individual occurrence and that it is used on the application server. We count the occurrence of the parameter and make sure that it does not appear more than once.
+Having established the fact that we are dealing with a login request, we can now write down our rules checking these request. An HTTP request has several characteristics that are of concern to us: The method, the path, query string parameter as well as any post parameters (this concerns a login using a user name and password). We will leave out the request headers including cookies in this example, but they could also become a vulnerability depending on application and should also be queried then.
 
-The final two rules are 10007 ad 10008. They specify patterns that the _username_ and _password_ parameters must match. In rule 10007 we block the message if the user name is longer than 16 characters and includes characters apart from letters, numbers, "*_*" and hyphens. This pattern must of course be adapted if necessary. Rule 10008 permits a few additional characters in the _password parameter_, but otherwise behaves identically.
+First, we look at the HTTP method in rule ID 10100. Displaying the login form is going to be a _GET_ request; submitting the credentials will be a _POST_ request. Some clients like to issue _HEAD_ and _OPTIONS_ requests as well and not much harm is done by allowing that as well. Everything else, _PUT_ and _DELETE_ and all the webdav methods are being blocked here. We check the four whitelisted methods with an parallel matching operator (`@pm`). This is faster then a regular expression and it is also more readable.
 
-This block of rules ensures that access to _/login_ is allowed only under very tight restrictions. We have thus written a basic framework of whitelisting rules that can be reused for more complicated parts of an application.
+In the rule block starting at rule ID 10200, we examine the URL in detail. We establish three folders, where we allo basic access: `/login/static/css/`, `/login/static/img/` and `/login/static/js/`. We do not want to micromanage the individual files retrieved from these folders, so we simply allow access to these folders. Rule ID 10203 is different. These are the targets of the dynamic requests of the users. We construct a regular expression which allows exactly three URIs: `/login/displayLogin.do`, `/login/login.do` and `/login/logout.do`. Anything outside this list is going to be forbidden. But how is this checked. The rules 10200, 10201, 10202 and 10203 check for the URI and if we have a match, we jump to the label `END_WHITELIST_URIBLOCK_login`. When we arrive at this label, we know that the URI is one of the predefined set; the request adheres to our rules. But we pass 10203 and still no hit with the URI, then we know that the client is an offender and we can block it accordingly. This is performed in the fallback rule with ID 10299. Here is a twist: if we block in this rule, we do not tell the client his request was forbidden (HTTP status 403, which would be the default for a _deny_): We return a HTTP status 404 instead leaving the user in the dark about the existence of our ruleset; at least for now.
+
+Now it is time to look at parameters. There are query string parameters and POST parameters. We could look at them separately, but it is more convenient to treat them as one group. The POST parameters will only be available in the 2nd phase, so all the rules from here to the end of our whitelist will work in phase 2.
+
+There are three things to check for any parameter: the name (do we know the parameter?), the cardinality (is it submitted more than once? I will explain this shortly) and the format (does the parameter follow out predefined pattern?).
+We perform the checks one after the other starting with the name in rule ID 10300. Here we check for a predefined list of parameter names using the parallel matching operator (`pm`) we have seen before. We expect three individual parameters: _username_, _password_ and a _sectoken_. Anything outside this list is forbidden.
+
+Then comes this cardinality thing. Let me explain it as follows: Suppose an attacker submits a parameter twice in the same request. This is called _HTTP Parameter Pollution_. So what will happen in the application? Will the application use the first occurrence? The second occurrence? Both? Or will it concatenate? Honestly, we do not know. That's why we need to stop this: We count all the parameter names and if anyone of them is appearing more than once, we stop the request. There is one rule for each parameter starting with rule 10400.
+
+We are slowly coming to an end now. But before we do, let's look at the individual parameters: Do they match a predfined mattern? In the case of the username (rule ID 10500) and the sectoken (rule ID 10501), the case is quite clear: We know how a username is supposed to look like on our site and for the machine generated sectoken it is even easier. So we use regular expressions to check this format.
+
+The case with the password is less obvious. Apparently, we want users to use a lot of special characters. Ideally special characters outside the standard ascii set. But how do we check their format? Let's first look at the length of the password parameter. We do this by leveraging the _length_ transformation. The operator in the rule will thus not look at the parameter itself, but at its length. The `@ge` operator is a good fit. If the password is longer than 64 bytes, then we deny access. In the next rule (ID 10503), we use another operator to validate the byterange. As we are expecting special characters, we need to make sure the visible UTF-8 range is allowed. So the byterange defined by our operator is really broad to give users perfect freedom when chosing their password. This means that the application will need to remain vigilant on the password parameter as it can not be locked down the same way as the username and the sectoken.
+
+This concludes our partial whitelisting example.
 
 ###Step 9: Trying out the blockade
 
@@ -534,15 +593,15 @@ $> curl http://localhost/login/index.html?debug=on
 -> FAIL
 $> curl http://localhost/login/admin.html
 -> FAIL
-$> curl -d "username=1234&password=test" http://localhost/login/login.do
+$> curl -d "username=john&password=test" http://localhost/login/login.do
 -> OK (ModSecurity permits access. But this page itself does not exist. So we get 404, Page not Found)
-$> curl -d "username=1234&password=test&backdoor=1" http://localhost/login/login.do
+$> curl -d "username=john&password=test&backdoor=1" http://localhost/login/login.do
 -> FAIL
-$> curl -d "username=12345678901234567&password=test" http://localhost/login/login.do
+$> curl -d "username=john5678901234567&password=test" http://localhost/login/login.do
 -> FAIL
-$> curl -d "username=1234'&password=test" http://localhost/login/login.do
+$> curl -d "username=john'&password=test" http://localhost/login/login.do
 -> FAIL
-$> curl -d "username=1234&username=5678&password=test" http://localhost/login/login.do
+$> curl -d "username=john&username=jack&password=test" http://localhost/login/login.do
 -> FAIL
 ```
 
@@ -558,7 +617,7 @@ A glance at the server’s error log proves that the are applied exactly as we d
 [2015-10-17 05:27:55.853951] [-:error] - - [client 127.0.0.1] ModSecurity: Access denied with code 403 (phase 2). Operator GT matched 1 at ARGS_POST. [file "/opt/apache-2.4.17/conf/httpd.conf_modsec_minimal"] [line "183"] [id "10005"] [msg "ARGS_POST occurring more than once"] [tag "Local Lab Service"] [tag "Whitelist Login"] [hostname "localhost"] [uri "/login/login.do"] [unique_id "UcAVpn8AAQEAAFjeANwAAAAI"]
 ```
 
-It works from top to bottom.
+It works from top to bottom and it seems the behaviour is just what we expected.
 
 ###Step 10 Goodie: Writing all client traffic to disk
 
