@@ -1,5 +1,6 @@
 ##### Changelog
 
+* 2016-10-18: New whitelist, ModSecurity 2.9.0 -> 2.9.1
 * 2016-10-10: Fixing small issues
 * 2016-07-15: Apache 2.4.20 -> 2.4.23
 * 2016-07-15: Apache 2.4.20 -> 2.4.23
