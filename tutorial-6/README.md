@@ -489,8 +489,9 @@ So here are the rules (I will explain them in detail afterwards):
 SecMarker BEGIN_WHITELIST_login
 
 # Make sure there are no URI evasion attempts
-SecRule REQUEST_URI_RAW  "@rx \.\." \
-    "id:10000,phase:1,deny,log,msg:'Path evasion attempt via ..'"
+SecRule REQUEST_URI "!@streq %{REQUEST_URI_RAW}" \
+    "id:10000,phase:1,deny,t:normalizePath,t:normalizePath,log,\
+    msg:'URI evasion attempt'"
 
 # START whitelisting block for URI /login
 SecRule REQUEST_URI "!@beginsWith /login" \
