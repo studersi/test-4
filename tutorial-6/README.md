@@ -490,7 +490,7 @@ SecMarker BEGIN_WHITELIST_login
 
 # Make sure there are no URI evasion attempts
 SecRule REQUEST_URI "!@streq %{REQUEST_URI_RAW}" \
-    "id:10000,phase:1,deny,t:normalizePath,t:normalizePath,log,\
+    "id:10000,phase:1,deny,t:normalizePathWin,log,\
     msg:'URI evasion attempt'"
 
 # START whitelisting block for URI /login
