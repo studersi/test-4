@@ -1,5 +1,6 @@
 ##### Changelog
 
+* 2016-10-23: Bugfix in anti-evasion rules
 * 2016-10-18: Extend anti-path evasion rules
 * 2016-10-18: New whitelist, ModSecurity 2.9.0 -> 2.9.1
 * 2016-10-10: Fixing small issues
