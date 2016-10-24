@@ -2,7 +2,7 @@
 
 ###What are we doing?
 
-We are embedding the OWASP ModSecurity Core Rules in our Apache web server and eliminating false alarms.
+We are embedding the OWASP ModSecurity Core Rule Set in our Apache web server and eliminating false alarms.
 
 ###Why are we doing this?
 
@@ -16,28 +16,35 @@ The ModSecurity Web Application Firewall, as we set up in Tutorial 6, still has 
 * An Apache web server with extended access log as in [Tutorial 5 (Extending and analyzing the access log)](https://www.netnea.com/cms/apache-tutorial-5-zugriffslog-ausbauen/)
 * An Apache web server with ModSecurity as in [Tutorial 6 (Embedding ModSecurity)](https://www.netnea.com/cms/apache-tutorial-6-modsecurity-einbinden/)
 
+We will be working with the new major release of the Core Rules, CRS3; short for Core Rule Set 3.0. The official distribution comes with an _INSTALL_ file that does a good job explaining the setup (after all, your's truly wrote a good deal of that file), but we will tweak the process a bit to suit our neats.
+
 ###Step 1: Downloading OWASP ModSecurity Core Rules
 
 The ModSecurity Core Rules are being developed under the umbrella of *OWASP*, the Open Web Application Security Project. The rules themselves are available at *GitHub* and can be downloaded as follows.
 
 ```
-$> wget https://github.com/SpiderLabs/owasp-modsecurity-crs/archive/2.2.9.tar.gz
-$> tar xvzf 2.2.9.tar.gz
-owasp-modsecurity-crs-2.2.9/
-owasp-modsecurity-crs-2.2.9/.gitignore
-owasp-modsecurity-crs-2.2.9/CHANGES
-owasp-modsecurity-crs-2.2.9/INSTALL
-owasp-modsecurity-crs-2.2.9/LICENSE
-owasp-modsecurity-crs-2.2.9/README.md
+$> cd /apache/conf
+$> wget https://github.com/SpiderLabs/owasp-modsecurity-crs/archive/v3.0.0-rc2.tar.gz
+$> tar xvzf v3.0.0-rc2.tar.gz
+owasp-modsecurity-crs-3.0.0-rc2/
+owasp-modsecurity-crs-3.0.0-rc2/CHANGES
+owasp-modsecurity-crs-3.0.0-rc2/IDNUMBERING
+owasp-modsecurity-crs-3.0.0-rc2/INSTALL
+owasp-modsecurity-crs-3.0.0-rc2/KNOWN_BUGS
+owasp-modsecurity-crs-3.0.0-rc2/LICENSE
+owasp-modsecurity-crs-3.0.0-rc2/README.md
+owasp-modsecurity-crs-3.0.0-rc2/crs-setup.conf.example
+owasp-modsecurity-crs-3.0.0-rc2/documentation/
+owasp-modsecurity-crs-3.0.0-rc2/documentation/OWASP-CRS-Documentation/
+owasp-modsecurity-crs-3.0.0-rc2/documentation/README
 ...
-$> sudo mkdir /opt/modsecurity-core-rules-2.2.9
-$> sudo chown `whoami` /opt/modsecurity-core-rules-2.2.9
-$> cp owasp-modsecurity-crs-2.2.9/base_rules/* /opt/modsecurity-core-rules-2.2.9
-$> sudo ln -s /opt/modsecurity-core-rules-2.2.9 /modsecurity-core-rules
-$> rm -r 2.2.9.tar.gz owasp-modsecurity-crs-2.2.9 
+$> sudo ln -s owasp-modsecurity-crs-3.0.0-rc2 /apache/conf/crs
+$> cp crs/crs-setup.conf.example crs/crs-setup.conf
+$> rm v3.0.0-rc2.tar.gz
 ```
 
-This unpacks the base part of the core rules in the directory `/opt/modsecurity-core-rules-2.2.9`. We create a link from `/modsecurity-core-rules` to this directory to do this. We then delete the rest of the core rules package. There are in fact a wide variety of optional rules which may be of interest depending on the situation. We will however ignore them while getting started in our lab-like setup. Furthermore, we will skip over a file named `modsecurity_crs_10_setup.conf`. A base configuration is usually written in this file and the file is then imported by Apache via *Include*. But this has not been a successful approach in my opinion. In the next section we will be directly integrating the content of this file in our Apache configuration, so we won’t be needing the file itself.
+This unpacks the base part of the core rules in the directory `/apache/conf/owasp-modsecurity-crs-3.0.0-rc2`. We create a link from `/apache/conf/crs` to this folder. Then we copy a file named `crs-setup.conf.example` to a new file `crs-setup.conf` and finally, we delete core rules tar file. The setup file allows us to tweak with many different settings. It is worth a look - if only to see what is all included. However, we are okay with the default settings and do not touch the file: We just make sure it is available under the new filename `crs-setup.conf`. Then we can continue to update the configuration to include the rules files.
+
 
 ###Step 2: Embedding Core Rules
 
@@ -166,12 +173,12 @@ SecAction "id:'90004',phase:5,nolog,pass,setvar:TX.ModSecTimestamp5start=%{DURAT
 
 # === ModSec Recommended Rules (in modsec src package) (ids: 200000-200010)
 
-SecRule REQUEST_HEADERS:Content-Type "text/xml" "id:'200000',phase:1,t:none,t:lowercase,\
-	pass,nolog,ctl:requestBodyProcessor=XML"
+SecRule REQUEST_HEADERS:Content-Type "text/xml" \
+  "id:'200000',phase:1,t:none,t:lowercase,pass,nolog,ctl:requestBodyProcessor=XML"
 
-SecRule REQBODY_ERROR "!@eq 0" "id:'200001',phase:2,t:none,deny,status:400,log,\
-	msg:'Failed to parse request body.',\
-logdata:'%{reqbody_error_msg}',severity:2"
+SecRule REQBODY_ERROR "!@eq 0" \
+  "id:'200001',phase:2,t:none,deny,status:400,log,msg:'Failed to parse request body.',\
+  logdata:'%{reqbody_error_msg}',severity:2"
 
 SecRule MULTIPART_STRICT_ERROR "!@eq 0" \
 "id:'200002',phase:2,t:none,log,deny,status:403, \
@@ -189,57 +196,22 @@ IP %{MULTIPART_INVALID_PART}, \
 IH %{MULTIPART_INVALID_HEADER_FOLDING}, \
 FL %{MULTIPART_FILE_LIMIT_EXCEEDED}'"
 
-SecRule TX:/^MSC_/ "!@streq 0" "id:'200004',phase:2,t:none,deny,status:500,\
-msg:'ModSecurity internal error flagged: %{MATCHED_VAR_NAME}'"
-
+SecRule TX:/^MSC_/ "!@streq 0" \
+  "ID:'200004',phase:2,t:none,deny,status:500,\
+  msg:'ModSecurity internal error flagged: %{MATCHED_VAR_NAME}'"
 
 # === ModSecurity Rules (ids: 900000-999999)
                 
-# === ModSec Core Rules Base Configuration (ids: 900001-900021)
+# === ModSec Core Rules Base Configuration (ids: 900000-900999)
 
-SecAction "id:'900001',phase:1,t:none, \
-   setvar:tx.critical_anomaly_score=5, \
-   setvar:tx.error_anomaly_score=4, \
-   setvar:tx.warning_anomaly_score=3, \
-   setvar:tx.notice_anomaly_score=2, \
-   nolog, pass"
-SecAction "id:'900002',phase:1,t:none,setvar:tx.inbound_anomaly_score_level=10000,\
-	setvar:tx.inbound_anomaly_score=0,nolog,pass"
-SecAction "id:'900003',phase:1,t:none,setvar:tx.outbound_anomaly_score_level=10000,\
-	setvar:tx.outbound_anomaly_score=0,nolog,pass"
-SecAction "id:'900004',phase:1,t:none,setvar:tx.anomaly_score_blocking=on,nolog,pass"
+Include    /apache/conf/crs/crs-setup.conf
 
-SecAction "id:'900006',phase:1,t:none,setvar:tx.max_num_args=255,nolog,pass"
-SecAction "id:'900007',phase:1,t:none,setvar:tx.arg_name_length=100,nolog,pass"
-SecAction "id:'900008',phase:1,t:none,setvar:tx.arg_length=400,nolog,pass"
-SecAction "id:'900009',phase:1,t:none,setvar:tx.total_arg_length=64000,nolog,pass"
-SecAction "id:'900010',phase:1,t:none,setvar:tx.max_file_size=10000000,nolog,pass"
-SecAction "id:'900011',phase:1,t:none,setvar:tx.combined_file_sizes=10000000,nolog,pass"
-SecAction "id:'900012',phase:1,t:none, \
-  setvar:'tx.allowed_methods=GET HEAD POST OPTIONS', \
-  setvar:'tx.allowed_request_content_type=application/x-www-form-urlencoded|\
-multipart/form-data|text/xml|application/xml|application/x-amf|application/json', \
-  setvar:'tx.allowed_http_versions=HTTP/0.9 HTTP/1.0 HTTP/1.1', \
-  setvar:'tx.restricted_extensions=.asa/ .asax/ .ascx/ .axd/ .backup/ .bak/ .bat/ \
-.cdx/ .cer/ .cfg/ .cmd/ .com/ .config/ .conf/ .cs/ .csproj/ .csr/ .dat/ .db/ .dbf/ \
-.dll/ .dos/ .htr/ .htw/ .ida/ .idc/ .idq/ .inc/ .ini/ .key/ .licx/ .lnk/ .log/ .mdb/ \
-.old/ .pass/ .pdb/ .pol/ .printer/ .pwd/ .resources/ .resx/ .sql/ .sys/ .vb/ .vbs/ \
-.vbproj/ .vsdisco/ .webinfo/ .xsd/ .xsx/', \
-  setvar:'tx.restricted_headers=/Proxy-Connection/ /Lock-Token/ /Content-Range/ \
-/Translate/ /via/ /if/', \
-  nolog,pass"
+SecAction "id:900110,phase:1,pass,nolog,\
+  setvar:tx.inbound_anomaly_score_threshold=1000,\
+  setvar:tx.outbound_anomaly_score_threshold=1000"
 
-SecRule REQUEST_HEADERS:User-Agent "^(.*)$" "id:'900018',phase:1,t:none,t:sha1,t:hexEncode,\
-setvar:tx.ua_hash=%{matched_var}, \
-  nolog,pass"
-SecRule REQUEST_HEADERS:x-forwarded-for "^\b(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\b" \
-  "id:'900019',phase:1,t:none,capture,setvar:tx.real_ip=%{tx.1},nolog,pass"
-SecRule &TX:REAL_IP "!@eq 0" "id:'900020',phase:1,t:none,initcol:global=global,\
-initcol:ip=%{tx.real_ip}_%{tx.ua_hash}, \
-  nolog,pass"
-SecRule &TX:REAL_IP "@eq 0" "id:'900021',phase:1,t:none,initcol:global=global,\
-initcol:ip=%{remote_addr}_%{tx.ua_hash},setvar:tx.real_ip=%{remote_addr}, \
-  nolog,pass"
+SecAction "id:900000,phase:1,pass,nolog,\
+  setvar:tx.paranoia_level=4"
 
 # === ModSecurity Ignore Rules Before Core Rules Inclusion; order by id of ignored rule (ids: 10000-49999)
 
@@ -247,7 +219,7 @@ initcol:ip=%{remote_addr}_%{tx.ua_hash},setvar:tx.real_ip=%{remote_addr}, \
 
 # === ModSecurity Core Rules Inclusion
 
-Include    /modsecurity-core-rules/*.conf
+Include    /apache/conf/crs/rules/*.conf
 
 # === ModSecurity Ignore Rules After Core Rules Inclusion; order by id of ignored rule (ids: 50000-59999)
 
@@ -264,17 +236,18 @@ SecAction "id:'90014',phase:5,pass,nolog,setvar:TX.ModSecTimestamp5end=%{DURATIO
 
 # === ModSec performance calculations and variable export (ids: 90100 - 90199)
 
-SecAction "id:'90100',phase:5,pass,nolog,setvar:TX.perf_modsecinbound=%{PERF_PHASE1}"
-SecAction "id:'90101',phase:5,pass,nolog,setvar:TX.perf_modsecinbound=+%{PERF_PHASE2}"
-SecAction "id:'90102',phase:5,pass,nolog,setvar:TX.perf_application=%{TX.ModSecTimestamp3start}"
-SecAction "id:'90103',phase:5,pass,nolog,setvar:TX.perf_application=-%{TX.ModSecTimestamp2end}"
-SecAction "id:'90104',phase:5,pass,nolog,setvar:TX.perf_modsecoutbound=%{PERF_PHASE3}"
-SecAction "id:'90105',phase:5,pass,nolog,setvar:TX.perf_modsecoutbound=+%{PERF_PHASE4}"
-SecAction "id:'90106',phase:5,pass,nolog,setenv:ModSecTimeIn=%{TX.perf_modsecinbound}"
-SecAction "id:'90107',phase:5,pass,nolog,setenv:ApplicationTime=%{TX.perf_application}"
-SecAction "id:'90108',phase:5,pass,nolog,setenv:ModSecTimeOut=%{TX.perf_modsecoutbound}"
-SecAction "id:'90109',phase:5,pass,nolog,setenv:ModSecAnomalyScoreIn=%{TX.inbound_anomaly_score}"
-SecAction "id:'90110',phase:5,pass,nolog,setenv:ModSecAnomalyScoreOut=%{TX.outbound_anomaly_score}"
+SecAction "id:90100,phase:5,pass,nolog,\
+  setvar:TX.perf_modsecinbound=%{PERF_PHASE1},\
+  setvar:TX.perf_modsecinbound=+%{PERF_PHASE2},\
+  setvar:TX.perf_application=%{TX.ModSecTimestamp3start},\
+  setvar:TX.perf_application=-%{TX.ModSecTimestamp2end},\
+  setvar:TX.perf_modsecoutbound=%{PERF_PHASE3},\
+  setvar:TX.perf_modsecoutbound=+%{PERF_PHASE4},\
+  setenv:ModSecTimeIn=%{TX.perf_modsecinbound},\
+  setenv:ApplicationTime=%{TX.perf_application},\
+  setenv:ModSecTimeOut=%{TX.perf_modsecoutbound},\
+  setenv:ModSecAnomalyScoreIn=%{TX.anomaly_score},\
+  setenv:ModSecAnomalyScoreOut=%{TX.outbound_anomaly_score}"
 
 SSLCertificateKeyFile   /etc/ssl/private/ssl-cert-snakeoil.key
 SSLCertificateFile      /etc/ssl/certs/ssl-cert-snakeoil.pem
@@ -1023,6 +996,7 @@ In the next tutorial we will be turning to practice and deriving fine tuning rul
 This tutorial was a hard bit of work. We’ll be taking a break now and treating ourselves to a beer. The next tutorial turns to practice. We have become familiar with the basic techniques, but how exactly do you apply these techniques when you are sinking under a huge number of false positives?
 
 ###References
+- [OWASP ModSecurity Core Rule Setg](https://coreruleset.org)
 - [Spider Labs Blog Post: Exception Handling](http://blog.spiderlabs.com/2011/08/modsecurity-advanced-topic-of-the-week-exception-handling.html)
 - [ModSecurity Reference Manual](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual)
 
