@@ -495,9 +495,9 @@ SecRule REQUEST_URI "!@streq %{REQUEST_URI_RAW}" \
 
 # START whitelisting block for URI /login
 SecRule REQUEST_URI "!@beginsWith /login" \
-    "id:10001,phase:1,pass,nolog,skipAfter:END_WHITELIST_login"
+    "id:10001,phase:1,pass,t:lowercase,nolog,skipAfter:END_WHITELIST_login"
 SecRule REQUEST_URI "!@beginsWith /login" \
-    "id:10002,phase:2,pass,nolog,skipAfter:END_WHITELIST_login"
+    "id:10002,phase:2,pass,t:lowercase,nolog,skipAfter:END_WHITELIST_login"
 
 # Validate HTTP method
 SecRule REQUEST_METHOD "!@pm GET HEAD POST OPTIONS" \
@@ -562,7 +562,7 @@ SecMarker END_WHITELIST_login
 
 Since this is a multi-line set of rules, we delimit the group of rules using two markers: *BEGIN_WHITELIST_login* and *END_WHITELIST_login*. We only need the first marker for readability, but the second one is a jump label. The first rule (ID 10000) enforces our policy to deny requests containing two dots in succession in the URI. Two dots in succession might serve as a way to evade our subsequent path criteria. E.g., constructing an URI which looks like accessing some other folder, but then uses `..` to escape from that folder and access `/login` nevertheless. This rule makes sure none of these games can be played with our server.
 
-In the two following rules (ID 10002 and 10003) we check whether our set of rules is affected at all. If the path written in lowercase and normalized does not begin with _/login_, we skip to the end marker - with no entry in the log file. It would be possible to place the entire block of rules within an Apache *Location* block, however, I prefer the rule style presented here. The whitelist we are constructing is a partial whitelist as it does not cover the whole server. Instead, it focuses on the login with the idea, that the login page will be accessed by anonymous users. Once they have performed the login, they have at least proved their credentials and a certain trust has been established. The login is thus a likely target for anonymous attackers and we want to secure it really well. It is also likely that any application on the server is more complex than the login and writing a positive ruleset for an advanced application would be too complicated for this tutorial. But the limited scope of the login makes it perfectly achievable and it adds a lot of security. The example serves as a template to use for other partial whitelists.
+In the two following rules (ID 10001 and 10002) we check whether our set of rules is affected at all. If the path written in lowercase and normalized does not begin with _/login_, we skip to the end marker - with no entry in the log file. It would be possible to place the entire block of rules within an Apache *Location* block, however, I prefer the rule style presented here. The whitelist we are constructing is a partial whitelist as it does not cover the whole server. Instead, it focuses on the login with the idea, that the login page will be accessed by anonymous users. Once they have performed the login, they have at least proved their credentials and a certain trust has been established. The login is thus a likely target for anonymous attackers and we want to secure it really well. It is also likely that any application on the server is more complex than the login and writing a positive ruleset for an advanced application would be too complicated for this tutorial. But the limited scope of the login makes it perfectly achievable and it adds a lot of security. The example serves as a template to use for other partial whitelists.
 
 Having established the fact that we are dealing with a login request, we can now write down our rules checking these request. An HTTP request has several characteristics that are of concern to us: The method, the path, the query string parameter as well as any post parameters (this concerns the submission of a login form). We will leave out the request headers including cookies in this example, but they could also become a vulnerability depending on the application and should also be queried then.
 
