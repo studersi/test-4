@@ -724,38 +724,8 @@ The simple way of dealing with a *false positive* is to simply disable the rule.
 
 Excluding a rule completely takes very little effort, but is of course potentially risky, because the rule is not being disabled for just legitimate users, but for attackers as well. By completely disabling a rule we are thus restricting the capability of *ModSecurity*. Or, expressed more drastically, we’re pulling the teeth out of the *WAF*. This is not something we want in practice. Nevertheless, it is important to know how this simple method works.
 
-Especially at higher paranoia levels, there are rules that just fail to work with some applications and trigger false alarms in all sorts of situations. So there is a use for disabling a rule completely. One notable example is rule ID `920300`: *Request Missing an Accept Header*. There are just so many user agents that submit requests without an accept header. If you are fed up with fine-tuning this, then make the rule go away as follows:
-
-```bash
-# ModSec Exclusion Rule: 920300 Request Missing an Accept Header
-SecRuleRemoveById 920300
-```
-
-But why don't we just remove the rule in the rule file directly? Well that would be a bad idea, because we would no longer be able to update the rule file without carrying out this removal again. It's much better to tune the rule set without actually touching the file.
-
-The directive above is a startup time directive. This means it removes the rule from the set of loaded rules and no processor cycles will be spent on the rule once the server has started. Of course, we can only remove things which have been loaded before. So this directive has to be placed after the CRS include statement. In the config recipe earlier in this tutorial we have reserved a space for this sort of exclusion rules.
-
-
-FIXME: Above we saw a list of alarms we can use to provoke the *Nikto* security scanner. One rule, which *Nikto* along with legitimate browsers sometimes violate is 960015: Request Missing an Accept Header. Due to this rule, alarms on a normal server occur quite frequently. This is a reason for disabling the rule.
-
-In our configuration file we have marked out two places to put the *ignore rules*. Once before the *core rules* and a second time after the *core rules*. The first place is reserved for run-time 
-
-```bash
-# === ModSecurity Ignore Rules Before Core Rules Inclusion; order by id of ignored rule (ids: 10000-49999)
-
-...
-
-# === ModSecurity Core Rules Inclusion
-
-Include    conf/modsecurity-core-rules-latest/*.conf
-
-# === ModSecurity Ignore Rules After Core Rules Inclusion; order by id of ignored rule (ids: 50000-79999)
-
-...
-
-```
-
-We are suppressing rule *960015* in the section above. Before we do this, we provoke an alarm for the rule:
+Especially at higher paranoia levels, there are rules that just fail to work with some applications and trigger false alarms in all sorts of situations. So there is a use for disabling a rule completely. One notable example is rule ID `920300`: *Request Missing an Accept Header*. There are just so many user agents that submit requests without an accept header. Let's raise the paranoia level to 2 by setting the `tx.paranoia_level` variable to 2 in rule ID 900,000.
+Then we send a request without `Accept` header to trigger an alert as follows:
 
 ```bash
 $> curl -v -H "Accept: " http://localhost/index.html
@@ -764,14 +734,88 @@ $> curl -v -H "Accept: " http://localhost/index.html
 > User-Agent: curl/7.32.0
 > Host: localhost
 ...
-$> tail /apache/logs/error.log
-...
-[Tue Dec 10 06:41:41 2013] [error] [client 127.0.0.1] ModSecurity: Warning. Operator EQ matched 0 at REQUEST_HEADERS. [file "/apache/conf/modsecurity-core-rules-latest/modsecurity_crs_21_protocol_anomalies.conf"] [line "47"] [id "960015"] [rev "1"] [msg "Request Missing an Accept Header"] [severity "NOTICE"] [ver "OWASP_CRS/2.2.8"] [maturity "9"] [accuracy "9"] [tag "Local Lab Service"] [tag "OWASP_CRS/PROTOCOL_VIOLATION/MISSING_HEADER_ACCEPT"] [tag "WASCTC/WASC-21"] [tag "OWASP_TOP_10/A7"] [tag "PCI/6.5.10"] [hostname "localhost"] [uri "/index.html"] [unique_id "UqaplX8AAQEAABiYANYAAAAD"]
-[Tue Dec 10 06:41:41 2013] [error] [client 127.0.0.1] ModSecurity: Warning. Operator LT matched 1000 at TX:inbound_anomaly_score. [file "/apache/conf/modsecurity-core-rules-latest/modsecurity_crs_60_correlation.conf"] [line "33"] [id "981203"] [msg "Inbound Anomaly Score (Total Inbound Score: 2, SQLi=, XSS=): Request Missing an Accept Header"] [tag "Local Lab Service"] [hostname "localhost"] [uri "/index.html"] [unique_id "UqaplX8AAQEAABiYANYAAAAD"]
+$> tail /apache/logs/error.log | melidmsg
+920300 Request Missing an Accept Header
 ```
 
-We instructed *curl* to send a request with no *Accept header*. Using the *verbose* option (*-v*) we can perfectly control this behavior. The *error log* will then actually show the alarm that was provoked with the summary of *anomaly scores* on the lines below. The rule violation earned the request a score of 2. Now we’ll be suppressing the rule by writing an *ignore rule* in the configuration section provided for it before *Core Rules Inclusion*:
+So the rule has been triggered as desired. Let us now exclude the rule. We have multiple options and we start with the most simple one. We exclude the rule at startup time of Apache. This means it removes the rule from the set of loaded rules and no processor cycles will be spent on the rule once the server has started. Of course, we can only remove things which have been loaded before. So this directive has to be placed after the CRS include statement. In the config recipe earlier in this tutorial we have reserved some space for this sort of exclusion rules. We fill in our exclusion directive right in this location:
 
+```bash
+# === ModSec Core Rules: Config Time Exclusion Rules (no ids)
+
+# ModSec Exclusion Rule: 920300 Request Missing an Accept Header
+SecRuleRemoveById 920300
+
+```
+The example comes with a comment, which describes the rule being excluded. This is a good practice, which you should adopt as well. We have the option to exclude by ID (as we just did), or we can select the rule by its message or my one of its tags. Here is an example using the message of the rule 920,300:
+
+```bash
+# ModSec Exclusion Rule: 920300 Request Missing an Accept Header
+SecRuleRemoveByMsg "Request Missing an Accept Header"
+```
+
+The *SecRuleRemoveByMsg* directive can also use regular expressions as parameters. This also works with the related *SecRuleRemoveByTag* directive as we can see here:
+
+```bash
+SecRuleRemoveByTag "MISSING_HEADER_ACCEPT$"
+```
+
+Excluding a rule completely is simple, but it is also a very drastic step. If our issues with the rule 920300 are limited to an agent checking the availability of our service by requesting the index page, we can limit the exclusion to this individual request. This is no longer a startup time rule exclusion, but a runtime exclusion which is being applied on certain conditions. Runtime exclusions leverage the *SecRule* directive combined with a special action executing the rule exclusion. This depends on the SecRule statement running before the rule in question is being applied. That's why run-time rule exclusions have to be placed before the Core Rules include statement, where we also reserved a space for this type of exclusion rules:
+
+```bash
+# === ModSec Core Rules: Runtime Exclusion Rules
+#                        order by id of ignored rule (ids: 10000-49999)
+
+# ModSec Exclusion Rule: 920300 Request Missing an Accept Header
+SecRule REQUEST_FILENAME "@beginsWith /index.html" "phase:1,nolog,pass,id:10000,ctl:ruleRemoveById=920300"
+```
+
+This type of exclusion is harder to read. Watch out for the *ctl* statement: `ctl:ruleRemoveById=920300`. This is the control action, which is used for runtime changes of the configuration of the ModSecurity rule engine. We use *ruleRemoveById* as control statement and apply it to rule ID 920300. This block is placed within a standard SecRule directive. This allows us to use the complete power of SecRule to exclude the rule 920300 in very specific situations. Here we exclude it based on the path of the request, but we could apply it depending on the agent's IP address - or a combination of the two in a chained rule statement (which we will examine shortly).
+
+
+ruleRemoveByMsg
+ruleRemoveByTag
+
+
+
+Startup time rule exclusions and runtime rule exclusions have the same effect, but the technique is really different. With the runtime exclusion, you gain granular control at the cost of performance as the exclusion is being evaluated for every single request. While as the startup time exclusion happens only once.
+
+
+
+
+
+###Step 7: Suppressing false alarms: Disabling individual rules for specific parameters
+
+Next we look at excluding an individual parameter from being evaluated by a specific rule. So unlike our example 920300
+
+Till now we have suppressed individual rules for specific paths. In practice there is a second case that at least quantitatively is very widespread: An individual parameter, typically a cookie, triggers rule violation regardless of path. Each individual request results in a rule violation. An initial look at the statistics can come as quite a shock. But only when you see how easy this is to handle does the situation settle down a bit. You’d have to disable the rule for the base path */* or manage to generally disable the rules for the affected parameter. This is done as follows:
+
+```bash
+SecRuleUpdateTargetById 950005 "!REQUEST_COOKIES:basket_id"
+```
+
+This directive, that has to be configured after loading the *core rules*, matches the *target list* in rule 950005. This means that the cookie *basket_id* should no longer be inspected by rule 950005. This again results in blindness, but a cookie can be very easily checked at a later point in time as to whether the rules related to it are still relevant.
+
+For form parameters we shouldn’t proceed so generally that we disable it for the entire service. There is however another rule pattern closely based on this example, but which is only effective on a single path for an individual parameter:
+
+```bash
+SecRule REQUEST_FILENAME "@beginsWith /app/submit.do" \
+	"phase:2,nolog,pass,t:none,id:10002,ctl:ruleRemoveTargetById=950005;ARGS:contact_form_name"
+```
+
+We disable the handling of the *contact_form_name* parameter via rule *950005* for the path */app/submit.do*.. This does the job right and in my experience is the preferred way to suppress an individual false positive for a parameter.
+
+Using the different methods to design *ignore rules* gives us the tools we need to work through the *false positives* one by one. Being able to work quickly requires experience and helpful tools which we will becoming familiar with in the next tutorial.
+
+
+FIXME -----------------------------------
+
+
+```bash
+# ModSec Rule Exclusion: 920300 : Request Missing an Accept Header (severity: 2 NOTICE)
+SecRule REQUEST_FILENAME "@beginsWith /foo" "phase:1,nolog,pass,id:10000,ctl:ruleRemoveById=920300"
+
+```
 ```bash
 SecRule REQUEST_FILENAME "@beginsWith /" "phase:1,nolog,pass,t:none,id:10000,ctl:ruleRemoveById=960015"
 ```
@@ -875,28 +919,8 @@ $> grep Vj74@n8AAQEAADydhKkAAAAE logs/error.log
 
 As you see, we can instruct *ModSecurity* to apply the core rules without having to increase the score. But to be honest, you have to admit that the design of such a construct is extremely complex and error-prone. This is why I don’t use this technique in practice, but only suppress *false positives* by selectively disabling rules and for this reason am struggling with the blindness described at the beginning. 
 
-There’s a very simple method for disabling the rules that we are not familiar with yet:
 
-###Step 7: Suppressing false alarms: Disabling individual rules for specific parameters
 
-Till now we have suppressed individual rules for specific paths. In practice there is a second case that at least quantitatively is very widespread: An individual parameter, typically a cookie, triggers rule violation regardless of path. Each individual request results in a rule violation. An initial look at the statistics can come as quite a shock. But only when you see how easy this is to handle does the situation settle down a bit. You’d have to disable the rule for the base path */* or manage to generally disable the rules for the affected parameter. This is done as follows:
-
-```bash
-SecRuleUpdateTargetById 950005 "!REQUEST_COOKIES:basket_id"
-```
-
-This directive, that has to be configured after loading the *core rules*, matches the *target list* in rule 950005. This means that the cookie *basket_id* should no longer be inspected by rule 950005. This again results in blindness, but a cookie can be very easily checked at a later point in time as to whether the rules related to it are still relevant.
-
-For form parameters we shouldn’t proceed so generally that we disable it for the entire service. There is however another rule pattern closely based on this example, but which is only effective on a single path for an individual parameter:
-
-```bash
-SecRule REQUEST_FILENAME "@beginsWith /app/submit.do" \
-	"phase:2,nolog,pass,t:none,id:10002,ctl:ruleRemoveTargetById=950005;ARGS:contact_form_name"
-```
-
-We disable the handling of the *contact_form_name* parameter via rule *950005* for the path */app/submit.do*.. This does the job right and in my experience is the preferred way to suppress an individual false positive for a parameter.
-
-Using the different methods to design *ignore rules* gives us the tools we need to work through the *false positives* one by one. Being able to work quickly requires experience and helpful tools which we will becoming familiar with in the next tutorial.
 
 ###Step 8: Readjusting the anomaly limit
 
