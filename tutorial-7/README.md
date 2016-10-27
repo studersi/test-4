@@ -6,7 +6,7 @@ We are embedding the OWASP ModSecurity Core Rule Set in our Apache web server an
 
 ###Why are we doing this?
 
-The ModSecurity Web Application Firewall, as we set up in Tutorial 6, still has barely any rules. But protection only works when you configure an additional rule set that is as comprehensive as possible and when you have eliminated all of the false alarms. The core rules provide generic blacklisting. This means that they inspect requests and responses for signs of attacks. The signs are often keywords or typical patterns that may be suggestive of a wide variety of attacks. This also entails false alarms being triggered.
+The ModSecurity Web Application Firewall, as we set up in tutorial 6, still has barely any rules. The protection only works when you configure an additional rule set that is as comprehensive as possible and when you have eliminated all of the false alarms. The Core Rules provide generic blacklisting. This means that they inspect requests and responses for signs of attacks. The signs are often keywords or typical patterns that may be suggestive of a wide variety of attacks. This also entails false alarms being triggered and we have to eliminate these for a successful installation.
 
 ###Requirements
 
@@ -16,7 +16,7 @@ The ModSecurity Web Application Firewall, as we set up in Tutorial 6, still has 
 * An Apache web server with extended access log as in [Tutorial 5 (Extending and analyzing the access log)](https://www.netnea.com/cms/apache-tutorial-5-zugriffslog-ausbauen/)
 * An Apache web server with ModSecurity as in [Tutorial 6 (Embedding ModSecurity)](https://www.netnea.com/cms/apache-tutorial-6-modsecurity-einbinden/)
 
-We will be working with the new major release of the Core Rules, CRS3; short for Core Rule Set 3.0. The official distribution comes with an _INSTALL_ file that does a good job explaining the setup (after all, your's truly wrote a good deal of that file), but we will tweak the process a bit to suit our neats.
+We will be working with the new major release of the Core Rules, CRS3; short for Core Rule Set 3.0. The official distribution comes with an _INSTALL_ file that does a good job explaining the setup (after all, your's truly wrote a good deal of that file), but we will tweak the process a bit to suit our needs.
 
 ###Step 1: Downloading OWASP ModSecurity Core Rules
 
@@ -43,14 +43,16 @@ $> cp crs/crs-setup.conf.example crs/crs-setup.conf
 $> rm v3.0.0-rc2.tar.gz
 ```
 
-This unpacks the base part of the core rules in the directory `/apache/conf/owasp-modsecurity-crs-3.0.0-rc2`. We create a link from `/apache/conf/crs` to this folder. Then we copy a file named `crs-setup.conf.example` to a new file `crs-setup.conf` and finally, we delete core rules tar file. The setup file allows us to tweak with many different settings. It is worth a look - if only to see what is all included. However, we are okay with the default settings and do not touch the file: We just make sure it is available under the new filename `crs-setup.conf`. Then we can continue to update the configuration to include the rules files.
+This unpacks the base part of the Core Rules in the directory `/apache/conf/owasp-modsecurity-crs-3.0.0-rc2`. We create a link from `/apache/conf/crs` to this folder. Then we copy a file named `crs-setup.conf.example` to a new file `crs-setup.conf` and finally, we delete Core Rules tar file.
+
+The setup file allows us to tweak with many different settings. It is worth a look - if only to see what is all included. However, we are okay with the default settings and do not touch the file: We just make sure it is available under the new filename `crs-setup.conf`. Then we can continue to update the configuration to include the rules files.
 
 
 ###Step 2: Embedding Core Rules
 
-In Tutorial 6, in which we embedded ModSecurity itself, we marked out a section for the core rules. We now add the Include directive in this section. Specifically, four parts are added to the existing configuration. (1) The core rules base configuration, (2) a part for self-defined ignore rules before the core rules. Then (3) the core rules themselves and finally a part (4) for self-defined ignore rules after the core rules.
+In Tutorial 6, in which we embedded ModSecurity itself, we marked out a section for the Core Rules. We now add two *Include* directives into this section. Specifically, four parts are added to the existing configuration. (1) The Core Rules base configuration, (2) a part for self-defined rule exclusions before the Core Rules. Then (3) the Core Rules themselves and finally a part (4) for rule exclusions after the Core Rules.
 
-The ignore rules are rules used for managing the false alarms described above. Some false alarms must be prevented before the corresponding core rule is loaded. Some false alarms can only be intercepted following the definition of the core rule itself. But one thing at a time. Here is the new block of configuration which we will insert into the base configuration, we assembled when we enabled ModSecurity.
+The rule exclusions are directives and rules used for managing the false alarms described above. Some false alarms must be prevented before the corresponding Core Rule is loaded. Some false alarms can only be intercepted following the definition of the core rule itself. But one thing at a time. Here is the new block of configuration which we will insert into the base configuration, we assembled when we enabled ModSecurity.
 
 ```bash
 # === ModSec Core Rules Base Configuration (ids: 900000-900999)
@@ -65,8 +67,7 @@ SecAction "id:900000,phase:1,pass,nolog,\
   setvar:tx.paranoia_level=1"
 
 
-# === ModSec Core Rules: Runtime Exclusion Rules
-#                        order by id of ignored rule (ids: 10000-49999)
+# === ModSec Core Rules: Runtime Exclusion Rules (ids: 10000-49999)
 
 # ...
 
@@ -82,13 +83,17 @@ Include    /apache/conf/crs/rules/*.conf
 
 ```
 
-The Core Rules come with a base configuration file named `crs-setup.conf` which we prepared above. The copy step of the original example file guarantees that we can update the Core Rules distribution without harming our copy of the config file unless we want to. We now have the option to edit settings in that settings file. However, the strategy for this series of config files has been to define all the important things in our single apache configuration file. We do not want to insert the contents of the `crs-setup.conf` file into our configuration, but we include it, in order to get the minimal set of config items needed to run the Core Rules. I do not want to dive into all the options in the settings file, but it is worth to have a look.
+The Core Rules come with a base configuration file named `crs-setup.conf` which we prepared during the installation. The step copying the original example file guarantees that we can update the Core Rules distribution without harming our copy of the config file unless we want to. 
 
-As for now, we leave the file untouched, but we take three important values out of `crs-setup.conf` and define it in our config so we have them in sight at all times. We define two thresholds in the unconditional rule _900110_: The inbound anomaly score and the outbound anomaly score. This is done via the `setvar` action which sets both values to 1000. What does that mean? The Core Rules work with a scoring system. For every rule a request violates, there is a score being raised. When all the request rules have passed, the score is compared to the limit. If if hits the limit, the request is blocked. The same thing happens with the responses. 
+We have the option to edit settings in that base configuration file. However, the strategy for this series of tutorials has been to define all the important things in our single apache configuration file. We do not want to insert the complete contents of the `crs-setup.conf` file into our configuration, but we include it, in order to get the minimal set of configuration items needed to run the Core Rules. I do not want to dive into all the options in the settings file, but it is worth to have a look.
+
+As for now, we leave the file untouched, but we take three important values out of `crs-setup.conf` and define it in our config so we have them in sight at all times. We define two thresholds in the unconditional rule _900110_: The inbound anomaly score and the outbound anomaly score. This is done via the `setvar` action which sets both values to 1000.
+
+What does that mean? The Core Rules work with a scoring mechanism by default. For every rule a request violates, there is a score being raised. When all the request rules have passed, the score is compared to the limit. If if hits the limit, the request is blocked. The same thing happens with the responses, where we want to avoid information leaks to reach the client.
 
 The Core Rules come in blocking mode by default. If a rule is violated and the score hits the limit, the blocking will be effective immediately. But we are not yet sure our service runs smoothly and the danger of false alarms is always there. We want to avoid unwanted blocks, so we set the threshold at a value of 1000. Rule violations score with 5 points at most, so even if cumulation is possible, a request is unlikely to hit the limit. Yet, we remain in blocking mode and when we grow more confident in our configuration, we can lower the threshold gradually.
 
-The second rule, id `900000`, defines the _Paranoia Level_. The groups are divided in four groups, paranoia level 1 - 4. As the name suggests, the higher the paranoia level, the more paranoid the rules. The default is paranoia level 1 where the rules are quite sane and false alarms are rare. When you raise the PL to 2, additional rules are enabled. Starting PL 2, you will face false alarms; also named false positives. This number grows with PL3 and when you arrive PL4 you are likely to face false alarms like mad; paranoid so to say. We will deal with false positives later in this tutorial, but for the moment you just need to be aware that you can control the aggressiveness of the ruleset with the paranoia level setting.
+The second rule, id `900000`, defines the _Paranoia Level_ to 1. The Core Rules are divided in four groups at paranoia levels 1 - 4. As the name suggests, the higher the paranoia level, the more paranoid the rules. The default is paranoia level 1 where the rules are quite sane and false alarms are rare. When you raise the PL to 2, additional rules are enabled. Starting PL 2, you will face more and more false alarms; also named false positives. This number grows with PL3 and when you arrive PL4 you are likely to face false alarms as if your web application firewall would have turned quite paranoid so to say. We will deal with false positives later in this tutorial, but for the moment you just need to be aware that you can control the aggressiveness of the rule set with the paranoia level setting.
 
 In the center of the config snipped follows the include statement, which loads all files with suffix `.conf` from the rules sub folder in the CRS directory. This is where all the rules are being loaded. Let's cast a eye on them:
 
@@ -121,18 +126,18 @@ crs/rules/RESPONSE-959-BLOCKING-EVALUATION.conf
 crs/rules/RESPONSE-980-CORRELATION.conf
 ```
 
-The rule files are grouped in request and in response rules. We start off with an initialization rule file. There are a lot of things commented out in the `crs-setup.conf` file. These values are simply set to their default value in the 901 rule file. Then follows two application specific rule files for Wordpress and Drupal; followed by an exceptions file that is mostly irrelevant to us. Starting with 910, we have the real rules. Every file is dedicated to a topic or type of attack. The core rules occupy the ID namespace from 900.000 to 999.999. The first three digits correspond with the three digit prefix in the rule id. This means the IP reputation rules in `REQUEST-910-IP-REPUTATION.conf` will occupy the rule range 910.000 - 910.999. The method enforcement follows between 911.000 - 911.999, etc.. Some of these rule files are small and they do not use up their assigned rule range by far. Others are much bigger and the infamous SQL Injection rules run the risk of touching their ID roof one day.
+The rule files are grouped in request and in response rules. We start off with an initialization rule file. There are a lot of things commented out in the `crs-setup.conf` file. These values are simply set to their default value in the 901 rule file. This helps to clean the config neat and tidy and still all default settings being applied. Then we have two application specific rule files for Wordpress and Drupal; followed by an exceptions file that is mostly irrelevant to us. Starting with 910, we have the real rules.
+
+Every file is dedicated to a topic or type of attack. The Core Rules occupy the ID namespace from 900,000 to 999,999. The first three digits of every rule correspond with three digits in the rule files. This means the IP reputation rules in `REQUEST-910-IP-REPUTATION.conf` will occupy the rule range 910,000 - 910,999. The method enforcement rules follow between 911,000 and 911,999, etc.. Some of these rule files are small and they do not use up their assigned rule range by far. Others are much bigger and the infamous SQL Injection rules run the risk of touching their ID roof one day.
 
 An important rule file is `REQUEST-949-BLOCKING-EVALUATION.conf`. This is where the anomaly score is checked against the inbound threshold and the request is being blocked accordingly.
-
-
-Then start the outbound rules, which are less numerous and basically check for code and error leakages. The outbound score is checked in the file with the 980 prefix.
+Then start the outbound rules, which are less numerous and basically check for code leakages (stack traces!) and leakages in error messages (which are very helpful if constructing and SQL injection). The outbound score is checked in the file with the 980 prefix.
 
 Some of the rules come with data files. These files with a `.data` ending reside in the same folder with the rule files. Data files are typically used when the request has to be checked against a long list of keywords, like unwanted user agents or php function names. Have a look if you are interested.
 
-Before and after the rules include, there is a bit of config space reserved. This is where we will be handling false alarms in the future. Some of them are being treated before the rules are loaded in the configuration; some after the loading. We'll return to this further later in this tutorial.
+Before and after the rules *Include* directive in our Apache configuration file, there is a bit of configuration space reserved. This is where we will be handling false alarms in the future. Some of them are being treated before the rules are loaded in the configuration; some after the *Include* directive. We'll return to this later in this tutorial.
 
-Here is the complete apache configuration including ModSecurity and the core rules:
+For completeness, here is the complete apache configuration including ModSecurity, the Core Rules and all the other config bits from the earlier tutorials that we depend upon:
 
 ```bash
 ServerName        localhost
@@ -295,8 +300,7 @@ SecAction "id:900000,phase:1,pass,nolog,\
   setvar:tx.paranoia_level=1"
 
 
-# === ModSec Core Rules: Runtime Exclusion Rules
-#                        order by id of ignored rule (ids: 10000-49999)
+# === ModSec Core Rules: Runtime Exclusion Rules (ids: 10000-49999)
 
 # ...
 
@@ -387,27 +391,26 @@ DocumentRoot		/apache/htdocs
 
 ```
 
-
-We have embedded the core rules and are now ready for test operation. The rules inspect requests and responses. They also trigger alarms, but will not block any requests, because the limits have been set very high. Let's give it a shot.
+We have embedded the Core Rules and are now ready for test operation. The rules inspect requests and responses. They will trigger alarms if they encounter fishy requests, but they will not block any transaction, because the limits have been set very high. Let's give it a shot.
 
 ###Step 3: Triggering alarms for testing purposes
 
-For starters, we will do something easy. It is a request that will trigger exactly one rule:
+For starters, we will do something easy. It is a request that will trigger exactly one rule due to the attempt to execute a bash shell. We know that our simple lab server is not vulnerable to such a blatant attack. But ModSecurity does not know this and will still try and protect us:
 
 ```bash
 $> curl localhost/index.html?exec=/bin/bash
 <html><body><h1>It works!</h1></body></html>
 ```
-We have not been blocked, but let's check the logs to see if anything happened:
+As predicted, we have not been blocked, but let's check the logs to see if anything happened:
 
 ```bash
 $> tail -1 /apache/logs/access.log
 127.0.0.1 - - [2016-10-25 08:40:01.881647] "GET /index.html?exec=/bin/bash HTTP/1.1" 200 48 "-" "curl/7.35.0" localhost 127.0.0.1 40080 - - + "-" WA7@QX8AAQEAABC4maIAAAAV - - 98 234 -% 7672 2569 117 479 5 0
 ```
 
-It's a standard `GET` request with a status 200. The interesting bit is the second field from the end. This is the inbound anomaly score of the request. Our submission of `/bin/bash` as parameter got us a score of 5. This is considered a critical rule violation by the Core Rules. An error is set at 4, a warning at 3 and a notice at 2. However, if you look over the rules, most of them score as critical violations with a score of 5.
+It looks like a standard `GET` request with a status 200. The interesting bit is the second field from the end. In the log file tutorial we have defined a lengthy Apache access log format with two items reserved for the anomaly score. So far these values have been empty; now they are being filled. The first of the two numbers at the end is the inbound anomaly score of the request. Our submission of `/bin/bash` as parameter got us a score of 5. This is considered a critical rule violation by the Core Rules. An error level violation is set at 4, a warning at 3 and a notice at 2. However, if you look over the rules in all the files, most of them score as critical violations with a score of 5.
 
-But now we want to know what rule triggered the alert. We could simply tail the error log, but let's use the unique ID to get all the messages associated with our request. The unique ID was displayed in the access log, this is thus very simple:
+But now we want to know what rule triggered the alert. We could simply tail the error log, but let's use the unique ID to get all the messages associated with our request. The unique ID was displayed in the access log, so this is very simple:
 
 ```bash
 [2016-10-25 08:40:01.881938] [authz_core:debug] 127.0.0.1:42732 WA7@QX8AAQEAABC4maIAAAAV AH01626: authorization result of Require all granted: granted
@@ -415,15 +418,15 @@ But now we want to know what rule triggered the alert. We could simply tail the 
 [2016-10-25 08:40:01.884172] [-:error] 127.0.0.1:42732 WA7@QX8AAQEAABC4maIAAAAV [client 127.0.0.1] ModSecurity: Warning. Matched phrase "/bin/bash" at ARGS:exec. [file "/apache/conf/crs/rules/REQUEST-932-APPLICATION-ATTACK-RCE.conf"] [line "448"] [id "932160"] [rev "1"] [msg "Remote Command Execution: Unix Shell Code Found"] [data "Matched Data: /bin/bash found within ARGS:exec: /bin/bash"] [severity "CRITICAL"] [ver "OWASP_CRS/3.0.0"] [maturity "1"] [accuracy "8"] [tag "application-multi"] [tag "language-shell"] [tag "platform-unix"] [tag "attack-rce"] [tag "OWASP_CRS/WEB_ATTACK/COMMAND_INJECTION"] [tag "WASCTC/WASC-31"] [tag "OWASP_TOP_10/A1"] [tag "PCI/6.5.2"] [hostname "localhost"] [uri "/index.html"] [unique_id "WA7@QX8AAQEAABC4maIAAAAV"]
 ```
 
-The authorization modules reports in the log file since we are running on level debug. But on the third line, we see the rule alert we are looking for. Let's look at this in detail. The core rules messages contain much more information than default messages, making it worthwhile to discuss the log format once more.
+The authorization modules reports two times in the log file since we are running on level debug. But on the third line, we see the rule alert we are looking for. Let's look at this in detail. The Core Rules messages contain much more information than normal Apache messages making it worthwhile to discuss the log format once more.
 
-The beginning of the line consists of the Apache-specific parts such as the timestamp and the severity of the message as the Apache server sees it. *ModSecurity* messages are always set to *error* level. ModSecurity's alert format and the Apache error log format we configured lead to some redundancy. The client IP address with the source port number and the unique ID of the request are fields written by Apache. The square bracket with the same client IP address again marks the start of ModSecurity's alert message. The characteristic marker is `ModSecurity: Warning`. It describes a rule being triggered without blocking the request. The alert only raised the anomaly score. It is very easy to distinguish between the triggering of alarms and actual blocking in the Apache error log. Particularly since the individual core rules, as we have seen, increase the anomaly score, but they do not trigger a blockade. The blockade itself is performed by a separate blocking rule taking the limit into account. But given the insanely high limit, this is not expected to appear anytime soon. ModSecurity logs normal rule violations in the error log as *ModSecurity. Warning ...*, and blockades will be logged as *ModSecurity. Access denied ...*. A *warning* never has any direct impact on the client. Unless you see the *Access denied ...*, the client was unaffected.
+The beginning of the line consists of the Apache-specific parts such as the timestamp and the severity of the message as the Apache server sees it. *ModSecurity* messages are always set to *error* level. ModSecurity's alert format and the Apache error log format we configured lead to some redundancy. The first occurrence client IP address with the source port number and the unique ID of the request are fields written by Apache. The square bracket with the same client IP address again marks the start of ModSecurity's alert message. The characteristic marker of a Core Rules alert is `ModSecurity: Warning`. It describes a rule being triggered without blocking the request. This is because the alert only raised the anomaly score. It is very easy to distinguish between the issueing of alarms and actual blocking in the Apache error log. Particularly since the individual Core Rules increase the anomaly score, but they do not trigger a blockade. The blockade itself is performed by a separate blocking rule taking the limit into account. But given the insanely high limit, this is not expected to appear anytime soon. ModSecurity logs normal rule violations in the error log as *ModSecurity. Warning ...*, and blockades will be logged as *ModSecurity. Access denied ...*. A *warning* never has any direct impact on the client: Unless you see the *Access denied ...*, the client was unaffected.
+msg data sev version maturity
+What comes next? A reference to the pattern found in the request. The specific phrase `/bin/bash` was found in the argument `exec`. Then comes a series of information chunks that always have the same pattern: They are within square brackets and have their own identifier. First comes the *file* identifier. It shows us the file in which the rule that triggered the alarm is defined. This is followed by *line* for the line number within the file. The *id* parameter is an important one. The rule in question, `932160`, can be found in the set of rules that defend against remote command execution in the 932,000 - 932,999 rule block. Then comes *rev* as a reference to the revision number of the rule. In Core Rules, this parameters express how often the rule has been revised. If a modification is made to a rule, *rev* increases by one. *msg*, short for *message*, describes the type of attack detected. The relevant part of the request, the *exec* parameter appears in *data*. In my example this is obviously a case of *Remote Code Execution* (RCE).
 
-What comes next? A reference to the pattern found in the request. The specific phrase `/bin/bash` was found in the argument `exec`. Then comes a series of parameters that always have the same pattern: They are within square brackets and have their own identifier. First comes the *file* identifier. It shows us the file in which the rule that triggered the alarm is defined. This is followed by *line* for the line number in the file. The *id* parameter appears more important to me. The rule in question, `932160`, out of the set of rules that defend against remote command execution in the 932.000 - 932.999 rule block. Then comes *rev* as a reference to the revision number of the rule. In core rules these parameters express how often the rule has been revised. If a modification is made to a rule, *rev* increases by one. *msg*, short for *message*, describes the type of attack detected. The relevant part of the request, the *exec* parameter appears in *data*. In my example this is obviously a case of *Remote Code Execution* (RCE).
+Then we have the *severity* level of the rule, which set of the alarm and which corresponds with the anomaly score of the rule. We have already established the fact, that our rule is considered critical, that's why it is being reported here at this severity. At *ver* we come to the release of the core rule set, followed by *maturity*, a reference to the quality of the rule. Higher *maturity* indicates that we can trust this rule, because it is in widespread use and has caused very few problems. However, low *maturity* is likely to indicate an experimental rule. This is why the value 1 appears only six times in the *Core Rules*, whereas in the version being used 116 rules have a value of 8 and 99 rules are assumed to have a maturity of 9. *Accuracy*, the precision of the rule, behaves similar to *maturity*. This is an optional value the author of the rule defined when writing the rule. There are no low values in the system of rules, 8 is the most frequent value (144 times), 9 is widespread (82). All these additional notes in the log message are for documentation purposes only. In my experience they are of little relevance and hardly ever change between *Core Rules* releases. This might change in the future, though.
 
-At *ver* we come to the release of the core rule set, followed by *maturity*, a reference to the quality of the rule. Higher *maturity* indicates that we can trust this rule, because it is in widespread use and has caused very few problems. However, low *maturity* is likely to indicate an experimental rule. This is why the value 1 appears only six times in the *core rules*, whereas in the version being used 116 rules have a value of 8 and 99 rules are assumed to have a maturity of 9. *Accuracy*, the precision of the rule, behaves similar to *maturity*. This is an optional value the author of the rule defined when writing the rule. There are no low values in the system of rules, 8 is the most frequent value (144 times), 9 is widespread (82). These additional notes in the log message are for documentation purposes only. In my experience they are of little relevance and hardly ever change between *Core Rules* releases.
-
-What follows is a series of *tags* assigned to the rule. It is therefore being included along with every rule violation. Afterwards follow several tags from the *Core Rule Set*, classifying the type of attack. These references can, for example, be used for analysis and statistics. Towards the end of the alarm come three additional values, *hostname*, *uri* and *unique_id*, that more clearly specify the request (the *unique_id* was already listed early on the log line by Apache itself, so repeating it here is somewhat redundant). 
+What follows is a series of *tags* assigned to the rule. They are therefore being included along with every alert message. These tags ofen classify the type of attack. These references can, for example, be used for analysis and statistics. Towards the end of the alarm come three additional values, *hostname*, *uri* and *unique_id*, that more clearly specify the request (the *unique_id* was already listed early on the log line by Apache itself, so repeating it here is somewhat redundant). 
 
 With this, we have covered the full alert message that led to the inbound anomaly score of 5. That was only a single request with a single alert. Let's generate more alerts. *Nikto* is a simple tool that can help us in this situation. It's a security scanner that has been around for ages. It's not very proficient, but it is fast and easy to use. Just the right tool to generate alerts for us. *Nikto* may still have to be installed. The scanner is however included in most distributions.
 
@@ -447,11 +450,11 @@ $> nikto -h localhost
 + 1 host(s) tested
 ```
 
-This scan should have triggered numerous *ModSecurity alarms* on the server. Let’s take a close look at the *Apache error log*. In my case there were over 7,300 entries in the error log. Combine this with the authorization messages and infos on many 404s (nikto probes for files that do not exist on the server) and you end up with error log growing fast. The single nikto run resulted in a logfile of 8.8 MB. Looking over the audit log tree reveals 78 MB of logs. It's obvious: you need to keep a close eye on these log files or your server will collapse.
+This scan should have triggered numerous *ModSecurity alarms* on the server. Let’s take a close look at the *Apache error log*. In my case there were over 7,300 entries in the error log. Combine this with the authorization messages and infos on many 404s (nikto probes for files that do not exist on the server) and you end up with error log growing fast. The single nikto run resulted in a logfile of 8.8 MB. Looking over the audit log tree reveals 78 MB of logs. It's obvious: you need to keep a close eye on these log files or your server will collapse due to denial of service via log file exhaustion.
 
 ###Step 4: Analyzing anomaly scores
 
-We are now facing 7,300 alerts. And even if the format of the entries in the error log may be clear, without a tool they are very hard to read, let alone analyze. A simple remedy is to use a few *shell aliases*, which extract individual pieces of information from the entries. They are stored in the alias file we discussed in the log format Tutorial 5.
+So we are facing 7,300 alerts. And even if the format of the entries in the error log may be clear, without a tool they are very hard to read, let alone analyze. A simple remedy is to use a few *shell aliases*, which extract individual pieces of information from the entries. They are stored in the alias file we discussed in the log format tutorial 5.
 
 ```
 $> cat ~/.apache-modsec.alias
@@ -471,7 +474,7 @@ alias meluri='grep -o "\[uri [^]]*" | cut -d\" -f2'
 $> source ~/.apache-modsec.alias 
 ```
 
-These abbreviations all start with the prefix *mel*, short for *ModSecurity error log*. Then comes the field name. Let’s try it out to output the rule IDs in the messages.
+These abbreviations all start with the prefix *mel*, short for *ModSecurity error log*, followed by the field name. Let’s try it out to output the rule IDs in the messages.
 
 ```
 $> cat logs/error.log | melid | tail
@@ -565,9 +568,9 @@ ID=$(echo "$STR" | sed -e "s/.*\ //"); grep $ID logs/error.log | head -1 | melms
 2340 913120 Found request filename/argument associated with security scanner
 ```
 
-This we can work with. But it’s perhaps necessary to explain the *one-liners*. We extract the rule IDs from the *error log*, then *sort* them, put them together in a list of found IDs (*uniq -c*) and sort again by the numbers found. That’s the first *one-liner*. A relationship between the individual rules is still lacking, because there’s not much we can do with the ID number yet. We get the names from the *error log* again by looking through the previously run test line-by-line in a loop. We show what we have in this loop (`$STR`). Then we have to separate the number of found items and the IDs again. This is done using an embedded sub-command (`ID=$(echo "$STR" | sed -e "s/.*\ //")`). We then use the IDs we just found to search the *error log* once more for an entry, but take only the first one, extract the *msg* part and display it. Done.
+This, we can work with. But it’s perhaps necessary to explain the *one-liners*. We extract the rule IDs from the *error log*, then *sort* them, sum them together in a list of found IDs (*uniq -c*) and sort again by the numbers found. That’s the first *one-liner*. A relationship between the individual rules is still lacking, because there’s not much we can do with the ID number yet. We get the names from the *error log* again by looking through the previously run test line-by-line in a loop. We show what we have in this loop (`$STR`). Then we have to separate the number of found items and the IDs again. This is done using an embedded sub-command (`ID=$(echo "$STR" | sed -e "s/.*\ //")`). We then use the IDs we just found to search the *error log* once more for an entry, but take only the first one, extract the *msg* part and display it. Done.
 
-Depending on computing power this may take just a few seconds or a few minutes. You might now think that it would be better to define an additional alias to determine the ID and description of the rule in a single step. This puts us on the wrong path, though, because there are rules that contain dynamic parts in and following the brackets (anomaly scores in the rules checking the threshold with rule ID 949110 and 980130!). We of course want to combine these rules putting them together in order to map the rule only once. So, to really simplify analysis we have to get rid of the dynamic items. Here’s an additional *alias* that implements this idea. It is part of the *.apache-modsec.alias* file you are already familiar with.
+You might now think that it would be better to define an additional alias to determine the ID and description of the rule in a single step. This puts us on the wrong path, though, because there are rules that contain dynamic parts in and following the brackets (anomaly scores in the rules checking the threshold with rule ID 949110 and 980130!). We of course want to combine these rules putting them together in order to map the rule only once. So, to really simplify analysis we have to get rid of the dynamic items. Here’s an additional *alias* that implements this idea. It is also part of the *.apache-modsec.alias* file.
 
 ```bash
 alias melidmsg='grep -o "\[id [^]]*\].*\[msg [^]]*\]" | sed -e "s/\].*\[/] [/" -e "s/\[msg //" | \
@@ -613,21 +616,20 @@ $> cat logs/error.log | melidmsg | sucs
    2340 913120 Found request filename/argument associated with security scanner
 ```
 
-So that's something we can work with. It proofs that the Core Rules detected a lot of malign requests and we now have an idea which rules played a role in this. The rule triggered the most frequently, 913120, is no surprise in this regard and when you look upwards in the output, this all makes a lot of sense.
-
+So that's something we can work with. It proofs that the Core Rules detected a lot of malign requests and we now have an idea which rules played a role in this. The rule triggered most frequently, 913120, is no surprise in this regard and when you look upwards in the output, this all makes a lot of sense.
 
 
 ###Step 5: Evaluating false alarms
 
-So *Nikto* scan set off thousands of alarms. They were likely justified. In the normal use of *ModSecurity* things are a bit different. The Core Rules are designed and optimised to have as few false alarms as positives in paranoia level 1. But in real life, there are going to be false positives sooner or later. Depending on the application, a normal installation will also see alarms and a lot of them false. And when you raise the paranoia level to become more vigilant towards attacks, then the number of false positives will raise. Actually, it will raise steeply when you move to PL 3 or 4. So steeply in fact, some would call it exploding.
+So *Nikto* scan set off thousands of alarms. They were likely justified. In the normal use of *ModSecurity* things are a bit different. The Core Rules are designed and optimised to have as few false alarms as possible in paranoia level 1. But in productive use, there are going to be false positives sooner or later. Depending on the application, a normal installation will also see alarms and a lot of them false. And when you raise the paranoia level to become more vigilant towards attacks, then the number of false positives will raise. Actually, it will raise steeply when you move to PL 3 or 4; so steeply some would call it exploding.
 
 In order to run smoothly, the configuration has first to be fine tuned. Legitimate requests and exploitation attempts need to be distinct. We want to achieve a high degree of separation between the two. We wish to configure *ModSecurity* and the CRS so the engine knows exactly how to distinguish between legitimate requests and attacks.
 
-False alarms are possible in both directions. Attacks that are not detected are called *false negatives*. The *core rules* are strict and careful to keep the number of *false negatives* low. An attacker would have to possess a great deal of savvy to circumvent the system of rules; especially at higher paranoia levels. Unfortunately, this strictness also results in alarms being triggered for normal requests. It is commonly the case that at a low degree of separation you either get a lot of *false negatives* or a lot of *false positives*. Reducing the number of *false negatives* leads to an increase in *false positives*. Both correlate highly with one another.
+False alarms are possible in both directions. Attacks that are not detected are called *false negatives*. The *Core Rules* are strict and careful to keep the number of *false negatives* low. An attacker needs to possess a great deal of savvy to circumvent the system of rules; especially at higher paranoia levels. Unfortunately, this strictness also results in alarms being triggered for normal requests. It is commonly the case that at a low degree of separation you either get a lot of *false negatives* or a lot of *false positives*. Reducing the number of *false negatives* leads to an increase in *false positives* and vice versa. Both correlate highly with one another.
 
-We have to overcome this link: We want to increase the degree of separation in order to reduce the number of *false positives* without increasing the number of *false negatives*. We can do this by fine tuning the system of rules in a few places. We will disable certain rules for certain requests. But first we need to have a clear picture of the current situation: How many *false positives* are there and which of the rules are being violated in a particular context? We need a plan and a goal: How many *false positives* are we willing to allow on the system? Reducing them to zero will be extremely difficult to do, but percentages are something we can work with. A possible target would be: 99.9999% of legitimate requests should pass without being blocked by the WAF. This is realistic, but involves a bit of work depending on the application.
+We have to overcome this link: We want to increase the degree of separation in order to reduce the number of *false positives* without increasing the number of *false negatives*. We can do this by fine tuning the system of rules in a few places. We have to exclude certain rules from being executed for certain requests or parameters. But first we need to have a clear picture of the current situation: How many *false positives* are there and which of the rules are being violated in a particular context? How many *false positives* are we willing to allow on the system? Reducing them to zero will be extremely difficult to do, but percentages are something we can work with. A possible target would be: 99.99% of legitimate requests should pass without being blocked by the WAF. This is realistic, but involves a bit of work depending on the application. 99.99% of requests without a false alarm is also a number where professional use starts. But I have setups where we are not willing to accept more than 1 false alarm in 1 million of requests. That's thus 99.9999%.
 
-To reach such a goal we will need one or two tools to help us get a good footing. Specifically, we want to find out the *anomaly scores* the different requests to the server have been assigned and which of the rules have actually been violated. We have seen that the access log reports the anomaly scores of the requests thanks to the special format introduced in one of the previous tutorials. We now want to present these scores in a suitable form.
+To reach such a goal we will need one or two tools to help us get a good footing. Specifically, we need to find out about these numbers. Then, in a second step, we look at the error log to understand the rules that let to these alerts. We have seen that the access log reports the anomaly scores of the requests. Let's try to extract these scores and to present them in a suitable form.
 
 In Tutorial 5 we worked with a sample log file containing 10,000 entries. We’ll be using this log file again here: [tutorial-5-example-access.log](https://www.netnea.com/apache-tutorials/git/laboratory/tutorial-5/tutorial-5-example-access.log). The file comes from a real server, but the IP addresses, server names and paths have been simplified or rewritten. However, the information we need for our analysis is still there. Let’s have a look at the distribution of *anomaly scores*:
 
@@ -647,11 +649,11 @@ $> egrep -o "[0-9-]+$" tutorial-5-example-access.log | sucs
 
 The first command line reads the inbound *anomaly score*. It’s the second-to-last value in the *access log line*. We take the two last values (*egrep*) and then *cut* the first one out. We then sort the results using the familiar *sucs* alias. The outbound *anomaly score* is the last value in the *log line*. This is why there is no *cut* command on the second command line.
 
-The results give us an idea about the situation: The great majority of requests pass the *ModSecurity module* with no rule violation. 80 requests violated one or more rules. This is not a standard situation. In fact, I provoked additional false alarms to give us something to look at. The Core Rules are so optimised these days, that you need a lot of traffic to get a reasonable amount of alerts - or you need to raise the paranoia level very high on a non tuned system.
+The results give us an idea about the situation: The great majority of requests pass the *ModSecurity module* with no rule violation: 9920 requests with score 0. 80 requests violated one or more rules. This is not a standard situation for the Core Rules. In fact, I provoked additional false alarms to give us something to look at. The Core Rules are so optimised these days, that you need a lot of traffic to get a reasonable amount of alerts - or you need to raise the paranoia level very high on a non-tuned system.
 
-A score of 41 appears twice, corresponding to a high number of serious rule infractions. This is very common in practice, where serious SQL injection attempt sets off a series of alarms. In 41 cases we didn’t get any score for the server’s responses. These are log entries of empty requests in which a connection with the client was established, but no request was made. We have taken this possibility into account in the regular expression using *egrep* and are also taking account of the default value "-". Besides these empty entries, nothing else is conspicuous at all. This is typical, if a bit high. In all likelihood we will be seeing a fair number of violations from the requests and very few alarms from the responses.
+A score of 41 appears twice, corresponding to a high number of serious rule infractions. This is very common in practice, where a serious SQL injection attempt sets off a series of alarms. In 41 cases we didn’t get any score for the server’s responses. These are log entries of empty requests in which a connection with the client was established, but no request was made. We have taken this possibility into account in the regular expression using *egrep* and are also taking account of the default value "-". Besides these empty entries, nothing else is conspicuous at all. This is typical, if a bit high. In all likelihood we will be seeing a fair number of violations from the requests and very few alarms from the responses.
 
-But this still doesn’t give us the right idea about the *tuning steps* that would be needed to run this install smoothly. To present this information in suitable form I have prepared a script that analyzes *anomaly scores*. [modsec-positive-stats.rb](https://www.netnea.com/apache-tutorials/git/laboratory/bin/modsec-positive-stats.rb). It takes the two anomaly scores as input and we need to separate them with a semicolon. We can do this as follows:
+But this still doesn’t give us the right idea about the *tuning steps* that would be needed to run this install smoothly. To present this information in suitable form I have prepared a script that analyzes *anomaly scores*. [modsec-positive-stats.rb](https://www.netnea.com/apache-tutorials/git/laboratory/bin/modsec-positive-stats.rb). It takes the two anomaly scores as input and we need to separate them with a semicolon in order to pipe them into the script. We can do this as follows:
 
 ```
 $> cat tutorial-5-example-access.log  | egrep -o "[0-9-]+ [0-9-]+$" | tr " " ";" | modsec-positive-stats.rb
@@ -714,18 +716,17 @@ Reqs with outgoing score of   0 |   9959 |  99.5900% | 100.0000% |   0.0000%
 Average:   0.0000        Median   0.0000         Standard deviation   0.0000
 ```
 
-The script divides the inbound from the outbound *anomaly scores*. The incoming ones are handled first. Before the script can handle the scores, it describes how often an empty *anomaly score* has been found (*empty incoming score*). In our case this was the 41 times we saw before. Then comes the statement about *score 0*: 9920 requests. This is coverage of 99.2%. Together with the empty scores this is already coverage of 99.61% (*Sum of %*). 0.39% had a higher *anomaly score* (*Missing %*). Above we set out to have 99.9999% of requests able to pass the server. We are about 0.38% or 38 requests away from this target. The next *anomaly score* is 2. It appears 11 times or 0.11%. The 3 appears 17 times and a score of 5 8 times. All in all, we are at 99.97%. Then there is one request with a score of 21 and finally 2 requests with 41. To achieve 99.99% coverage we have get to this limit (and, based on the log file, thus achieve 100% coverage).
+The script divides the inbound from the outbound *anomaly scores*. The incoming ones are handled first. Before the script can handle the scores, it describes how often an empty *anomaly score* has been found (*empty incoming score*). In our case this was 41 times, as we saw before. Then comes the statement about *score 0*: 9920 requests. This is covering 99.2% of the requests. Together with the empty scores this is already covering 99.61% (*Sum of %*). 0.39% had a higher *anomaly score* (*Missing %*). Above we set out to have 99.99% of requests able to pass the server. We are about 0.38% or 38 requests away from this target. The next *anomaly score* is 2. It appears 11 times or 0.11%. The 3 appears 17 times and a score of 5 can be seen 8 times. All in all, we are at 99.97%. Then there is one request with a score of 21 and finally 2 requests with 41. To achieve 99.99% coverage we have get to this limit (and, based on the log file, thus achieve 100% coverage).
 
-There are probably some *false positives*. In practice, we have to make certain of this before we start fine tuning the rules. It would basically be wrong to assume a false positive based on a justified alarm and suppress the alarm in the future. Before tuning it must therefore be ensured that no attacks are present in the log file. This is not always very easy. Manual review helps, restricting to known IP addresses, pre-authentication, testing/tuning on a test system separated from the internet, filtering the access log by country of origin for the IP address, etc.: It's a big topic and making general recommendations is difficult.
+There are probably some *false positives*. In practice, we have to make certain of this before we start fine tuning the rules. It would be totally wrong to assume a false positive based on a justified alarm and suppress the alarm in the future. Before tuning it must therefore be ensured that no attacks are present in the log file. This is not always very easy. Manual review helps, restricting to known IP addresses, pre-authentication, testing/tuning on a test system separated from the internet, filtering the access log by country of origin for the IP address, etc.: It's a big topic and making general recommendations is difficult. But please do take this serious.
 
-###Step 6: Suppressing false alarms: Disabling individual rules
+###Step 6: Handling false positives: Disabling individual rules
 
 The simple way of dealing with a *false positive* is to simply disable the rule. We are thus making the alarm disappear by excluding a certain rule from the rule set. The CRS term for this technique is called *Rules Exclusion* or *Exclusion Rules*. It is called *Rule* because this exclusion involved writing rules or directives resembling rules themselves.
 
-Excluding a rule completely takes very little effort, but is of course potentially risky, because the rule is not being disabled for just legitimate users, but for attackers as well. By completely disabling a rule we are thus restricting the capability of *ModSecurity*. Or, expressed more drastically, we’re pulling the teeth out of the *WAF*. This is not something we want in practice. Nevertheless, it is important to know how this simple method works.
+Excluding a rule completely takes very little effort, but it is of course potentially risky, because the rule is not being disabled for just legitimate users, but for attackers as well. By completely disabling a rule we are thus restricting the capability of *ModSecurity*. Or, expressed more drastically, we’re pulling the teeth out of the *WAF*.
 
-Especially at higher paranoia levels, there are rules that just fail to work with some applications and trigger false alarms in all sorts of situations. So there is a use for disabling a rule completely. One notable example is rule ID `920300`: *Request Missing an Accept Header*. There are just so many user agents that submit requests without an accept header. Let's raise the paranoia level to 2 by setting the `tx.paranoia_level` variable to 2 in rule ID 900,000.
-Then we send a request without `Accept` header to trigger an alert as follows:
+Especially at higher paranoia levels, there are rules that just fail to work with some applications and trigger false alarms in all sorts of situations. So there is a use for disabling a rule completely. One notable example is rule ID `920300`: *Request Missing an Accept Header*. There are just so many user agents that submit requests without an accept header, there is a rule dedicated to the problem. Let's raise the paranoia level to 2 by setting the `tx.paranoia_level` variable to 2 in rule ID 900,000.  Then we send a request without `Accept` header to trigger an alert as follows (I suggest to return the paranoia level to 1 again afterwards):
 
 ```bash
 $> curl -v -H "Accept: " http://localhost/index.html
@@ -738,7 +739,7 @@ $> tail /apache/logs/error.log | melidmsg
 920300 Request Missing an Accept Header
 ```
 
-So the rule has been triggered as desired. Let us now exclude the rule. We have multiple options and we start with the most simple one. We exclude the rule at startup time of Apache. This means it removes the rule from the set of loaded rules and no processor cycles will be spent on the rule once the server has started. Of course, we can only remove things which have been loaded before. So this directive has to be placed after the CRS include statement. In the config recipe earlier in this tutorial we have reserved some space for this sort of exclusion rules. We fill in our exclusion directive right in this location:
+So the rule has been triggered as desired. Let us now exclude the rule. We have multiple options and we start with the most simple one: We exclude the rule at startup time of Apache. This means it removes the rule from the set of loaded rules and no processor cycles will be spent on the rule once the server has started. Of course, we can only remove things which have been loaded before. So this directive has to be placed after the CRS include statement. In the config recipe earlier in this tutorial we have reserved some space for this sort of exclusion rules. We fill in our exclusion directive right in this location:
 
 ```bash
 # === ModSec Core Rules: Config Time Exclusion Rules (no ids)
@@ -747,80 +748,90 @@ So the rule has been triggered as desired. Let us now exclude the rule. We have 
 SecRuleRemoveById 920300
 
 ```
-The example comes with a comment, which describes the rule being excluded. This is a good practice, which you should adopt as well. We have the option to exclude by ID (as we just did), or we can select the rule by its message or my one of its tags. Here is an example using the message of the rule 920,300:
+The example comes with a comment, which describes the rule being excluded. This is a good practice, which you should adopt as well. We have the option to exclude by ID (as we just did), to add several comma separated rule IDs, to configure a rule range or we can select the rule by its message or my one of its tags. Here is an example using the message of the rule 920,300:
 
 ```bash
 # ModSec Exclusion Rule: 920300 Request Missing an Accept Header
 SecRuleRemoveByMsg "Request Missing an Accept Header"
 ```
 
-The *SecRuleRemoveByMsg* directive can also use regular expressions as parameters. This also works with the related *SecRuleRemoveByTag* directive as we can see here:
+The *SecRuleRemoveByMsg* directive can also use regular expressions as parameters. This works with the related *SecRuleRemoveByTag* directive as well:
 
 ```bash
 SecRuleRemoveByTag "MISSING_HEADER_ACCEPT$"
 ```
 
-Excluding a rule completely is simple, but it is also a very drastic step. If our issues with the rule 920300 are limited to an agent checking the availability of our service by requesting the index page, we can limit the exclusion to this individual request. This is no longer a startup time rule exclusion, but a runtime exclusion which is being applied on certain conditions. Runtime exclusions leverage the *SecRule* directive combined with a special action executing the rule exclusion. This depends on the SecRule statement running before the rule in question is being applied. That's why run-time rule exclusions have to be placed before the Core Rules include statement, where we also reserved a space for this type of exclusion rules:
+Unfortunately, the support for regular expressions it not universal. For example the *OR* functionality, expressed with a pipe character, is not implemented. In practice, you will have to try it out and see for yourself.
+
+So these are startup rule exclusions. Excluding a rule in this manner is simple and readable, but it is also a drastic step which we will not use in a production setup very often. Because, if our issues with the rule 920300 are limited to a single legitimate agent checking the availability of our service by requesting the index page, we can limit the exclusion to this individual request. This is no longer a startup time rule exclusion, but a runtime exclusion which is being applied on certain conditions. Runtime exclusions leverage the *SecRule* directive combined with a special action executing the rule exclusion. This depends on the SecRule statement running before the rule in question is being applied. That's why run-time rule exclusions have to be placed before the Core Rules include statement, where we also reserved a space for this type of exclusion rule:
 
 ```bash
-# === ModSec Core Rules: Runtime Exclusion Rules
-#                        order by id of ignored rule (ids: 10000-49999)
+# === ModSec Core Rules: Runtime Exclusion Rules (ids: 10000-49999)
 
 # ModSec Exclusion Rule: 920300 Request Missing an Accept Header
 SecRule REQUEST_FILENAME "@beginsWith /index.html" "phase:1,nolog,pass,id:10000,ctl:ruleRemoveById=920300"
 ```
 
-This type of exclusion is harder to read. Watch out for the *ctl* statement: `ctl:ruleRemoveById=920300`. This is the control action, which is used for runtime changes of the configuration of the ModSecurity rule engine. We use *ruleRemoveById* as control statement and apply it to rule ID 920300. This block is placed within a standard SecRule directive. This allows us to use the complete power of SecRule to exclude the rule 920300 in very specific situations. Here we exclude it based on the path of the request, but we could apply it depending on the agent's IP address - or a combination of the two in a chained rule statement (which we will examine shortly).
+Now this is harder to read. Watch out for the *ctl* statement: `ctl:ruleRemoveById=920300`. This is the control action, which is used for runtime changes of the configuration of the ModSecurity rule engine. We use *ruleRemoveById* as the control statement and apply it to rule ID 920300. This block is placed within a standard *SecRule* directive. This allows us to use the complete power of *SecRule* to exclude the rule 920300 in very specific situations. Here we exclude it based on the path of the request, but we could apply it depending on the agent's IP address - or a combination of the two in a chained rule statement.
 
+Like with the startup rule exclusions, we are not limited to an exclusion by rule ID. Exclusions by message or tag will work just as well (`ctl:ruleRemoveByMsg`, `ctl:ruleRemoveByTag`). Again, regular expressions are supported, but only to a certain extend.
 
-ruleRemoveByMsg
-ruleRemoveByTag
+Startup time rule exclusions and runtime rule exclusions have the same effect, but internally, they are really different. With the runtime exclusions, you gain granular control at the cost of performance as the exclusion is being evaluated for every single request. Startup time exclusions are performing better and they are easier to read and write.
 
+###Step 7: Handling false positives: Disabling individual rules for specific parameters
 
+Next we look at excluding an individual parameter from being evaluated by a specific rule. So unlike our example 920300, which looked at the specific Accept header, we are now targeting rules examining the ARGS group of variables.
 
-Startup time rule exclusions and runtime rule exclusions have the same effect, but the technique is really different. With the runtime exclusion, you gain granular control at the cost of performance as the exclusion is being evaluated for every single request. While as the startup time exclusion happens only once.
+Let's assume we have a password field in an authentication scheme like we used in the previous tutorial. Users are advised to use hard to guess passwords with lots of special characters which leads to the Core Rules sending a steady stream of alerts because of strange password in this parameter field.
 
-
-
-
-
-###Step 7: Suppressing false alarms: Disabling individual rules for specific parameters
-
-Next we look at excluding an individual parameter from being evaluated by a specific rule. So unlike our example 920300
-
-Till now we have suppressed individual rules for specific paths. In practice there is a second case that at least quantitatively is very widespread: An individual parameter, typically a cookie, triggers rule violation regardless of path. Each individual request results in a rule violation. An initial look at the statistics can come as quite a shock. But only when you see how easy this is to handle does the situation settle down a bit. You’d have to disable the rule for the base path */* or manage to generally disable the rules for the affected parameter. This is done as follows:
+Here is an artificial example triggering the rule 942100, which leverages the libinjection library to detect SQL injections. Execute this command and you get an alert:
 
 ```bash
-SecRuleUpdateTargetById 950005 "!REQUEST_COOKIES:basket_id"
+$> curl --data "password=' or f7x=gZs" localhost/login/login.do
 ```
 
-This directive, that has to be configured after loading the *core rules*, matches the *target list* in rule 950005. This means that the cookie *basket_id* should no longer be inspected by rule 950005. This again results in blindness, but a cookie can be very easily checked at a later point in time as to whether the rules related to it are still relevant.
-
-For form parameters we shouldn’t proceed so generally that we disable it for the entire service. There is however another rule pattern closely based on this example, but which is only effective on a single path for an individual parameter:
+There is little wrong with this password from a security perspective. In fact we should just disable this rule. But of course it would be wrong to disable this rule completely. It serves a very important purpose with many other parameter. Ideally, we want to exclude the parameter password from bring examined by this rule. Here is the startup time rule exclusion performing this task:
 
 ```bash
-SecRule REQUEST_FILENAME "@beginsWith /app/submit.do" \
-	"phase:2,nolog,pass,t:none,id:10002,ctl:ruleRemoveTargetById=950005;ARGS:contact_form_name"
+SecRuleUpdateTargetById 942100 !ARGS:password
 ```
 
-We disable the handling of the *contact_form_name* parameter via rule *950005* for the path */app/submit.do*.. This does the job right and in my experience is the preferred way to suppress an individual false positive for a parameter.
-
-Using the different methods to design *ignore rules* gives us the tools we need to work through the *false positives* one by one. Being able to work quickly requires experience and helpful tools which we will becoming familiar with in the next tutorial.
-
-
-FIXME -----------------------------------
-
+This directive adds "not ARGS:password" to the list of parameters to be examined by rule 942100. This effectively excludes the parameter from the evaluation. This directive also accepts rule ranges as parameter and it comes with two siblings for messages and tags. Of course, this directive also exists in a variant where we select the rule via its message:
 
 ```bash
-# ModSec Rule Exclusion: 920300 : Request Missing an Accept Header (severity: 2 NOTICE)
-SecRule REQUEST_FILENAME "@beginsWith /foo" "phase:1,nolog,pass,id:10000,ctl:ruleRemoveById=920300"
-
+SecRuleUpdateTargetByMsg "SQL Injection Attack Detected via libinjection" !ARGS:password
 ```
+
+And here is what it looks like for tags:
+
 ```bash
-SecRule REQUEST_FILENAME "@beginsWith /" "phase:1,nolog,pass,t:none,id:10000,ctl:ruleRemoveById=960015"
+SecRuleUpdateTargetByTag "attack-sqli" !ARGS:password
 ```
 
-We define a rule that first inspects the path. With the condition for the path *"/"*, the rule will of course always apply and the condition is therefore not needed. We prefer to set it this way nevertheless, because this base pattern can easily be used for different paths. Without a condition we would formulate it as *SecAction*. In phase 1 of our rule we define that we don’t want to log, but assign an ID to the beginning of our block (*10000*). Finally, we suppress rule *960015*. This is done via a control instruction (*ctl.*).
+The tag we are using in this example, *attack-sqli*, points to a wide range of SQL injection rules. So it will prevent a whole class of rules from looking at the password parameter. This makes sense for this password parameter, but it might go too far for other parameters. So it really depends on the application and the parameter in question.
+
+A password parameter is generally only used on the login request, so it we can work with the `SecRuleUpdateTargetById` directive in practice, so that all occurrences of the said parameter are exempt from examination by rule 942100. But let's say we want to do exclude it only under certain conditions: In this case, we want to look at the parameter when a scanner is submitting it and one fairly good way to detect scanners is by looking at the *Referer* request header. So the idea is to check the correct header and then exclude the parameter from examination by 942100. This runtime rule exclusion works with a control action, similar to the one we have seen before.
+
+```bash
+SecRule REQUEST_HEADERS:Referer "@streq http://localhost/login/displayLogin.do" "phase:1,nolog,pass,id:10000,ctl:ruleRemoveTargetById=942100;ARGS:password"
+
+```
+
+The format of the control action is really difficult to grasp now: In addition to the rule ID, we add a semicolon and then the password parameter as part of the ARGS group of variables. In ModSecurity, this is called the ARGS collection with the colon as separator. Try to memorize this! 
+
+In profession use, this is likely the exclusion rule construct, which is used the most (not with the Referer header, though, but with the *REQUEST_FILENAME* variable). This exclusion construct is very granular on the parameter level and it can be constructed to have only minimal impact on the requests thanks to the power of *SecRule*.
+
+This is the same concept applied to messages:
+
+```bash
+SecRule REQUEST_HEADERS:Referer "@streq http://localhost/login/displayLogin.do" "phase:1,nolog,pass,id:10000,ctl:ruleRemoveTargetByMsg=SQL.Injection.Attack.Detected.via.libinjection;ARGS:password"
+```
+
+Unfortunately, the message parameter does not cope with space characters. But as the parameter accepts regular expressions, we can substitute the space with dots to get it working. Finally, let's look at the tag variant of this rule exclusion type:
+
+```bash
+SecRule REQUEST_HEADERS:Referer "@streq http://localhost/login/displayLogin.do" "phase:1,nolog,pass,id:10000,ctl:ruleRemoveTargetByTag=attack-sqli;ARGS:password"
+```
 
 That was very important. Therefore, to summarize once again: We define a rule to suppress another rule. We use a pattern for this which lets us define a path as a condition. This enables us to disable rules for individual parts of an application. Only in those places where false alarms occur. This prevents us from disabling rules on the entire server, considering that the false alarm occurs only when processing one individual form, which is frequently the case. This would look something like this:
 
@@ -829,221 +840,80 @@ SecRule REQUEST_FILENAME "@beginsWith /app/submit.do" "phase:1,nolog,pass,t:none
 ctl:ruleRemoveById=960015"
 ```
 
-We have now disabled a rule. For the entire service (*"/"*) or for a specific sub-path (*"/app/submit.do"*). Unfortunately, we have gone a bit blind with respect to these rules. We never know whether incoming requests would violate the rule. Because we aren’t always familiar with the applications on our servers in detail and if we now wait a year and think about whether we still need the *ignore rule*, we won’t have an answer for that. We have suppressed every message on the topic. It would be ideal if we could still observe when the rule takes effect, but without blocking the request and having the *anomaly score* remain unchanged. Increasing an *anomaly score* is done in the definition of the rule. In rule *960015* of the *core rules* this is solved as follows:
+With this, we have seen all basic methods to handle false positives via rule exclusions. You now use the patterns for *ignore rules* described above to work through the various *false positives*. 
 
-```
-setvar:tx.inbound_anomaly_score=+%{tx.notice_anomaly_score}"
-```
+###Step 8: Readjusting the anomaly threshold
 
-Here the value *tx.notice_anomaly_score* is added to the *inbound_anomaly_score* transaction variable. We have the option of changing the configuration of this rule without touching the rule file. We can’t suppress addition, but we can neutralize it by subtraction. However, this means another rule pattern in the form of a rule configured after the *core rules* are embedded.
+Handling false positives is at times tedious. However, with the goal of protecting the application in detail, it is most certainly worthwhile. When we introduced the statistic script I stated, that we should make sure that at least 99.99% of requests pass through the rule set without any false positives. The remaining positives, the ones caused by attackers, should be blocked. But we are still running with an anomaly limit of 1,000. We need to reduce this to a decent level. Any limit above 30 or 40 is unlikely to stop anything serious. With a threshold of 20 you start to see an effect and then with 10 you get a fairly good protection from standard attackers. Even if an individual rule only scores at 5 points, some attack classes like SQL injections typically trigger multiple alarms, so a limit of 10 catches quite a few attacking requests. In other categories, the coverage with rules is less extensive. This means, the cumulation of multiple rules is less intense. So it is perfectly possible to stay beneath a score of 10 with a certain attack payload. That's why a limit of 5 for the inbound score and 4 for the outbound score gives you a good level security.
 
-```
-...
-SecRule REQUEST_FILENAME "@beginsWith /index.html" "chain,phase:2,log,pass,t:none,id:10004,\
-	msg:'Adjusting inbound anomaly score for rule 960015'"
-   SecRule "&TX:960015-OWASP_CRS/PROTOCOL_VIOLATION/MISSING_HEADER-REQUEST_HEADERS" "@ge 1" \
-   	"setvar:tx.inbound_anomaly_score=-%{tx.notice_anomaly_score}"
-...
-```
-
-Here we have two rules combined via the *chain* command. This means that the first rule formulates a condition and the second rule is only executed if the first condition is true. Another somewhat cryptic condition is formulated in the second rule. Specifically, we are looking if a specific variable is set, in particular *TX:960015-OWASP_CRS/PROTOCOL_VIOLATION/MISSING_HEADER-REQUEST_HEADERS*. This transaction variable was set by rule *960015* and indicates a match for rule 960015. So, if we find this variable this means that rule 960015 was applied. In this case we again reduce the *inbound anomaly score* by the same value the rule increased it. We thus neutralize the effect of the rule without suppressing the message itself.
-
-Afterwards, for the *curl* request presented above this results in two entries in the *error log*:
+But how to lower the limit from 1000 to 5 without harming production? It takes a certain trust in your tuning skills to perform this step. A more natural approach is to go over multiple iterations: An initial tuning round is performed with a limit of 1,000. When the most blatant sources of false positives are eliminated this way, you wait from a given amount of time and then lower the limit to 50 and examine the logs again. Tune and reduce to 30, then 20, 10 and finally 5. After every reduction, you need to check the new logs files and run the statistic script. By looking at the statistics, you see what you can expect from a reduction of the limit. Let's once more look at the stats we examined before:
 
 ```bash
-[2015-11-08 08:16:19.215089] [-:error] - - [client 127.0.0.1] ModSecurity: Warning. Operator EQ matched 0 at REQUEST_HEADERS. [file "/modsecurity-core-rules/modsecurity_crs_21_protocol_anomalies.conf"] [line "47"] [id "960015"] [rev "1"] [msg "Request Missing an Accept Header"] [severity "NOTICE"] [ver "OWASP_CRS/2.2.9"] [maturity "9"] [accuracy "9"] [tag "Local Lab Service"] [tag "OWASP_CRS/PROTOCOL_VIOLATION/MISSING_HEADER_ACCEPT"] [tag "WASCTC/WASC-21"] [tag "OWASP_TOP_10/A7"] [tag "PCI/6.5.10"] [hostname "localhost"] [uri "/app/submit.do"] [unique_id "Vj72w38AAQEAADwHNSoAAAAA"]
-[2015-11-08 08:16:19.220263] [-:error] - - [client 127.0.0.1] ModSecurity: Warning. Operator GE matched 1 at TX. [file "/apache/conf/httpd.conf_labor-06"] [line "187"] [id "10001"] [msg "Adjusting inbound anomaly score for rule 960015"] [tag "Local Lab Service"] [hostname "localhost"] [uri "/app/submit.do"] [unique_id "Vj72w38AAQEAADwHNSoAAAAA"]
-```
-
-The entry about the final *anomaly score* does not appear, because this value was reset to 0. All this means that we will now continue to be informed if a rule violation occurs, but the request will no longer be assigned an *anomaly score* based on this rule. In this sense, we have accepted the alarm.
-
-These types of rules are demanding: While the first condition follows a familiar pattern, the second rule which includes the transaction variable involves a lot of writing: How do we get to the variable names and from where exactly do we know the score?
-
-We can either get the variable names from the rule definitions in the *core rules* or stick with the *debug log* that we define at the highest level (*SecDebugLogLevel 9*):
-
-```
-$> sudo egrep "Set variable.*960015" logs/modsec_debug.log
-[16/Dec/2013:10:16:11 +0100] [localhost/sid#1470170][rid#7fbc5c018e40][/app/submit.do][9] Set variable "tx.960015-OWASP_CRS/PROTOCOL_VIOLATION/MISSING_HEADER-REQUEST_HEADERS" to "0".
-```
-
-The *tx.960015-OWASP_CRS/PROTOCOL_VIOLATION/MISSING_HEADER-REQUEST_HEADERS* written here must be written in a rule as *TX:960015-OWASP_CRS/PROTOCOL_VIOLATION/MISSING_HEADER-REQUEST_HEADERS*, written exactly as we just did above. The *&* in front means that it’s not the variable itself being inspected, but the number of variables with this name: *1*. The exact value by which we have to subtract again in the *inbound anomaly score* is again found in the *debug log*:
-
-```bash
-$> sudo egrep -B9 "Set variable.*960015" logs/modsec_debug.log
-[08/Nov/2015:08:16:19 +0100] [localhost/sid#758700][rid#7fee30002970][/app/submit.do][9] Setting variable: tx.anomaly_score=+%{tx.notice_anomaly_score}
-[08/Nov/2015:08:16:19 +0100] [localhost/sid#758700][rid#7fee30002970][/app/submit.do][9] Recorded original collection variable: tx.anomaly_score = "0"
-[08/Nov/2015:08:16:19 +0100] [localhost/sid#758700][rid#7fee30002970][/app/submit.do][9] Resolved macro %{tx.notice_anomaly_score} to: 2
-[08/Nov/2015:08:16:19 +0100] [localhost/sid#758700][rid#7fee30002970][/app/submit.do][9] Relative change: anomaly_score=0+2
-[08/Nov/2015:08:16:19 +0100] [localhost/sid#758700][rid#7fee30002970][/app/submit.do][9] Set variable "tx.anomaly_score" to "2".
-[08/Nov/2015:08:16:19 +0100] [localhost/sid#758700][rid#7fee30002970][/app/submit.do][9] Setting variable: tx.%{rule.id}-OWASP_CRS/PROTOCOL_VIOLATION/MISSING_HEADER-%{matched_var_name}=%{matched_var}
-[08/Nov/2015:08:16:19 +0100] [localhost/sid#758700][rid#7fee30002970][/app/submit.do][9] Resolved macro %{rule.id} to: 960015
-[08/Nov/2015:08:16:19 +0100] [localhost/sid#758700][rid#7fee30002970][/app/submit.do][9] Resolved macro %{matched_var_name} to: REQUEST_HEADERS
-[08/Nov/2015:08:16:19 +0100] [localhost/sid#758700][rid#7fee30002970][/app/submit.do][9] Resolved macro %{matched_var} to: 0
-[08/Nov/2015:08:16:19 +0100] [localhost/sid#758700][rid#7fee30002970][/app/submit.do][9] Set variable "tx.960015-OWASP_CRS/PROTOCOL_VIOLATION/MISSING_HEADER-REQUEST_HEADERS" to "0"
-```
-
-Here we see in detail how *ModSecurity* performed its arithmetic functions. What’s interesting is the first line showing how the anomaly score is increased. It is increased by *tx.notice_anomaly_score*. We would also find this value in the definition of the *core rules*, but it’s easier to read here.
-
-It can of course happen that a rule is violated multiple times. This means that multiple parameters are violating the same rule. We can also cover this case, at yet another level of complexity. In this case, *ModSecurity* writes a collection variable that includes the variable names: rule number and name with the suffix *-ARGS:<name>* added to it. For a *file injection rule* such as *950005* this results, for example, in *TX:950005-OWASP_CRS/WEB_ATTACK/FILE_INJECTION-ARGS:contact_form_name*. If we are dealing with two parameters that are violating this rule (say, for instance *contact_form_name* and *contact_form_address*), we use the following construct:
-
-```bash
-SecRule REQUEST_FILENAME "@beginsWith /app/submit.do" "chain,phase:2,log,t:none,pass,id:10003, \
-	msg:'Adjusting inbound anomaly score for rule 950005'"
-   SecRule "&TX:950005-OWASP_CRS/WEB_ATTACK/FILE_INJECTION-ARGS:contact_form_name" "@ge 1" \
-   	"setvar:tx.inbound_anomaly_score=-%{tx.critical_anomaly_score}"
-
-SecRule REQUEST_FILENAME "@beginsWith /submit.do" "chain,phase:2,log,pass,t:none,id:10004, \
-	msg:'Adjusting inbound anomaly score for rule 950005'"
-   SecRule "&TX:950005-OWASP_CRS/WEB_ATTACK/FILE_INJECTION-ARGS:contact_form_address" "@ge 1" \
-   	"setvar:tx.inbound_anomaly_score=-%{tx.critical_anomaly_score}"
-```
-
-We can trigger the rule violation and change of anomaly value just configured with the following request:
-
-```bash
-$> curl -d "contact_form_name=/etc/passwd" -d "contact_form_address=/etc/passwd" \
-	http://localhost/app/submit.do
-...
-$> tail -1 logs/access.log
-127.0.0.1 - - [2015-11-08 08:25:46.950543] "POST /app/submit.do HTTP/1.1" 404 45 "-" \
-"curl/7.46.0-DEV" localhost 127.0.0.1 80 - - "-" Vj74@n8AAQEAADydhKkAAAAE - - 219 231 \
--% 21734 19189 71 588 0 0
-$> grep Vj74@n8AAQEAADydhKkAAAAE logs/error.log
-...
-[2015-11-08 08:25:46.961718] [-:error] - - [client 127.0.0.1] ModSecurity: Warning. Pattern match "(?:\\\\b(?:\\\\.(?:ht(?:access|passwd|group)|www_?acl)|global\\\\.asa|httpd\\\\.conf|boot\\\\.ini)\\\\b|\\\\/etc\\\\/)" at ARGS:contact_form_address. [file "/modsecurity-core-rules/modsecurity_crs_40_generic_attacks.conf"] [line "205"] [id "950005"] [rev "3"] [msg "Remote File Access Attempt"] [data "Matched Data: /etc/ found within ARGS:contact_form_address: /etc/passwd"] [severity "CRITICAL"] [ver "OWASP_CRS/2.2.9"] [maturity "9"] [accuracy "9"] [tag "Local Lab Service"] [tag "OWASP_CRS/WEB_ATTACK/FILE_INJECTION"] [tag "WASCTC/WASC-33"] [tag "OWASP_TOP_10/A4"] [tag "PCI/6.5.4"] [hostname "localhost"] [uri "/app/submit.do"] [unique_id "Vj74@n8AAQEAADydhKkAAAAE"]
-[2015-11-08 08:25:46.961953] [-:error] - - [client 127.0.0.1] ModSecurity: Warning. Pattern match "(?:\\\\b(?:\\\\.(?:ht(?:access|passwd|group)|www_?acl)|global\\\\.asa|httpd\\\\.conf|boot\\\\.ini)\\\\b|\\\\/etc\\\\/)" at ARGS:contact_form_name. [file "/modsecurity-core-rules/modsecurity_crs_40_generic_attacks.conf"] [line "205"] [id "950005"] [rev "3"] [msg "Remote File Access Attempt"] [data "Matched Data: /etc/ found within ARGS:contact_form_name: /etc/passwd"] [severity "CRITICAL"] [ver "OWASP_CRS/2.2.9"] [maturity "9"] [accuracy "9"] [tag "Local Lab Service"] [tag "OWASP_CRS/WEB_ATTACK/FILE_INJECTION"] [tag "WASCTC/WASC-33"] [tag "OWASP_TOP_10/A4"] [tag "PCI/6.5.4"] [hostname "localhost"] [uri "/app/submit.do"] [unique_id "Vj74@n8AAQEAADydhKkAAAAE"]
-[2015-11-08 08:25:46.970259] [-:error] - - [client 127.0.0.1] ModSecurity: Warning. Operator GE matched 1 at TX. [file "/apache/conf/httpd.conf_labor-06"] [line "187"] [id "50001"] [msg "Adjusting inbound anomaly score for rule 950005"] [tag "Local Lab Service"] [hostname "localhost"] [uri "/app/submit.do"] [unique_id "Vj74@n8AAQEAADydhKkAAAAE"]
-[2015-11-08 08:25:46.970320] [-:error] - - [client 127.0.0.1] ModSecurity: Warning. Operator GE matched 1 at TX. [file "/apache/conf/httpd.conf_labor-06"] [line "190"] [id "50002"] [msg "Adjusting inbound anomaly score for rule 950005"] [tag "Local Lab Service"] [hostname "localhost"] [uri "/app/submit.do"] [unique_id "Vj74@n8AAQEAADydhKkAAAAE"]
-
-```
-
-As you see, we can instruct *ModSecurity* to apply the core rules without having to increase the score. But to be honest, you have to admit that the design of such a construct is extremely complex and error-prone. This is why I don’t use this technique in practice, but only suppress *false positives* by selectively disabling rules and for this reason am struggling with the blindness described at the beginning. 
-
-
-
-
-###Step 8: Readjusting the anomaly limit
-
-You now use the patterns for *ignore rules* described above to work through the various *false positives*. This work is very complex. However, with the goal of protecting the application in detail, it is most certainly worthwhile. What should however be considered is the degree to which the *false positives* are to be eliminated. A typical target value is something such as blocking a request that violated a rule on a level lower than *critical*. This means setting the *anomaly limit* to 5. Now, every request that violates a critical rule is assigned a score of a least 5 and is blocked in the end. A service tuned this way could receive an *access log* analysis using the following pattern:
-
-```
-$> egrep  -o "[0-9]+ [0-9]+$" logs/access.log   | ./modsec-positive-stats.rb 
 INCOMING                     Num of req. | % of req. |  Sum of % | Missing %
 Number of incoming req. (total) |  10000 | 100.0000% | 100.0000% |   0.0000%
 
-Empty or miss. incoming score   |      0 |   0.0000% |   0.0000% | 100.0000%
-Reqs with incoming score of   0 |   9970 |  99.7000% |  99.7000% |   0.3000%
-Reqs with incoming score of   1 |      4 |   0.0400% |  99.7400% |   0.2600%
-Reqs with incoming score of   2 |     21 |   0.2100% |  99.9500% |   0.0500%
-Reqs with incoming score of   3 |      0 |   0.0000% |  99.9500% |   0.0500%
-Reqs with incoming score of   4 |      4 |   0.0400% |  99.9900% |   0.0100%
-Reqs with incoming score of   5 |      1 |   0.0100% | 100.0000% |   0.0000%
-
-Average:   0.0067        Median   0.0000         Standard deviation   0.1329
-
-
-OUTGOING                     Num of req. | % of req. |  Sum of % | Missing %
-Number of outgoing req. (total) |  10000 | 100.0000% | 100.0000% |   0.0000%
-
-Empty or miss. outgoing score   |      0 |   0.0000% |   0.0000% | 100.0000%
-Reqs with outgoing score of   0 |  10000 | 100.0000% | 100.0000% |   0.0000%
-
-Average:   0.0000        Median   0.0000         Standard deviation   0.0000
+Empty or miss. incoming score   |     41 |   0.4100% |   0.4100% |  99.5900%
+Reqs with incoming score of   0 |   9920 |  99.2000% |  99.6100% |   0.3900%
+Reqs with incoming score of   1 |      0 |   0.0000% |  99.6100% |   0.3900%
+Reqs with incoming score of   2 |     11 |   0.1100% |  99.7200% |   0.2800%
+Reqs with incoming score of   3 |     17 |   0.1699% |  99.8900% |   0.1100%
+Reqs with incoming score of   4 |      0 |   0.0000% |  99.8900% |   0.1100%
+Reqs with incoming score of   5 |      8 |   0.0800% |  99.9700% |   0.0300%
+Reqs with incoming score of   6 |      0 |   0.0000% |  99.9700% |   0.0300%
+Reqs with incoming score of   7 |      0 |   0.0000% |  99.9700% |   0.0300%
+Reqs with incoming score of   8 |      0 |   0.0000% |  99.9700% |   0.0300%
+Reqs with incoming score of   9 |      0 |   0.0000% |  99.9700% |   0.0300%
+Reqs with incoming score of  10 |      0 |   0.0000% |  99.9700% |   0.0300%
+Reqs with incoming score of  11 |      0 |   0.0000% |  99.9700% |   0.0300%
+Reqs with incoming score of  12 |      0 |   0.0000% |  99.9700% |   0.0300%
+Reqs with incoming score of  13 |      0 |   0.0000% |  99.9700% |   0.0300%
+Reqs with incoming score of  14 |      0 |   0.0000% |  99.9700% |   0.0300%
+Reqs with incoming score of  15 |      0 |   0.0000% |  99.9700% |   0.0300%
+Reqs with incoming score of  16 |      0 |   0.0000% |  99.9700% |   0.0300%
+Reqs with incoming score of  17 |      0 |   0.0000% |  99.9700% |   0.0300%
+Reqs with incoming score of  18 |      0 |   0.0000% |  99.9700% |   0.0300%
+Reqs with incoming score of  19 |      0 |   0.0000% |  99.9700% |   0.0300%
+Reqs with incoming score of  20 |      0 |   0.0000% |  99.9700% |   0.0300%
+Reqs with incoming score of  21 |      1 |   0.0100% |  99.9800% |   0.0200%
+Reqs with incoming score of  22 |      0 |   0.0000% |  99.9800% |   0.0200%
+Reqs with incoming score of  23 |      0 |   0.0000% |  99.9800% |   0.0200%
+Reqs with incoming score of  24 |      0 |   0.0000% |  99.9800% |   0.0200%
+Reqs with incoming score of  25 |      0 |   0.0000% |  99.9800% |   0.0200%
+Reqs with incoming score of  26 |      0 |   0.0000% |  99.9800% |   0.0200%
+Reqs with incoming score of  27 |      0 |   0.0000% |  99.9800% |   0.0200%
+Reqs with incoming score of  28 |      0 |   0.0000% |  99.9800% |   0.0200%
+Reqs with incoming score of  29 |      0 |   0.0000% |  99.9800% |   0.0200%
+Reqs with incoming score of  30 |      0 |   0.0000% |  99.9800% |   0.0200%
+Reqs with incoming score of  31 |      0 |   0.0000% |  99.9800% |   0.0200%
+Reqs with incoming score of  32 |      0 |   0.0000% |  99.9800% |   0.0200%
+Reqs with incoming score of  33 |      0 |   0.0000% |  99.9800% |   0.0200%
+Reqs with incoming score of  34 |      0 |   0.0000% |  99.9800% |   0.0200%
+Reqs with incoming score of  35 |      0 |   0.0000% |  99.9800% |   0.0200%
+Reqs with incoming score of  36 |      0 |   0.0000% |  99.9800% |   0.0200%
+Reqs with incoming score of  37 |      0 |   0.0000% |  99.9800% |   0.0200%
+Reqs with incoming score of  38 |      0 |   0.0000% |  99.9800% |   0.0200%
+Reqs with incoming score of  39 |      0 |   0.0000% |  99.9800% |   0.0200%
+Reqs with incoming score of  40 |      0 |   0.0000% |  99.9800% |   0.0200%
+Reqs with incoming score of  41 |      2 |   0.0200% | 100.0000% |   0.0000%
 ```
 
-Of 10,000 requests, 9,999 have an *anomaly score* of 4 or lower. This is a fine tuned service. We can thus reduce the *inbound anomaly score limit* increased at the beginning. If we want to be notified of critical rule violations, we set the limits as follows:
+10,000 requests is not really a big log file. But it will do for now. Based on the data, we can immediately decide to reduce the limit to 50. It is unlikely that a request will hit that threshold - and if it does, it is an isolated transaction which is very rare.
 
-```
-...
-SecAction "id:'900002',phase:1,t:none,setvar:tx.inbound_anomaly_score_level=5,nolog,pass"
-SecAction "id:'900003',phase:1,t:none,setvar:tx.outbound_anomaly_score_level=5,nolog,pass"
-...
-```
+Reducing the limit to 30 would probably be a bit overzealous, because the column on the right states that 0.02% of the requests scored higher than 30. Apparently we should get rid of the false positives at 41 before we should reduce the limit to 30. 
 
-We do the same with the *outbound anomaly score*. In practice, you’ll have to be a bit more nuanced.
+With this statistical data, the iterative tuning process becomes quite clear: The *modsec-positive-stats.rb* script brings sense and reason to the process.
 
-###Step 9: Summary of the ways of combating false positives
+For the outbound responses, the situation is a bit simpler as you will hardly see any
+scores above 5. There simply are not enough rules to have any cumulative effect; probably because there is not much you can check in a response. So I reduce the response threshold down to 5 or 4 rather quickly ( 4which happens to be the default value of the Core Rule Set outbound request threshold).
 
-We have become familiar with four different ways of suppressing a false alarm. I’m presenting them here again along with specific examples:
+I think the tuning concept and the theory are now quite clear. In the next tutorial we will continue with the tuning of false positives to gain some practice with the methods demonstrated here. And I will also introduce a script which helps with the construction of the more complicated exclusion rules.
 
+###Step 9 (Goodie): Summary of the ways of combating false positives
 
-**Case 1 : Disabling a rule completely** </br>
+It is possibly best to summarize the tuning directives in graphic.
 
-```bash
-# ModSecurity Rule Exclusion: 920350 Host header is a numeric IP address
-SecRuleRemoveById 920350
-```
+![Screenshot: SSLLabs](./tutorial-7-exclusion-directives-summary.png)
 
-This is the most simple form of an exclusion rule that disables a rule completely. 
-
-The directive has to
-be placed after the `Include` directive loading the rule with the ID in question. The rule will thus
-be disabled during the startup of the server.
-
-The rule IDs can be comma separated, or you can issue a range (e.g. `920000-920999`).
-
-Alternatives exist in the form of `SecRuleRemoveByMsg` and `SecRuleRemoveByTag` which both allow for regular expression patterns.
-
-
-
-**Case 2 : Disabling a rule for a specific parameter** </br>
-
-```bash
-# ModSecurity Rule Exclusion for cookie PHPSESSID: 942450 SQL Hex Encoding Identified
-SecRuleUpdateTargetById 942450 "!REQUEST_COOKIES:PHPSESSID"
-```
-This is the more advanced form of an exclusion rule that removes an individual parameter from the set of targets of an individual rule.
-
-The directive has to be placed after the `Include` directive loading the rule with the ID in question. The rule target will thus
-be disabled during the startup of the server.
-
-The rule IDs can be comma separated, or you can issue a range (e.g., `920000-920999`).
-
-The target can be defined with the help of a regular expression (e.g., `!REQUEST_COOKIES:/^.*SESS/`). 
-
-Alternatives exist in the form of `SecRuleUpdateTargetByMsg` and `SecRuleUpdateTargetByTag` which both allow for regular expression patterns.
-
-
-**Case 3 : Disabling the rule for a specific path** </br>
-
-```bash
-# ModSecurity Rule Exclusion: 920350 Host header is a numeric IP address
-SecRule REQUEST_FILENAME "@beginsWith /availability-check.do" \
-	"phase:1,nolog,pass,t:none,id:10001,ctl:ruleRemoveById=920350"
-```
-Location in the configuration: Preferably in front of the *Core Rule Inclusion*, but for *phase:1* can also be placed after *include*. </br>
-Phase: Best in phase 1, because the path is known at this moment.</br>
-
-
-**Case 4 : Disabling rules for specific parameters on a specific path** </br>
-
-```bash
-# ModSecurity Rule Exclusion for parameter password: 942450 SQL Hex Encoding Identified
-SecRule REQUEST_FILENAME "@beginsWith /login/submit.do" \
-	"phase:2,nolog,pass,t:none,id:10002,ctl:ruleRemoveTargetById=942450;ARGS:password"
-```
-Location in the configuration: Preferably placed after the *Core Rule Inclusion*. </br>
-Phase: Required for *post parameter* in phase 2, otherwise conceivable in phase 1.</br>
-
-
-**Case 5 : Keep the rule enabled, but disable scoring for specific parameters on specific paths** </br>
-
-```bash   
-SecRule REQUEST_FILENAME "@beginsWith /app/submit.do" \
-	"chain,phase:2,log,pass,t:none,id:10003,msg:'Adjusting inbound anomaly score for rule 950005'"
-SecRule "&TX:950005-OWASP_CRS/WEB_ATTACK/FILE_INJECTION-ARGS:contact_form_name" "@ge 1" \
-	"setvar:tx.inbound_anomaly_score=-%{tx.critical_anomaly_score}"
-```
-Location in the configuration: Preferably placed after the *Core Rule Inclusion*. </br>
-Phase: Required for *post parameter* in phase 2, otherwise conceivable in phase 1.</br>
-
-In practice, it’s important to proceed systematically. *ModSecurity* and the *core rules* are already complex enough. If we don’t watch out, all of our fine tuning efforts will only result in chaos at the end. It’s better to think about which rule fine tuning approaches you want to work with. In technical terms, the one manipulating the *anomaly scores* is the preferred approach. It is however very hard to read and the work required for writing and testing outweighs the simpler ones, although this in turn is accompanied by the disadvantage described above that all messages for the rule are suppressed.
-
-In the next tutorial we will be turning to practice and deriving fine tuning rules for an untuned application from the log files.
-
-###Step 10 (Goodie): A beer
-
-This tutorial was a hard bit of work. We’ll be taking a break now and treating ourselves to a beer. The next tutorial turns to practice. We have become familiar with the basic techniques, but how exactly do you apply these techniques when you are sinking under a huge number of false positives?
 
 ###References
 - [OWASP ModSecurity Core Rule Setg](https://coreruleset.org)
