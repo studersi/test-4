@@ -1,5 +1,6 @@
 ##### Changelog
 
+* 2016-10-31: Raised PCRE limits to 100K
 * 2016-10-24: Bugfix in anti-evasion rules. Capital letters in URIs.
 * 2016-10-23: Bugfix in anti-evasion rules
 * 2016-10-18: Extend anti-path evasion rules

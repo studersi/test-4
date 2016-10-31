@@ -154,8 +154,8 @@ SecRequestBodyNoFilesLimit    64000
 SecResponseBodyAccess         On
 SecResponseBodyLimit          10000000
 
-SecPcreMatchLimit             15000
-SecPcreMatchLimitRecursion    15000
+SecPcreMatchLimit             100000
+SecPcreMatchLimitRecursion    100000
 
 SecTmpDir                     /tmp/
 SecDataDir                    /tmp/
@@ -313,7 +313,7 @@ The ModSecurity base configuration begins on the next line: We define the base s
 
 On the response side we enable body access and in turn define a limit of 10 MB. No differentiation is made here in the transfer of forms or files; all of them are files.
 
-Now comes the memory reserved for the _PCRE library_. ModSecurity documentation suggests a value of 1500 bytes. But this quickly leads to problems in practice. Our base configuration with a limit of 15000 is a bit more robust. If problems still occur, values above 100000 are also manageable; memory requirements grow only marginally.
+Now comes the memory reserved for the _PCRE library_. ModSecurity documentation suggests a value of 1500 bytes. But this quickly leads to problems in practice. Our base configuration with a limit of 100000 is much more robust. If problems still occur, values above 100000 are also manageable; memory requirements grow only marginally.
 
 ModSecurity requires three directories for data storage. We put all of them in the _tmp directory_. For productive operation this is of course the wrong place, but for the first baby steps it’s fine and it is not easy to give general recommendations for the right choice of this directory, because the local environment plays a big role. For the aforementioned directories this concerns temporary data, then about session data that should be retained after a server restart, and finally temporary storage for file uploads which during inspection should not use too much memory and above a specific size are stored on the hard disk.
 
