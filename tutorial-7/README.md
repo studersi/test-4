@@ -751,20 +751,16 @@ So the rule has been triggered as desired. Let us now exclude the rule. We have 
 SecRuleRemoveById 920300
 
 ```
-The example comes with a comment, which describes the rule being excluded. This is a good practice, which you should adopt as well. We have the option to exclude by ID (as we just did), to add several comma separated rule IDs, to configure a rule range or we can select the rule by its message or by one of its tags. Here is an example using the message of the rule 920,300:
+The example comes with a comment, which describes the rule being excluded. This is a good practice, which you should adopt as well. We have the option to exclude by ID (as we just did), to add several comma separated rule IDs, to configure a rule range or we can select the rule by one of its tags. Here is an example using the message of the rule 920,300:
 
 ```bash
 # ModSec Exclusion Rule: 920300 Request Missing an Accept Header
-SecRuleRemoveByMsg "Request Missing an Accept Header"
+SecRuleRemoveByTag "^MISSING_HEADER_ACCEPT$"
 ```
 
-The *SecRuleRemoveByMsg* directive can also use regular expressions as parameters. This works with the related *SecRuleRemoveByTag* directive as well:
+As you can see, this directive accepts regular expressions as parameters. Unfortunately, the support is not universal: For example, the *OR* functionality, expressed with a pipe character, is not implemented. In practice, you will have to try it out and see for yourself what works and what does not.
 
-```bash
-SecRuleRemoveByTag "MISSING_HEADER_ACCEPT$"
-```
-
-Unfortunately, the support for regular expressions is not universal. For example, the *OR* functionality, expressed with a pipe character, is not implemented. In practice, you will have to try it out and see for yourself.
+Technically there an additional directive, `SecRuleRemoveByMsg`. However, the messages are not guaranteed to be stable between releases and they are not very consistent anyways. So you should not try to build exlcusion rules for the Core Rule Set via this directive.
 
 So these are startup rule exclusions. Excluding a rule in this manner is simple and readable, but it is also a drastic step which we will not use in a production setup very often. Because, if our issues with the rule 920300 are limited to a single legitimate agent checking the availability of our service by requesting the index page, we can limit the exclusion to this individual request. This is no longer a startup time rule exclusion, but a runtime exclusion which is being applied on certain conditions. Runtime exclusions leverage the *SecRule* directive combined with a special action executing the rule exclusion. This depends on the SecRule statement running before the rule in question is applied. That's why runtime rule exclusions have to be placed before the Core Rule Set include statement, where we also reserved a space for this type of exclusion rule:
 
@@ -772,12 +768,13 @@ So these are startup rule exclusions. Excluding a rule in this manner is simple 
 # === ModSec Core Rules: Runtime Exclusion Rules (ids: 10000-49999)
 
 # ModSec Exclusion Rule: 920300 Request Missing an Accept Header
-SecRule REQUEST_FILENAME "@beginsWith /index.html" "phase:1,nolog,pass,id:10000,ctl:ruleRemoveById=920300"
+SecRule REQUEST_FILENAME "@streq /index.html" \
+    "phase:1,nolog,pass,id:10000,ctl:ruleRemoveById=920300"
 ```
 
 Now this is harder to read. Watch out for the *ctl* statement: `ctl:ruleRemoveById=920300`. This is the control action, which is used for runtime changes of the configuration of the ModSecurity rule engine. We use *ruleRemoveById* as the control statement and apply it to rule ID 920300. This block is placed within a standard *SecRule* directive. This allows us to use the complete power of *SecRule* to exclude rule 920300 in very specific situations. Here we exclude it based on the path of the request, but we could apply it depending on the agent's IP address - or a combination of the two in a chained rule statement.
 
-As with the startup rule exclusions, we are not limited to an exclusion by rule ID. Exclusions by message or tag will work just as well (`ctl:ruleRemoveByMsg`, `ctl:ruleRemoveByTag`). Again, regular expressions are supported, but only to a certain extent.
+As with the startup rule exclusions, we are not limited to an exclusion by rule ID. Exclusions by tag will work just as well (`ctl:ruleRemoveByTag`). Again, regular expressions are supported, but only to a certain extent.
 
 Startup time rule exclusions and runtime rule exclusions have the same effect, but internally, they are really different. With the runtime exclusions, you gain granular control at the cost of performance, as the exclusion is being evaluated for every single request. Startup time exclusions are performing better and they are easier to read and write.
 
@@ -796,54 +793,47 @@ $> curl --data "password=' or f7x=gZs" localhost/login/login.do
 There is little wrong with this password from a security perspective. In fact, we should just disable this rule. But of course, it would be wrong to disable this rule completely. It serves a very important purpose with many other parameters. Ideally, we want to exclude the parameter password from being examined by this rule. Here is the startup time rule exclusion performing this task:
 
 ```bash
+# ModSec Exclusion Rule: 942100 SQL Injection Attack Detected via libinjection
 SecRuleUpdateTargetById 942100 !ARGS:password
 ```
 
-This directive adds "not ARGS:password" to the list of parameters to be examined by rule 942100. This effectively excludes the parameter from the evaluation. This directive also accepts rule ranges as parameters and it comes with two siblings for messages and tags. Of course, this directive also exists in a variant where we select the rule via its message:
+This directive adds "not ARGS:password" to the list of parameters to be examined by rule 942100. This effectively excludes the parameter from the evaluation. This directive also accepts rule ranges as parameters. Of course, this directive also exists in a variant where we select the rule via its tag:
+
 
 ```bash
-SecRuleUpdateTargetByMsg "SQL Injection Attack Detected via libinjection" !ARGS:password
-```
-
-And here is what it looks like for tags:
-
-```bash
+# ModSec Exclusion Rule: 942100 SQL Injection Attack Detected via libinjection
 SecRuleUpdateTargetByTag "attack-sqli" !ARGS:password
 ```
 
 The tag we are using in this example, *attack-sqli*, points to a wide range of SQL injection rules. So it will prevent a whole class of rules from looking at the password parameter. This makes sense for this password parameter, but it might go too far for other parameters. So it really depends on the application and the parameter in question.
 
-A password parameter is generally only used on the login request, so we can work with the `SecRuleUpdateTargetById` directive in practice, so that all occurrences of said parameter are exempt from examination by rule 942100. But let's say we want to exclude it only under certain conditions: In this case, we want to look at the parameter when a scanner is submitting it and one fairly good way to detect scanners is by looking at the *Referer* request header. So the idea is to check the correct header and then exclude the parameter from examination by 942100. This runtime rule exclusion works with a control action, similar to the ones we have seen before:
+A password parameter is generally only used on the login request, so we can work with the `SecRuleUpdateTargetById` directive in practice, so that all occurrences of said parameter are exempt from examination by rule 942100. But let me stress, that this directive is server-wide. If you have multiple services with multiple Apache virtual hosts each running a different application, then `SecRuleUpdateTargetById` and `SecRuleUpdateTargetByTag` will disable the said rule or rules respectively for all occurrences of the password parameter on the whole server.
+
+So let's assume you want to exclude *password* only under certain conditions. For example the rule should still be active when a scanner is submitting the request. One fairly good way to detect scanners is by looking at the *Referer* request header. So the idea is to check the correct header and then exclude the parameter from examination by 942100. This runtime rule exclusion works with a control action, similar to the ones we have seen before:
 
 ```bash
-SecRule REQUEST_HEADERS:Referer "@streq http://localhost/login/displayLogin.do" "phase:1,nolog,pass,id:10000,ctl:ruleRemoveTargetById=942100;ARGS:password"
+SecRule REQUEST_HEADERS:Referer "@streq http://localhost/login/displayLogin.do" \
+    "phase:1,nolog,pass,id:10000,ctl:ruleRemoveTargetById=942100;ARGS:password"
 
 ```
 
 The format of the control action is really difficult to grasp now: In addition to the rule ID, we add a semicolon and then the password parameter as part of the ARGS group of variables. In ModSecurity, this is called the ARGS collection with the colon as separator. Try to memorize this! 
 
-In professional use, this is likely the exclusion rule construct that is used the most (not with the Referer header, though, but with the *REQUEST_FILENAME* variable). This exclusion construct is very granular on the parameter level and it can be constructed to have only minimal impact on the requests thanks to the power of *SecRule*.
-
-This is the same concept applied to messages:
+In professional use, this is likely the exclusion rule construct that is used the most (not with the Referer header, though, but with the *REQUEST_FILENAME* variable). This exclusion construct is very granular on the parameter level and it can be constructed to have only minimal impact on the requests thanks to the power of *SecRule*. If you would rather go with a tag than with an ID, here is your example: 
 
 ```bash
-SecRule REQUEST_HEADERS:Referer "@streq http://localhost/login/displayLogin.do" "phase:1,nolog,pass,id:10000,ctl:ruleRemoveTargetByMsg=SQL.Injection.Attack.Detected.via.libinjection;ARGS:password"
+SecRule REQUEST_HEADERS:Referer "@streq http://localhost/login/displayLogin.do" \
+    "phase:1,nolog,pass,id:10000,ctl:ruleRemoveTargetByTag=attack-sqli;ARGS:password"
 ```
 
-Unfortunately, the message parameter does not cope with space characters. But as the parameter accepts regular expressions, we can substitute the space with dots to get it working. Finally, let's look at the tag variant of this rule exclusion type:
-
-```bash
-SecRule REQUEST_HEADERS:Referer "@streq http://localhost/login/displayLogin.do" "phase:1,nolog,pass,id:10000,ctl:ruleRemoveTargetByTag=attack-sqli;ARGS:password"
-```
-
-That was very important. Therefore, to summarize once again: We define a rule to suppress another rule. We use a pattern for this which lets us define a path as a condition. This enables us to disable rules for individual parts of an application but only in places where false alarms occur. This prevents us from disabling rules on the entire server, considering that the false alarm occurs only when processing one individual form, which is frequently the case. This would look something like this:
+This section was very important. Therefore, to summarize once again: We define a rule to suppress another rule. We use a pattern for this which lets us define a path as a condition. This enables us to disable rules for individual parts of an application but only in places where false alarms occur. This prevents us from disabling rules on the entire server, considering that the false alarm occurs only when processing one individual form, which is frequently the case. This would look something like this:
 
 ```
-SecRule REQUEST_FILENAME "@beginsWith /app/submit.do" "phase:1,nolog,pass,t:none,id:10001,\
-ctl:ruleRemoveById=960015"
+SecRule REQUEST_FILENAME "@streq /app/submit.do" \
+    "phase:1,nolog,pass,t:none,id:10001,ctl:ruleRemoveById=960015"
 ```
 
-With this, we have seen all basic methods to handle false positives via rule exclusions. You now use the patterns for *ignore rules* described above to work through the various *false positives*. 
+With this, we have seen all basic methods to handle false positives via rule exclusions. You now use the patterns for *excusion rules* described above to work through the various *false positives*. 
 
 ###Step 9: Readjusting the anomaly threshold
 
