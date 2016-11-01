@@ -902,9 +902,9 @@ I think the tuning concept and the theory are now quite clear. In the next tutor
 
 ###Step 10 (Goodie): Summary of the ways of combating false positives
 
-It is possibly best to summarize the tuning directives in graphic.
+It is possibly best to summarize the tuning directives in graphic. Here is a cheatsheet for you:
 
-![Screenshot: SSLLabs](./tutorial-7-exclusion-directives-summary.png)
+![Screenshot: SSLLabs](./tutorial-7-rule-exclusion-cheatsheet_small.png)
 
 
 ###References
