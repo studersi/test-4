@@ -826,12 +826,7 @@ SecRule REQUEST_HEADERS:Referer "@streq http://localhost/login/displayLogin.do" 
     "phase:1,nolog,pass,id:10000,ctl:ruleRemoveTargetByTag=attack-sqli;ARGS:password"
 ```
 
-This section was very important. Therefore, to summarize once again: We define a rule to suppress another rule. We use a pattern for this which lets us define a path as a condition. This enables us to disable rules for individual parts of an application but only in places where false alarms occur. This prevents us from disabling rules on the entire server, considering that the false alarm occurs only when processing one individual form, which is frequently the case. This would look something like this:
-
-```
-SecRule REQUEST_FILENAME "@streq /app/submit.do" \
-    "phase:1,nolog,pass,t:none,id:10001,ctl:ruleRemoveById=960015"
-```
+This section was very important. Therefore, to summarize once again: We define a rule to suppress another rule. We use a pattern for this which lets us define a path as a condition. This enables us to disable rules for individual parts of an application but only in places where false alarms occur. And at the same time, it prevents us from disabling rules on the entire server.
 
 With this, we have seen all basic methods to handle false positives via rule exclusions. You now use the patterns for *excusion rules* described above to work through the various *false positives*. 
 
