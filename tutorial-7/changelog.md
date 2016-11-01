@@ -1,5 +1,8 @@
 ##### Changelog
 
+* 2016-11-01: Adding Cheatsheet. Publication.
+* 2016-10-31: Feedback by Walter Hop
+* 2016-10-31: Feedback by Manuel Leos Rivas
 * 2016-10-10: Fixing small issues
 * 2016-07-15: Apache 2.4.20 -> 2.4.23
 * 2016-07-15: Apache 2.4.20 -> 2.4.23
