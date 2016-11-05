@@ -43,7 +43,8 @@ MODE_SIMPLE=2
 MODE_PARAMETER=3
 MODE_PATH=4
 MODE_COMBINED=5
-MODE_GRAPHVIZ=6
+MODE_RULE=7
+MODE_GRAPHVIZ=8
 MODE_ALL=16
 
 $params[:mode]   = MODE_SUPERSIMPLE
@@ -176,6 +177,19 @@ def read_file(file)
 	
 end
 
+def display_ignore_rule_mode_rule(id, event, events)
+  # Purpose: display ignore rule based on rule
+  # Input  : rule id, event object, events array
+  # Output : report via stdout
+  # Return : none
+  # Remarks: none
+
+	rules = Array.new
+	puts "      # ModSec Rule Exclusion: #{event.id} : #{event.msg} (severity: #{Severities[event.severity].to_s} #{event.severity})"
+	puts "      SecRuleRemoveById #{event.id}"
+	
+end
+
 def display_ignore_rule_mode_parameter(id, event, events)
   # Purpose: display ignore rule based on parameter of event
   # Input  : rule id, event object, events array
@@ -216,7 +230,7 @@ def display_ignore_rule_mode_path(id, event, events)
   # Remarks: none
 
 	puts "      # ModSec Rule Exclusion: #{id} : #{event.msg} (severity: #{Severities[event.severity].to_s} #{event.severity})"
-	puts "      SecRule REQUEST_FILENAME \"@beginsWith /foo\" \"phase:1,nolog,pass,id:#{$params[:ruleid]},ctl:ruleRemoveById=#{id}\""
+	puts "      SecRule REQUEST_URI \"@beginsWith /foo\" \"phase:1,nolog,pass,id:#{$params[:ruleid]},ctl:ruleRemoveById=#{id}\""
 	$params[:ruleid] = $params[:ruleid] + 1
 
 	uris = Array.new
@@ -292,7 +306,7 @@ def display_ignore_rule_mode_path_and_parameter(id, event, events)
 				if $params[:verbose]
 					prefix = couple[:num].to_s + " x"
 				end
-				printf "     %s SecRule REQUEST_FILENAME \"@beginsWith %s\" \"phase:2,nolog,pass,id:%d,ctl:ruleRemoveTargetById=%d;%s\"\n", prefix, couple[:uri], $params[:ruleid], id, couple[:parameter]
+				printf "     %s SecRule REQUEST_URI \"@beginsWith %s\" \"phase:2,nolog,pass,id:%d,ctl:ruleRemoveTargetById=%d;%s\"\n", prefix, couple[:uri], $params[:ruleid], id, couple[:parameter]
 				$params[:ruleid] = $params[:ruleid] + 1
 
 		end
@@ -349,6 +363,8 @@ def display_report(events)
 		0.upto(out.length-1) do |i| print "-"; end; print "\n" # breakline
 	end
 	case $params[:mode]
+		when MODE_RULE
+			display_ignore_rule_mode_rule(id, event, events)
 		when MODE_PARAMETER
 			display_ignore_rule_mode_parameter(id, event, events)
 		when MODE_PATH
@@ -699,8 +715,8 @@ EOF
     $params[:verbose] = true;
   end
 
-  opts.on('-m', '--mode MAN', 'Ignore-Rule suggestion mode:
-                                     One of "simple", "supersimple", "parameter", "path",
+  opts.on('-m', '--mode STR', 'Ignore-Rule suggestion mode:
+                                     One of "simple", "supersimple", "rule", "parameter", "path",
                                      "combined" or "graphviz". Default is "supersimple"') do |mode|
 	  case mode
 	  when "simple"
@@ -713,6 +729,8 @@ EOF
     		$params[:mode] = MODE_PATH;
 	  when "combined"
     		$params[:mode] = MODE_COMBINED;
+	  when "rule"
+    		$params[:mode] = MODE_RULE;
 	  when "graphviz"
     		$params[:mode] = MODE_GRAPHVIZ;
 	  when "all"
@@ -723,7 +741,7 @@ EOF
 	  end
   end
   
-  opts.on('-r', '--ruleid MAN', "Start of ruleid namespace to be used. Default is #{RULEID_DEFAULT}.") do |ruleid|
+  opts.on('-r', '--ruleid STR', "Start of ruleid namespace to be used. Default is #{RULEID_DEFAULT}.") do |ruleid|
     $params[:ruleid] = ruleid.to_i;
   end
 
