@@ -1,5 +1,6 @@
 ##### Changelog
 
+* 2016-11-02: CRS 3.0.0-rc2 -> CRS 3.0.0-rc3, fixed broken link to stats script
 * 2016-11-01: Adding Cheatsheet. Publication.
 * 2016-10-31: Feedback by Walter Hop
 * 2016-10-31: Feedback by Manuel Leos Rivas

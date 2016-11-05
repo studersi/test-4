@@ -24,26 +24,26 @@ The ModSecurity Core Rule Set are being developed under the umbrella of *OWASP*,
 
 ```
 $> cd /apache/conf
-$> wget https://github.com/SpiderLabs/owasp-modsecurity-crs/archive/v3.0.0-rc2.tar.gz
-$> tar xvzf v3.0.0-rc2.tar.gz
-owasp-modsecurity-crs-3.0.0-rc2/
-owasp-modsecurity-crs-3.0.0-rc2/CHANGES
-owasp-modsecurity-crs-3.0.0-rc2/IDNUMBERING
-owasp-modsecurity-crs-3.0.0-rc2/INSTALL
-owasp-modsecurity-crs-3.0.0-rc2/KNOWN_BUGS
-owasp-modsecurity-crs-3.0.0-rc2/LICENSE
-owasp-modsecurity-crs-3.0.0-rc2/README.md
-owasp-modsecurity-crs-3.0.0-rc2/crs-setup.conf.example
-owasp-modsecurity-crs-3.0.0-rc2/documentation/
-owasp-modsecurity-crs-3.0.0-rc2/documentation/OWASP-CRS-Documentation/
-owasp-modsecurity-crs-3.0.0-rc2/documentation/README
+$> wget https://github.com/SpiderLabs/owasp-modsecurity-crs/archive/v3.0.0-rc3.tar.gz
+$> tar xvzf v3.0.0-rc3.tar.gz
+owasp-modsecurity-crs-3.0.0-rc3/
+owasp-modsecurity-crs-3.0.0-rc3/CHANGES
+owasp-modsecurity-crs-3.0.0-rc3/IDNUMBERING
+owasp-modsecurity-crs-3.0.0-rc3/INSTALL
+owasp-modsecurity-crs-3.0.0-rc3/KNOWN_BUGS
+owasp-modsecurity-crs-3.0.0-rc3/LICENSE
+owasp-modsecurity-crs-3.0.0-rc3/README.md
+owasp-modsecurity-crs-3.0.0-rc3/crs-setup.conf.example
+owasp-modsecurity-crs-3.0.0-rc3/documentation/
+owasp-modsecurity-crs-3.0.0-rc3/documentation/OWASP-CRS-Documentation/
+owasp-modsecurity-crs-3.0.0-rc3/documentation/README
 ...
-$> sudo ln -s owasp-modsecurity-crs-3.0.0-rc2 /apache/conf/crs
+$> sudo ln -s owasp-modsecurity-crs-3.0.0-rc3 /apache/conf/crs
 $> cp crs/crs-setup.conf.example crs/crs-setup.conf
-$> rm v3.0.0-rc2.tar.gz
+$> rm v3.0.0-rc3.tar.gz
 ```
 
-This unpacks the base part of the Core Rule Set in the directory `/apache/conf/owasp-modsecurity-crs-3.0.0-rc2`. We create a link from `/apache/conf/crs` to this folder. Then we copy a file named `crs-setup.conf.example` to a new file `crs-setup.conf` and finally, we delete the Core Rule Set tar file.
+This unpacks the base part of the Core Rule Set in the directory `/apache/conf/owasp-modsecurity-crs-3.0.0-rc3`. We create a link from `/apache/conf/crs` to this folder. Then we copy a file named `crs-setup.conf.example` to a new file `crs-setup.conf` and finally, we delete the Core Rule Set tar file.
 
 The setup file allows us to tweak many different settings. It is worth a look - if only to see what is included. However, we are OK with the default settings and will not touch the file: We just make sure it is available under the new filename `crs-setup.conf`. Then we can continue to update the configuration to include the rules files.
 
@@ -77,7 +77,7 @@ SecAction "id:900000,phase:1,pass,nolog,\
 Include    /apache/conf/crs/rules/*.conf
 
 
-# === ModSec Core Rules: Config Time Exclusion Rules (no ids)
+# === ModSec Core Rules: Startup Time Rules Exclusions
 
 # ...
 
@@ -656,7 +656,7 @@ The results give us an idea of the situation: The vast majority of requests pass
 
 A score of 41 appears twice, corresponding to a high number of serious rule infractions. This is very common in practice, where a serious SQL injection attempt sets off a series of alarms. In 41 cases, we didn’t get any score for the server’s responses. These are log entries of empty requests in which a connection with the client was established, but no request was made. We have taken this possibility into account in the regular expression using *egrep* and are also taking into account the default value, "-". Besides these empty entries, nothing else is conspicuous at all. This is typical, if a bit high. In all likelihood, we will be seeing a fair number of violations from the requests and very few alarms from the responses.
 
-But this still doesn’t give us the right idea about the *tuning steps* that would be needed to run this install smoothly. To present this information in a suitable form, I have prepared a script that analyzes *anomaly scores*. [modsec-positive-stats.rb](https://www.netnea.com/apache-tutorials/git/laboratory/bin/modsec-positive-stats.rb). It takes the two anomaly scores as input and we need to separate them with a semicolon in order to pipe them into the script. We can do this like this:
+But this still doesn’t give us the right idea about the *tuning steps* that would be needed to run this install smoothly. To present this information in a suitable form, I have prepared a script that analyzes *anomaly scores*. [modsec-positive-stats.rb](https://www.netnea.com/cms/files/modsec-positive-stats.rb). It takes the two anomaly scores as input and we need to separate them with a semicolon in order to pipe them into the script. We can do this like this:
 
 ```
 $> cat tutorial-5-example-access.log  | egrep -o "[0-9-]+ [0-9-]+$" | tr " " ";" | modsec-positive-stats.rb
@@ -897,9 +897,9 @@ I think the tuning concept and the theory are now quite clear. In the next tutor
 
 ###Step 10 (Goodie): Summary of the ways of combating false positives
 
-It is possibly best to summarize the tuning directives in graphic. Here is a cheatsheet for you:
+It is possibly best to summarize the tuning directives in a graphic. So here is a cheatsheet for your use!
 
-![Screenshot: SSLLabs](./tutorial-7-rule-exclusion-cheatsheet_small.png)
+<a href="https://www.netnea.com/cms/rule-exclusion-cheatsheet-download/"><img src="/files/tutorial-7-rule-exclusion-cheatsheet_small.png" alt="Rule Exclusion CheatSheet" width="476" height="673" /></a>
 
 
 ###References
