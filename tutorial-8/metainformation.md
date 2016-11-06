@@ -1,7 +1,7 @@
-Title: Compiling Apache  
+Title: Handling False Positives with the OWASP ModSecurity Core Rule Set  
 Author: <a href="mailto:christian.folini@netnea.com">Christian Folini</a> (<a href="https://twitter.com/ChrFolini">@ChrFolini</a>)  
-Tutorial Number: 1  
-Last Update: 2016-10-10  
-Release Date: 2016-10-11  
-Difficulty: Simple  
-Duration: 1/2h  
+Tutorial Number: 8  
+Last Update: 2016-11-06  
+Release Date: 2016-11-08  
+Difficulty: Medium  
+Duration: 1h  
