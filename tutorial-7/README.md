@@ -903,7 +903,7 @@ It is possibly best to summarize the tuning directives in a graphic. So here is 
 
 
 ###References
-- [OWASP ModSecurity Core Rule Setg](https://coreruleset.org)
+- [OWASP ModSecurity Core Rule Set](https://coreruleset.org)
 - [Spider Labs Blog Post: Exception Handling](http://blog.spiderlabs.com/2011/08/modsecurity-advanced-topic-of-the-week-exception-handling.html)
 - [ModSecurity Reference Manual](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual)
 
