@@ -53,7 +53,7 @@ The character of the application, the paranoia level and the amount of traffic a
 
 One would think that the error log with the alerts is the place to go. But, we are looking at the access log first. We defined the log format in a way that gives us the anomaly scores for every request. This helps us with this step.
 
-In the previous tutorial, we used the script `[modsec-positive-stats.rb](https://www.netnea.com/cms/files/modsec-positive-stats.rb)`. We return to this script with the example access log as the target:
+In the previous tutorial, we used the script [modsec-positive-stats.rb](https://www.netnea.com/cms/files/modsec-positive-stats.rb). We return to this script with the example access log as the target:
 
 ```bash
 $> cat tutorial-8-example-access.log | alscores | modsec-positive-stats.rb
@@ -310,7 +310,11 @@ So we have 10,000 requests and about half of them pass without raising any alarm
 
 Let's visualize this:
 
-<img src="/files/tutorial-8-untuned-distribution.png" alt="Untuned Distribution" width="950" height="550" /></a>
+<img src="/files/tutorial-8-distribution-untuned.png" alt="Untuned Distribution" width="950" height="550" />
+
+_A quick overview over the stats generated above_
+
+
 
 I have used a logarithmic scale on the Y axis to emphasize the number of requests making up the long tail. So on the left, you have most of the requests, but on the right, you have the few requests with a lot of alerts. All together, these requests scored a ton of false positives that we need to address. But where to start? We start with the request returning the highest anomaly score, we start on the right side of the graph! This makes sense because we are in blocking mode and we would like to reduce the threshold. The group of requests standing in our way are the six requests with a score of 231 and the single request with a score of 189. Let's write exclusion rules to suppress the alarms leading to these scores.
 
@@ -354,6 +358,7 @@ So these are the culprits. Let's go through them one by one. 921180 is a rule th
 For every alert, we need to write a rule exclusion and as we have seen in the previous tutorial, there are multiple options. It takes a bit of experience to make the right choice and very often, multiple approaches can be suitable. Let's look at the cheat sheet again:
 
 <a href="https://www.netnea.com/cms/rule-exclusion-cheatsheet-download/"><img src="/files/tutorial-7-rule-exclusion-cheatsheet_small.png" alt="Rule Exclusion CheatSheet" width="476" height="673" /></a>
+_Click to get to the download of the large version_
 
 Let's start with a simple case: 920273. We could look at this in great detail and check out all the different parameters triggering this rule. Depending on the security level we want to provide for our application, this would be the right approach. But then this is an exercise, so we will keep it simple: Let's kick this rule out completely. We'll opt for a startup rule (to be placed after the CRS include).
 
