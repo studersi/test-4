@@ -2,11 +2,11 @@
 
 ###What are we doing?
 
-To successfully ward off attackers, we are reducing the number of *false positives* for a fresh installation of *OWASP ModSecurity Core Rules* and will then set the anomaly limits to a lower level.
+To successfully ward off attackers, we are reducing the number of *false positives* for a fresh installation of *OWASP ModSecurity Core Rules* and will then set the anomaly limits to a strict level.
 
 ###Why are we doing this?
 
-A fresh installation of *core rules* will typically have some false alarms. In some special cases there can be thousands of them. In the last tutorial we saw a number of approaches for suppressing individual false alarms in the future. Every beginning is hard and what is missing is a strategy for coping with the various false alarms. Reducing the number of false alarms is the prerequisite for lowering the *core rules* anomaly threshold and this in turn is required in order to use *ModSecurity* to actually ward off attackers. And only after the false alarms really are disabled or at least to a large extent curtailed do we get a picture of real attackers.
+A fresh installation of *core rules* will typically have some false alarms. In some special cases there can be thousands of them. In the last tutorial we saw a number of approaches for suppressing individual false alarms. Every beginning is hard and what is missing is a strategy for coping with the various false alarms. Reducing the number of false alarms is the prerequisite for lowering the *Core Rule Set* (CRS) anomaly threshold and this in turn is required in order to use *ModSecurity* to actually ward off attackers. And only after the false alarms really are disabled or at least to a large extent curtailed do we get a picture of real attackers.
 
 ###Requirements
 
@@ -17,41 +17,43 @@ A fresh installation of *core rules* will typically have some false alarms. In s
 * An Apache web server with ModSecurity as shown in [Tutorial 6 (Embedding ModSecurity)](https://www.netnea.com/cms/apache-tutorial-6-modsecurity-einbinden/)
 * An Apache web server with the Core Rule Set as shown in [Tutorial 7 (Including the Core Rule Set)](https://www.netnea.com/cms/apache-tutorial-7_including-modsecurity-core-rules/)
 
-There is no point in learning to fight false positives on a lab server without traffic. What you need is a real set of false alarms and then we can practice the writing of exclusion rules so they disappear from the installation. I have prepared two such files for you:
+There is no point in learning to fight false positives on a lab server without traffic. What you need is a real set of false alarms. This will let you practice the writing of rules exclusions so the false alarms disappear from the installation. I have prepared two such files for you:
 
 * [tutorial-8-example-access.log](./tutorial-8-example-access.log)
 * [tutorial-8-example-error.log](./tutorial-8-example-error.log)
 
-It is difficult to provide real production logs for an exercise due to all the sensitive data in the logs. So I went an created false positives from scratch. With the Core Rule Set 2.2.x this would have been simple, but with the 3.0.0 release, most of the false positives in the default install are now gone. It is hard to get a good set of false alarms with Core Rule Set 3.0. What I did was setting the Core Rule Set to Paranoia Level 4 and then install a local Drupal site. I would then publish a couple of articles and then read these articles in the browser. Rinse and repeat.
+It is difficult to provide real production logs for an exercise due to all the sensitive data in the logs. So I went an created false positives from scratch. With the Core Rule Set 2.2.x this would have been simple, but with the 3.0 release (CRS3), most of the false positives in the default install are now gone. What I did was setting the CRS to Paranoia Level 4 and then install a local Drupal site. I would then publish a couple of articles and then read these articles in the browser. Rinse and repeat up to 10,000 requests.
 
-Drupal and the core rules are not really in a loving relationship. Whenever the two software packages meet, they tend to fall out with each other, since the Core Rules are so pedantic and Drupal's habit to do square brackets in parameter names drives the Core Rules crazy. However, the default Core Rule Set 3.0 installation at Paranoia Level 1 and especially the new optional exclusion rules for Drupal (see the `crs-setup.conf` file for details) ward of almost all of the remaining false positives with a core Drupal installation.
+Drupal and the core rules are not really in a loving relationship. Whenever the two software packages meet, they tend to fall out with each other, since the CRS are so pedantic and Drupal's habit to do square brackets in parameter names drives the CRS crazy. However, the default CRS3 installation at Paranoia Level 1 and especially the new optional exclusion rules for Drupal (see the `crs-setup.conf` file for details) ward of almost all of the remaining false positives with a core Drupal installation.
 
-But things look totally different when you do not use these exclusion rules and if you raise the Paranoia Level to 4 in order to get plenty of false positives. For the 10,000 requests in my test run, I received over 27,000 false alarms. That should do for a training session.
+But things look totally different when you do not use these exclusion rules and if you raise the Paranoia Level to 4: You will get plenty of false positives. For the 10,000 requests in my test run, I received over 27,000 false alarms. That should do for a training session.
 
 ###Step 1: Defining a Policy to Fight False Positives
 
-The problem with False Positives is, that if you are unlucky, they flood you like an avalanche and you do not know where to start the fight. What you need is a plan and there is no official documentation proposing one. So here we go: These is my recommended approach to fighting false alarms:
+The problem with False Positives is that if you are unlucky, they flood you like an avalanche and you do not know where to start the fight. What you need is a plan and there is no official documentation proposing one. So here we go: These is my recommended approach to fighting false alarms:
 
 * Always work in blocking mode
 * Highest scoring requests go first
 * Work in several iterations
 
-What does that mean? The default installation come in blocking mode and with an anomaly threshold of 5 for the requests. In fact this is a very good goal for our work, but it's an overambitious start. The risk is, that a false positive raises an alarm, the browser of the wrong customer is blocked, a phone call to the manager ensues and you are forced to switch off the WAF. In many installations I have seen this was the end of the story.
+What does that mean? The default installation come in blocking mode and with an anomaly threshold of 5 for the requests. In fact this is a very good goal for our work, but it's an overambitious start on an existing production server. The risk is, that a false positive raises an alarm, the browser of the wrong customer is blocked, a phone call to the manager ensues and you are forced to switch off the WAF. In many installations I have seen this was the end of the story.
 
-Do not let a badly tuned system catch you like this. Instead you start with a high threshold for the anomaly score. Let's say 1,000 for the requests and also 1,000 for the responses for symmetry's sake (in practice, the responses do not score very high with the Core Rules). That way you know that no customer is ever going to be blocked, you get the reports of the false alarms and you gain time to weed them out.
+Do not let a badly tuned system catch you like this. Instead you start with a high threshold for the anomaly score. Let's say 1,000 for the requests and also 1,000 for the responses for symmetry's sake (in practice, the responses do not score very high). That way you know that no customer is ever going to be blocked, you get the reports of the false alarms and you gain time to weed them out.
 
 If you have a proper security program, this is all performed during an extensive testing phase, so the service never hits production without a strict configuration. But if you start with ModSecurity on an existing production service, starting out with a high threshold in production is the preferred method with minimal interruption to existing customers (zero impact, if you work diligently). 
 
-The problem with integrating ModSecurity in production is the fact that false positives and real alarms are intermixed. In order to tune your installation, you need to separate the two groups. This is not always easy. Manual review helps, restricting to known IP addresses, pre-authentication, testing/tuning on a test system separated from the internet, filtering the access log by country of origin for the IP address, etc... It's a big topic and making general recommendations is difficult. But please do take this seriously. Years ago, I demonstrated the exclusion of a false positive in a workshop - and the example alarm I used turned out to be a real attack. Needless to say that I learned my lesson.
+The problem with integrating ModSecurity in production is the fact that false positives and real alarms are intermixed. In order to tune your installation, you need to separate the two groups to really work on the false positives alone. This is not always easy. Manual review helps, restricting to known IP addresses, pre-authentication, testing/tuning on a test system separated from the internet, filtering the access log by country of origin for the IP address, etc... It's a big topic and making general recommendations is difficult. But please do take this seriously. Years ago, I demonstrated the exclusion of a false positive in a workshop - and the example alarm I used turned out to be a real attack. Needless to say that I learned my lesson.
+
+There is another question, which needs to get out of the way: Does not disabling rules actually lower the security of the site? Yes it does, but we need to keep things in perspective. In an ideal setup, all rules would be intact, the paranoia level would be very high (thus a total of 200 rules in place) and the anomaly limit very low; yet the application would run without any problems or false alarms. But in practice, this won't work outside of the rarest of cases. If we raise the anomaly threshold, then the alerts are still there, but the attackers are no longer affected. If we reduce the paranoia level, we disable dozens of rules with one setting. If we talk to the developers about changing their software so the false positives go away, we spend a lot of time arguing without much chance of success (at least in my experience). So disabling a single rule from a set of 200 rules is the best of all the bad solutions. The worst of all the bad solutions would be to disable ModSecurity altogether. And as this is very real in many organisations, I will rather disable individual rules based on a false positive than run the risk of being forced to kill the WAF.
 
 
 ###Step 2: Getting an Overview
 
-The character of the application, the Paranoia Level and the amount of traffic influence the amount of false positives you get in your logs. In the first run a couple of thousand or one hundred thousand requests max will do. Once you have that in your access log, it's time to take a look. Let's get an overview of the situation, let's look at the example logs.
+The character of the application, the Paranoia Level and the amount of traffic all influence the amount of false positives you get in your logs. In the first run a couple of thousand or one hundred thousand requests max will do. Once you have that in your access log, it's time to take a look. Let's get an overview of the situation: Let's look at the example logs!
 
 One would think that the error log with the alerts is the place to go. But in fact, we are looking at the access log first. We defined the log format in a way that gives us the anomaly scores for every request. This plays into our hand with this step.
 
-In the previous tutorial we used the script `modsec-positive-stats.rb`. We return to this script with the example access log as target:
+In the previous tutorial we used the script `[modsec-positive-stats.rb](https://www.netnea.com/cms/files/modsec-positive-stats.rb)`. We return to this script with the example access log as target:
 
 ```bash
 $> cat tutorial-8-example-access.log | alscores | modsec-positive-stats.rb
@@ -329,9 +331,9 @@ WBux0H8AAQEAAEdS9v4AAAAA
 WBux0H8AAQEAAEdTokEAAABL
 ```
 
-With this one-liner we *grep* for the requests with score 231 or 189. We know it is the second item from the end of the log line. The final value is the outgoing anomaly score. In our case, all responses scored 0, but theoretically, this value could be any number or undefined (-> `-`) so it is generally a good practice to write the pattern this way. The alias `alreqid` extracts the unique id and `tee` will show us the ids and write them to the file `ids` at the same time.
+With this one-liner we *grep* for the requests with score 231 or 189. We know it is the second item from the end of the log line. The final value is the outgoing anomaly score. In our case, all responses scored 0, but theoretically, this value could be any number or undefined (-> `-`) so it is generally a good practice to write the pattern this way. The alias *alreqid* extracts the unique id and *tee* will show us the ids and write them to the file *ids* at the same time.
 
-We can then take the ids in this file and use them to extract the alerts belonging to the requests in our focus. We use `grep -f` to perform this step. The `-F` flag tells *grep* that our pattern file is actually a list of fixed strings separated by newlines. Thus equipped *grep* is a lot more performing then without the flag.  The `melidmsg` alias extracts the id and the message explaining the alert. Both combined are very helpful. The already familiar `sucs` alias is then used to sum it all up:
+We can then take the ids in this file and use them to extract the alerts belonging to the requests in our focus. We use `grep -f` to perform this step. The `-F` flag tells *grep* that our pattern file is actually a list of fixed strings separated by newlines. Thus equipped, *grep* is a lot more performing then without the flag.  The *melidmsg* alias extracts the id and the message explaining the alert. Both combined are very helpful. The already familiar *sucs* alias is then used to sum it all up:
 
 ```bash
 $> grep -F -f ids tutorial-8-example-error.log  | melidmsg | sucs
@@ -343,29 +345,27 @@ $> grep -F -f ids tutorial-8-example-error.log  | melidmsg | sucs
     150 942432 Restricted SQL Character Anomaly Detection (args): # of special characters exceeded (2)
 ```
 
-So these are the culprits. Lets go through them one by one. 921180 is a rule which identifies when a parameter (*ids[]* here) is submitted more than once within the same request. It's an advanced rule which appeared in the Core Rule Release 3.0.0 for the first time; based on a mechanic I developed. Drupal seems to do this and we can instruct it to stop this behaviour. 942450 looks for strings of the pattern `0x` with two additional hexadecimal digits. This is a hexadecimal encoding which can point to an exploit being used. The problem with this encoding is that session cookies can contain this pattern sometimes. They are random generated and at times you get this pattern in a session cookie. When you do, there is this paranoia level 2 rule which looks for attack pattern in hexadecimal encoding that try to sneak past our ruleset. So are facing a false positive in a very classical way.
+So these are the culprits. Lets go through them one by one. 921180 is a rule which identifies when a parameter (*ids[]* here) is submitted more than once within the same request. It's an advanced rule which appeared in the CRS3 for the first time (based on a mechanic I developed). Drupal seems to do this and we can instruct it to stop this behaviour. 942450 looks for strings of the pattern `0x` with two additional hexadecimal digits. This is a hexadecimal encoding which can point to an exploit being used. The problem with this encoding is that session cookies can contain this pattern sometimes. Session cookies are random generated strings and at times you get this pattern in such an identifier. When you do, there is this paranoia level 2 rule which looks for attack pattern in hexadecimal encoding that try to sneak past our ruleset. So we are facing a false positive in a very classical way.
 
-942431 and 942432 are closely related. We call this siblings. They form a group with 942430, the base rule at paranoia level 2 looking for 12 special characters like square brackets, colons, semicolons, asterisks - you name it. 942431 is a strict sibling doing the same things, but with a limit of 6 characters at paranoia level 3 and finally the paranoid zealot in the family, 942432, is going crazy after the 2nd special character.
+942431 and 942432 are closely related. We call this siblings. They form a group with 942430, the base rule looking for 12 special characters like square brackets, colons, semicolons, asterisks, etc. (paranoia level 2). 942431 is a strict sibling doing the same things, but with a limit of 6 characters at paranoia level 3 and finally the paranoid zealot in the family, 942432, is going crazy after the 2nd special character (paanoia level 4).
 
-942130 is one of the big group of SQL injection rules (this is a field the Core Rules are very strong in) and finally 920273, another paranoid rule from paranoia level 4 defining the set of allowed ascii characters (i.e. `38,44-46,48-58,61,65-90,95,97-122`).
+942130 is one of the big group of SQL injection rules (this is a field the CRS are very strong in) and finally 920273, another paranoid rule from paranoia level 4 defining the set of allowed ascii characters (i.e. `38,44-46,48-58,61,65-90,95,97-122`).
 
-For every alert, we need to write a rule exclusion and as we have seen in the previous tutorial, there are multiple options. It takes a bit of experience to make the right choice and very often multiple approaches can be suitable.
-
-Here is the cheat sheet again:
+For every alert, we need to write a rule exclusion and as we have seen in the previous tutorial, there are multiple options. It takes a bit of experience to make the right choice and very often multiple approaches can be suitable. Let's look at the cheat sheet again:
 
 <a href="https://www.netnea.com/cms/rule-exclusion-cheatsheet-download/"><img src="/files/tutorial-7-rule-exclusion-cheatsheet_small.png" alt="Rule Exclusion CheatSheet" width="476" height="673" /></a>
 
-Let's start with a simple case : 920273. We could look at this in great detail and check out all the different parameters triggering this rule. Depending on the security level we want to provide for our application, this would be the right approach. But then this is an exercise and this is CMS installation. So let's keep it simple. Let's kick out this rule completely. We opt for a startup rule (to be placed after the CRS include).
+Let's start with a simple case : 920273. We could look at this in great detail and check out all the different parameters triggering this rule. Depending on the security level we want to provide for our application, this would be the right approach. But then this is an exercise, so we will keep it simple: Let's kick out this rule completely. We opt for a startup rule (to be placed after the CRS include).
 
 ```bash
 # === ModSec Core Rules: Startup Time Rules Exclusions
 
-# ModSec Rule Exclusion: 920273 : Invalid character in request (outside of very strict set) (severity: 5 CRITICAL)
+# ModSec Rule Exclusion: 920273 : Invalid character in request (outside of very strict set)
 SecRuleRemoveById 920273
 
 ```
 
-Let's take a look at the alerts for 942432:
+Next are the alerts for 942432:
 
 ```bash
 $> grep -F -f ids tutorial-8-example-error.log  | grep 942432 | melmatch | sucs
@@ -373,15 +373,15 @@ $> grep -F -f ids tutorial-8-example-error.log  | grep 942432 | melmatch | sucs
      75 ARGS_NAMES:ids[]
 ``` 
 
-Drupal obviously uses square brackets within the parameter name. This is not limited to ids, but a general pattern. Two square brackets are enough to trigger the rule, so this gives a lot of false alarms. Running after all occurrences would be very tedious, so let's kick out this rule as well (remember, it's a paranoia level 4 rule). 
+Drupal obviously uses square brackets within the parameter name. This is not limited to ids, but a general pattern. Two square brackets are enough to trigger the rule, so this gives a lot of false alarms. Running after all occurrences would be very tedious, so we will kick out this rule as well (remember, it's a paranoia level 4 rule and a more relaxed version of this rule exists at PL3). 
 
 ```bash
 # ModSec Rule Exclusion: 942432 : Restricted SQL Character Anomaly Detection (args): 
-# number of special characters exceeded (2) (severity:  NONE/UNKOWN)
+# number of special characters exceeded (2)
 SecRuleRemoveById 942432
 ```
 
-The next one is 942450. This is the hex encoding. This is a peculiar case as we can easily see:
+The next one is 942450. This is the rule looking for traces of hex encoding. This is a peculiar case as we can easily see:
 
 
 ```bash
@@ -390,29 +390,29 @@ $> grep -F -f ids tutorial-8-example-error.log  | grep 942450 | melmatch | sucs
       6 REQUEST_COOKIES_NAMES:SESS29af1facda0a866a687d5055f0x034ca
 ```
 
-As expected, it's session cookie. But hold on: The session cookie has a dynamic name! This means, we can not simply ignore the session cookie. We need to ignore cookies whose name match a certain pattern and this is very, very complicated. And it's probably not worth the hassle. The easier approach is to have this rule ignore all cookies.  This way, the rule is still intact for post and query string parameter, but it does not trigger on cookies anymore.
+As expected, it's session cookie but unexpectedly, the session cookie has a dynamic name on top! This means, we can not simply ignore the session cookie by name: We need to ignore cookies whose name match a certain pattern and this is very, very complicated. And it's probably not worth the hassle. The easier approach is to have this rule ignore all cookies.  This way, the rule is still intact for post and query string parameter, but it does not trigger on cookies anymore.
 
 ```bash
 # ModSec Rule Exclusion: 942450 : SQL Hex Encoding Identified (severity: 5 CRITICAL)
-SecRuleUpdateTargetById 942450 "!REQUEST_COOKIES
-SecRuleUpdateTargetById 942450 "!REQUEST_COOKIES_NAMES
+SecRuleUpdateTargetById 942450 "!REQUEST_COOKIES"
+SecRuleUpdateTargetById 942450 "!REQUEST_COOKIES_NAMES"
 ```
 
 Three more to go: 921180, 942431 and 942130. We start with the latter:
 
 ```bash
-$> grep -F -f ids tutorial-8-example-error.log  | grep 942130 | melmatch | sucs
+$> grep -F -f ids tutorial-8-example-error.log | grep 942130 | melmatch | sucs
      75 ARGS:ids[]
 ```
 
-So this is always the same parameter `ids[]`, which is already familiar to us. Maybe it's worth to look at the URI to understand how this is happening:
+So this is always the same parameter *ids[]*, which is already familiar to us. Maybe it's worth to look at the URI to understand how this is happening:
 
 ```bash
 $> grep -F -f ids tutorial-8-example-error.log  | grep 942130 | meluri | sucs
      75 /drupal/index.php/contextual/render
 ```
 
-So this is always the same URI. Let's exclude the parameter `ids[]` from being examined when occurring in requests to this location. This boils down to a run-time exclusion rule. In the previous tutorial, we have seen that writing these rules is cumbersome. Let's have a script pull this off for us: introducing [modsec-rulereport.rb](https://www.netnea.com/cms/files/modsec-rulereport.rb)
+So this is always the same URI. Let's exclude the parameter `ids[]` from being examined when occurring in requests to this location. This boils down to a run-time exclusion rule. In the previous tutorial, we have seen that writing these kind of rules is cumbersome. It would be nice to have a script do the work for us. So I created such a script: introducing [modsec-rulereport.rb](https://www.netnea.com/cms/files/modsec-rulereport.rb). It takes an alert message (or the error log in a more general sense) on STDIN and proposes one of many rules exclusions of different types (see modsec-rulereport.rb -h` for an overview). 
 
 
 ```bash
@@ -424,7 +424,7 @@ $> grep -F -f ids tutorial-8-example-error.log  | grep 942130 | modsec-rulerepor
       SecRule REQUEST_URI "@beginsWith /drupal/index.php/contextual/render" "phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=942130;ARGS:ids[]"
 ```
 
-The mode _combined_ instructs the script to write a rule that combines a path condition with a rule id and a certain parameter. First it reports the number of occurrences, then it proposes an exclusion rule which we can copy into our apache configuration file 1:1. The proposed rule has an id of 10,000. If we continue to use the script, we will have to edit this id ourselves to avoid id collisions, but that's a simple task.
+The mode _combined_ instructs the script to write a rule that combines a path condition with a rule id and a certain parameter. First it reports the number of occurrences, then it proposes an exclusion rule which we can copy together with the comment into our apache configuration file 1:1. The proposed rule has an id of 10,000. If we continue to use the script, we will have to edit this id ourselves to avoid id collisions, but that's a simple task.
 
 Here is how the configuration looks when we enter this construct (line break introduced for display reasons):
 
@@ -451,17 +451,16 @@ $> grep -F -f ids tutorial-8-example-error.log  | grep 942431 | modsec-rulerepor
 So that's almost the same thing. We can thus take out the control action (the bit starting with `ctl`) and append it to the previous statement:
 
 
-```
+```bash
 # === ModSec Core Rules: Runtime Exclusion Rules (ids: 10000-49999)
 
 # ModSec Rule Exclusion: 942130 : SQL Injection Attack: SQL Tautology Detected.
-# ModSec Rule Exclusion: 942431 : Restricted SQL Character Anomaly Detection (args): # of special characters exceeded (6) (severity:  NONE/UNKOWN)
+# ModSec Rule Exclusion: 942431 : Restricted SQL Character Anomaly Detection (args): # of ...
 SecRule REQUEST_URI "@beginsWith /drupal/index.php/contextual/render" \
     "phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=942130;ARGS:ids[],\
                                  ctl:ruleRemoveTargetById=942431;ARGS:ids[]"
 
 ```
-
 
 And now 921180:
 
@@ -474,7 +473,7 @@ $> grep -F -f ids tutorial-8-example-error.log  | grep 921180 | modsec-rulerepor
       SecRule REQUEST_URI "@beginsWith /drupal/index.php/contextual/render" "phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=921180;TX:paramcounter_ARGS_NAMES:ids[]"
 ```
 
-This is a special case. It's this habit of submitting a single parameter multiple times. The rule works with a separate counter introduced for every parameter and it will then check the counter. If we want to suppress the alarm, we best suppress the examination of this counter like the script proposes. We are facing the same URI again, but this time, I have that feeling that this rule will be triggered by other parameters as well.
+This is a special case. It's this habit of submitting a single parameter multiple times. The rule works with a separate counter introduced for every parameter and it will then check the counter in tule 921180. If we want to suppress the alarm, we best suppress the examination of this counter like the script proposes. We are facing the same URI again, but I have that feeling that this rule will be triggered by other parameters as well. We will see.
 
 In fact this brings us to an organisational problem? How do we best organise the rule exclusions, especially the complicated run-time exclusions? We can order by rule ID, by URI or by parameter. There is no easy answer. For large sites with multiple services or many different application paths, I use the URI to group the exclusion rules by branches of the service. But with small services sorting by rule ID seems a reasonable approach.
 
@@ -486,12 +485,12 @@ SecRule REQUEST_URI "@beginsWith /drupal/index.php/contextual/render" \
     "phase:2,nolog,pass,id:10001,ctl:ruleRemoveTargetById=921180;TX:paramcounter_ARGS_NAMES:ids[]"
 ```
 
-With this, we have covered these high scoring requests. Writing these six rule exclusions was a bit cumbersome, but the script seems to be a real improvement for the process. The rest will be faster. Promise.
+With this, we have covered these seven highly scoring requests (189 and 231). Writing these six rule exclusions was a bit cumbersome, but the script seems to be a real improvement for the process. The rest will be faster. Promise.
 
 
 ###Step 4: Reducing the anomaly score threshold
 
-We have tuned away the rules leading to the highest anomaly scores. Actually anything above 100 is now gone. In a productive setup I would deploy the updated configuration and observe the behaviour a bit. If the high scores are really gone, then it is time to reduce the anomaly limit. A typical first step is from 1,000 to 100. Then we do more rules exlusions, reduce to 50 or so, then to 20, 10 and 5. In fact a limit of 5 is really strong, but for sites with less security need, a limit of 10 might just be good enough. Anything above does not really block attackers.
+We have tuned away the alerts leading to the highest anomaly scores. Actually anything above 100 is now gone. In a productive setup I would deploy the updated configuration and observe the behaviour a bit. If the high scores are really gone, then it is time to reduce the anomaly limit. A typical first step is from 1,000 to 100. Then we do more rules exlusions, reduce to 50 or so, then to 20, 10 and 5. In fact a limit of 5 is really strong (first critical alert blocks a request), but for sites with less security need, a limit of 10 might just be good enough. Anything above does not really block attackers.
 
 But before we get there, we need to add few more rule exclusions.
 
@@ -504,7 +503,7 @@ After the first batch of rule exclusions, we would observe the service and end u
 * [tutorial-8-example-access-round-2.log](./tutorial-8-example-access-round-2.log)
 * [tutorial-8-example-error-round-2.log](./tutorial-8-example-error-round-2.log)
 
-The start again with a look at the score distribution:
+We start again with a look at the score distribution:
 
 ```bash
 $> cat tutorial-8-example-access-round-2.log | alscores | modsec-positive-stats.rb
@@ -588,9 +587,9 @@ Outgoing average:   0.0000    Median   0.0000    Standard deviation   0.0000
 
 If we compare this to the first run of the statistic script, we reduced the average score from 12.5 to 1.5. This is very impressive. So by focusing on a handful of high scoring requests, we improved the whole service a big deal.
 
-We could expect the high scoring requests at 231 and 189 be gone, but funny enough, the cluster at 98 has also disappeared.
+We could expect the high scoring requests at 231 and 189 be gone, but funny enough, the cluster at 98 has also disappeared. We only covered 7 bugging requests in the initial tuning, but a cluster with alerts from over 400 requests is gone too.
 
-So our next goal is the group of requests with a score of 60. Let's extract the rule ids and then examine the alerts a bit.
+Our next goal is now the group of requests with a score of 60. Let's extract the rule ids and then examine the alerts a bit.
 
 ```bash
 $> egrep " 60 [0-9-]+$" tutorial-8-example-access-round-2.log | alreqid > ids
@@ -606,7 +605,7 @@ $> grep -F -f ids tutorial-8-example-error-round-2.log | meluri | sucs
     924 /drupal/index.php/search/node
 ```
 
-So this points to a search form and payloads resembling sql injections (outside of the first rule 921180, which he have seen before). It is obvious that a search form will attract sql injection attacks. But then I know this was legitimate traffic (I filled the forms personally when I searched for sql statements in the drupal articles I had posted as an exercise) and we are now facing a dilemma: If we suppress the rules, we open a door for sql injections. If we are leaving the rules intact and reduce the limit, we will sooner or later block legitimate traffic. I think it is okay the say that nobody should be using the search form to look for sql statements in our articles. Or we can say that Drupal is smart enough to fight off sql attacks via the search form. As this is an exercise, this is what we are doing: Let's feed it all into our helper script:
+So this points to a search form and payloads resembling sql injections (outside of the first rule 921180, which he have seen before). It is obvious that a search form will attract sql injection attacks. But then I know this was legitimate traffic (I filled the forms personally when I searched for sql statements in the Drupal articles I had posted as an exercise) and we are now facing a dilemma: If we suppress the rules, we open a door for sql injections. If we are leaving the rules intact and reduce the limit, we will block legitimate traffic. I think it is okay the say that nobody should be using the search form to look for sql statements in our articles. But I could also state that Drupal is smart enough to fight off sql attacks via the search form. As this is an exercise, this is our position for the moment: Let's exclude these rules: Let's feed it all into our helper script:
 
 ```bash
 $> grep -F -f ids tutorial-8-example-error-round-2.log | modsec-rulereport.rb -m combined
@@ -657,7 +656,7 @@ SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" \
     "phase:2,nolog,pass,id:10002,ctl:ruleRemoveTargetById=921180;TX:paramcounter_ARGS_NAMES:keys"
 ```
 
-With 942100, it did not come up with a good proposal. This is because the rule alert for this rule has a different format and the script is not smart enough to parse it correctly. Let's examine the alert message to find the uri and the parameter in question. Unfortunately, `melmatch` won't be able to cope with this either. So we really have to work by hand this time:
+With 942100, the script did not come up with a good proposal. This is because the rule alert for this rule has a different format and the script is not smart enough to parse it correctly. Let's examine the alert message to find the URI and the parameter in question. Unfortunately, *melmatch* won't be able to cope with this either. So we really have to work by hand this time:
 
 ```bash
 $> grep -F -f ids tutorial-8-example-error-round-2.log | grep 942100 | head -1
@@ -689,21 +688,23 @@ $> grep -F -f ids tutorial-8-example-error-round-2.log | grep -v "942100\|921180
 
 ```
 
-We can simplify this into the following rule which is then appended to the previous run-time exclusion rules:
+We can simplify this into the following rule which is then appended to the previous run-time exclusion rule for 942100:
 
 
 ```bash
-      # ModSec Rule Exclusion: 942190 : Detects MSSQL code execution and information gathering attempts
-      # ModSec Rule Exclusion: 942200 : Detects MySQL comment-/space-obfuscated injections and backtick termination
-      # ModSec Rule Exclusion: 942260 : Detects basic SQL authentication bypass attempts 2/3
-      # ModSec Rule Exclusion: 942270 : Looking for basic sql injection. Common attack string for mysql, oracle and others.
-      # ModSec Rule Exclusion: 942410 : SQL Injection Attack
-      SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" "phase:2,nolog,pass,id:10005,\
-         ctl:ruleRemoveTargetById=942190;ARGS:keys,\
-         ctl:ruleRemoveTargetById=942200;ARGS:keys,\
-         ctl:ruleRemoveTargetById=942260;ARGS:keys,\
-         ctl:ruleRemoveTargetById=942270;ARGS:keys"
-         ctl:ruleRemoveTargetById=942410;ARGS:keys"
+# ModSec Rule Exclusion: 942100 : SQL Injection Attack Detected via libinjection
+# ModSec Rule Exclusion: 942190 : Detects MSSQL code execution and information gathering attempts
+# ModSec Rule Exclusion: 942200 : Detects MySQL comment-/space-obfuscated injections and backtick termination
+# ModSec Rule Exclusion: 942260 : Detects basic SQL authentication bypass attempts 2/3
+# ModSec Rule Exclusion: 942270 : Looking for basic sql injection. Common attack string for mysql, oracle and others.
+# ModSec Rule Exclusion: 942410 : SQL Injection Attack
+SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" "phase:2,nolog,pass,id:10004,\
+    ctl:ruleRemoveTargetById=942100;ARGS:keys,\
+    ctl:ruleRemoveTargetById=942190;ARGS:keys,\
+    ctl:ruleRemoveTargetById=942200;ARGS:keys,\
+    ctl:ruleRemoveTargetById=942260;ARGS:keys,\
+    ctl:ruleRemoveTargetById=942270;ARGS:keys"
+    ctl:ruleRemoveTargetById=942410;ARGS:keys"
 ```
 
 And done. This time, we cleaned out all the scores above 50. Time to reduce the anomaly threshold to 50, let it rest a bit and then examine the logs for the third batch.
@@ -711,13 +712,13 @@ And done. This time, we cleaned out all the scores above 50. Time to reduce the 
 
 ###Step 6: The third batch of rule exclusions
 
-Here are the new exercise files. It's still the same traffic, but with less alerts thanks to the rule exclusions.
+Here are the new exercise files. It's still the same traffic, but with less alerts again thanks to the rule exclusions.
 
 * [tutorial-8-example-access-round-3.log](./tutorial-8-example-access-round-3.log)
 * [tutorial-8-example-error-round-3.log](./tutorial-8-example-error-round-3.log)
 
 
-This brings us to the following statistics (only printing numbers for the incoming requests):
+This brings us to the following statistics (this time only printing numbers for the incoming requests):
 
 ```bash
 $> cat tutorial-8-example-access-round-3.log | alscores | modsec-positive-stats.rb --incoming
@@ -741,7 +742,7 @@ Incoming average:   0.7034    Median   0.0000    Standard deviation   2.0254
 
 ```
 
-So again, a big deal of false positives disappeared because of a bunch of exclusions for a score of 60. This time, we'll tackle the lone request at 10 and the cluster at 8 allowing us to reduce the anomaly threshold to 10 afterwards, which is already pretty low.
+So again, a big deal of false positives disappeared because of a bunch of exclusions for a score of 60. For this tuning round, we'll tackle the lone request at 10 and the cluster at 8 allowing us to reduce the anomaly threshold to 10 afterwards, which is already quite low.
 
 
 ```bash
@@ -820,7 +821,7 @@ $> grep -F -f ids tutorial-8-example-error-round-3.log | grep "921180\|942431" |
       SecRule REQUEST_URI "@beginsWith /drupal/index.php/quickedit/attachments" "phase:2,nolog,pass,id:10001,ctl:ruleRemoveTargetById=942431;ARGS:ajax_page_state[libraries]"
 ```
 
-You know the drill by now: The first one goes with the other 921180 exclusions (don't forget to pick a new rule id) and the second one gives a new entry in the config file:
+You know the drill by now: The first one goes with the other 921180 exclusions (don't forget to pick a new rule id) and the second is added as a separate new entry:
 
 
 ```bash
@@ -831,7 +832,7 @@ SecRule REQUEST_URI "@beginsWith /drupal/index.php/quickedit/attachments" \
 
 Time to reduce the limit once more (down to 10 this time) and see what happens.
 
-###Step 6: The fourth batch of rule exclusions
+###Step 7: The fourth batch of rule exclusions
 
 We have a new pair of logs: 
 
@@ -863,9 +864,9 @@ It seems, we are almost done. What rules are behind these remaining alerts?
 ```bash
 $> cat tutorial-8-example-access-round-4.log | egrep " 5 [0-9-]+$"  | alreqid > ids
 $> grep -F -f ids tutorial-8-example-error-round-4.log  | melidmsg | sucs
-     30 921180 TX:paramcounter_ARGS_NAMES:op       HTTP Parameter Pollution (ARGS_NAMES:op)
-     56 932160 ARGS:pass                           Remote Command Execution: Unix Shell Code Found
-    448 921180 TX:paramcounter_ARGS_NAMES:fields[  HTTP Parameter Pollution (ARGS_NAMES:fields[)
+     30 921180 HTTP Parameter Pollution (ARGS_NAMES:op)
+     56 932160 Remote Command Execution: Unix Shell Code Found
+    448 921180 HTTP Parameter Pollution (ARGS_NAMES:fields[])
 ```
 
 So our friend 921180 again for two parameters and another shell execution. Probably another occurrence of the password parameter. Let's check this:
@@ -900,9 +901,9 @@ SecRuleUpdateTargetById 930000-943999 "!ARGS:pass"
 
 And with this we are done. We have successfully fought all the false positives of a content management system with peculiar parameter formats and a ModSecurity rule set pushed to insanely paranoid levels. 
 
-###Step 7 : Summarizing all ignore rules
+###Step 8: Summarizing all ignore rules
 
-Time to look back and rearrange the configuration file with all the rule exclusions. I have regrouped them a bit, I added some comments and reassigned rule IDs. As outlined before, it is not obvious how to arrange the rules. I ordered them by ID but also included a block where I cover the search form separately.
+Time to look back and rearrange the configuration file with all the rule exclusions. I have regrouped them a bit, I added some comments and reassigned rule IDs. As outlined before, it is not obvious how to arrange the rules. Here, I ordered them by ID but also included a block where I cover the search form separately.
 
 ```bash
 # === ModSec Core Rules: Runtime Exclusion Rules (ids: 10000-49999)
@@ -973,11 +974,12 @@ SecRuleUpdateTargetById 930000-943999 "!ARGS:pass"
 
 ###Goodie: Getting a quicker overview
 
-When you first approach an untuned service a quick overview is the thing you want. It’s a good idea to have a look at the distribution of scores as described above. A good next step is to get a report of how exactly the *anomaly scores* occurred, such as an overview of the rule violations for each anomaly score. The following construct generates a report like this. On the first line we extract a list of anomaly scores from the incoming requests which actually appear in the log file. We then build a loop around these *scores*, read the *request ID* for each *score*, save it in the file `ids` and perform a short analysis for these *IDs* in the *error log*.
+If you do this the first time, it all looks a bit overwhelming. But then it's only been an hour of work or so, which seems reasonable - even more so if you stretch it over multiple iterations. One thing to help you get up to speed is giving you an overview over all the alerts standing behind the scores. It’s a good idea to have a look at the distribution of scores as described above. A good next step is to get a report of how exactly the *anomaly scores* occurred, such as an overview of the rule violations for each anomaly score. The following construct generates a report like this. On the first line we extract a list of anomaly scores from the incoming requests which actually appear in the log file. We then build a loop around these *scores*, read the *request ID* for each *score*, save it in the file `ids` and perform a short analysis for these *IDs* in the *error log*.
 
 ```bash
 $> cat tutorial-8-example-access.log | alscorein | sort -n | uniq | egrep -v -E "^0" > scores
-$> cat scores | while read S; do echo "INCOMING SCORE $S"; grep -E " $S [0-9-]+$" tutorial-8-example-access.log \
+$> cat scores | while read S; do echo "INCOMING SCORE $S";\
+grep -E " $S [0-9-]+$" tutorial-8-example-access.log \
 | alreqid > ids; grep -F -f ids tutorial-8-example-error.log | melidmsg | sucs; echo ; done 
 INCOMING SCORE 5
      30 921180 HTTP Parameter Pollution (ARGS_NAMES:op)
@@ -1056,7 +1058,7 @@ INCOMING SCORE 231
     132 942432 Restricted SQL Character Anomaly Detection (args): # of special characters exceeded (2)
 ```
 
-Strictly speaking, the responses to the requests are also listed for the low *scores* along with the error messages; in cases where they were triggered on requests they encountered rule violations in the requests themselves. However, this detail does not negate the usefulness of the construct above. A similar script that has been slightly extended is part of my private toolbox.
+I said it's only the request alerts, but strictly speaking, the responses to the requests are also listed for the low *scores* along with the error messages; in cases where they were triggered on requests they encountered rule violations in the requests themselves. However, this detail does not negate the usefulness of the construct above. A similar script that has been slightly extended is part of my private toolbox.
 
 Before we finish with this tutorial, let me present my tuning policy again:
 
@@ -1064,7 +1066,7 @@ Before we finish with this tutorial, let me present my tuning policy again:
 * Highest scoring requests go first
 * Work in several iterations
 
-When you grow more proficient, you can reduce the number of iterations and tackle more false alarms in a single batch. Or you concentrate on the rules that are triggered the most often. That may work as well and in the end, when all rule exclusions are in place, you should end up with the same configuration. But in my experience, this approach is the one with the highest chance of success and the lowest drop out rate.
+When you grow more proficient, you can reduce the number of iterations and tackle more false alarms in a single batch. Or you concentrate on the rules that are triggered the most often. That may work as well and in the end, when all rule exclusions are in place, you should end up with the same configuration. But in my experience, this policy with three simple guiding rules is the one with the highest chance of success and the lowest drop out rate. This is how you end of with a tight ModSecurity CRS setup in blocking mode with a low anomaly scoring limit.
 
 We have now reached the end of the block consisting of three *ModSecurity tutorials*. The next one will look into the setup of a *reverse proxy*.
 

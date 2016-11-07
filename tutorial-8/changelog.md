@@ -1,6 +1,7 @@
 ##### Changelog
 
 * 2016-11-08: Publication
+* 2016-11-07: Review of new text
 * 2016-11-06: Rewrite for CRS 3.0
 * 2016-10-10: Fixing small issues
 * 2016-07-15: Apache 2.4.20 -> 2.4.23
