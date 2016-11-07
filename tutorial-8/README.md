@@ -310,7 +310,7 @@ So we have 10,000 requests and about half of them pass without raising any alarm
 
 Let's visualize this:
 
-FIXME
+<img src="/files/tutorial-8-untuned-distribution.png" alt="Untuned Distribution" width="950" height="550" /></a>
 
 I have used a logarithmic scale on the Y axis to emphasize the number of requests making up the long tail. So on the left, you have most of the requests, but on the right, you have the few requests with a lot of alerts. All together, these requests scored a ton of false positives that we need to address. But where to start? We start with the request returning the highest anomaly score, we start on the right side of the graph! This makes sense because we are in blocking mode and we would like to reduce the threshold. The group of requests standing in our way are the six requests with a score of 231 and the single request with a score of 189. Let's write exclusion rules to suppress the alarms leading to these scores.
 
