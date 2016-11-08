@@ -514,85 +514,90 @@ We start again with a look at the score distribution:
 
 ```bash
 $> cat tutorial-8-example-access-round-2.log | alscores | modsec-positive-stats.rb
+
 INCOMING                     Num of req. | % of req. |  Sum of % | Missing %
 Number of incoming req. (total) |  10000 | 100.0000% | 100.0000% |   0.0000%
 
 Empty or miss. incoming score   |      0 |   0.0000% |   0.0000% | 100.0000%
-Reqs with incoming score of   0 |   8786 |  87.8600% |  87.8600% |  12.1400%
-Reqs with incoming score of   1 |      0 |   0.0000% |  87.8600% |  12.1400%
-Reqs with incoming score of   2 |      0 |   0.0000% |  87.8600% |  12.1400%
-Reqs with incoming score of   3 |      0 |   0.0000% |  87.8600% |  12.1400%
-Reqs with incoming score of   4 |      0 |   0.0000% |  87.8600% |  12.1400%
-Reqs with incoming score of   5 |    534 |   5.3400% |  93.2000% |   6.8000%
-Reqs with incoming score of   6 |      0 |   0.0000% |  93.2000% |   6.8000%
-Reqs with incoming score of   7 |      0 |   0.0000% |  93.2000% |   6.8000%
-Reqs with incoming score of   8 |    448 |   4.4799% |  97.6800% |   2.3200%
-Reqs with incoming score of   9 |      0 |   0.0000% |  97.6800% |   2.3200%
-Reqs with incoming score of  10 |      1 |   0.0100% |  97.6900% |   2.3100%
-Reqs with incoming score of  11 |      0 |   0.0000% |  97.6900% |   2.3100%
-Reqs with incoming score of  12 |      0 |   0.0000% |  97.6900% |   2.3100%
-Reqs with incoming score of  13 |      0 |   0.0000% |  97.6900% |   2.3100%
-Reqs with incoming score of  14 |      0 |   0.0000% |  97.6900% |   2.3100%
-Reqs with incoming score of  15 |      0 |   0.0000% |  97.6900% |   2.3100%
-Reqs with incoming score of  16 |      0 |   0.0000% |  97.6900% |   2.3100%
-Reqs with incoming score of  17 |      0 |   0.0000% |  97.6900% |   2.3100%
-Reqs with incoming score of  18 |      0 |   0.0000% |  97.6900% |   2.3100%
-Reqs with incoming score of  19 |      0 |   0.0000% |  97.6900% |   2.3100%
-Reqs with incoming score of  20 |      0 |   0.0000% |  97.6900% |   2.3100%
-Reqs with incoming score of  21 |      0 |   0.0000% |  97.6900% |   2.3100%
-Reqs with incoming score of  22 |      0 |   0.0000% |  97.6900% |   2.3100%
-Reqs with incoming score of  23 |      0 |   0.0000% |  97.6900% |   2.3100%
-Reqs with incoming score of  24 |      0 |   0.0000% |  97.6900% |   2.3100%
-Reqs with incoming score of  25 |     77 |   0.7700% |  98.4600% |   1.5400%
-Reqs with incoming score of  26 |      0 |   0.0000% |  98.4600% |   1.5400%
-Reqs with incoming score of  27 |      0 |   0.0000% |  98.4600% |   1.5400%
-Reqs with incoming score of  28 |      0 |   0.0000% |  98.4600% |   1.5400%
-Reqs with incoming score of  29 |      0 |   0.0000% |  98.4600% |   1.5400%
-Reqs with incoming score of  30 |     77 |   0.7700% |  99.2300% |   0.7700%
-Reqs with incoming score of  31 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  32 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  33 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  34 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  35 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  36 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  37 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  38 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  39 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  40 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  41 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  42 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  43 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  44 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  45 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  46 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  47 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  48 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  49 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  50 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  51 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  52 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  53 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  54 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  55 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  56 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  57 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  58 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  59 |      0 |   0.0000% |  99.2300% |   0.7700%
-Reqs with incoming score of  60 |     77 |   0.7700% | 100.0000% |   0.0000%
+Reqs with incoming score of   0 |   8944 |  89.4400% |  89.4400% |  10.5600%
+Reqs with incoming score of   1 |      0 |   0.0000% |  89.4400% |  10.5600%
+Reqs with incoming score of   2 |      0 |   0.0000% |  89.4400% |  10.5600%
+Reqs with incoming score of   3 |      0 |   0.0000% |  89.4400% |  10.5600%
+Reqs with incoming score of   4 |     20 |   0.2000% |  89.6400% |  10.3600%
+Reqs with incoming score of   5 |    439 |   4.3900% |  94.0300% |   5.9700%
+Reqs with incoming score of   6 |      0 |   0.0000% |  94.0300% |   5.9700%
+Reqs with incoming score of   7 |      0 |   0.0000% |  94.0300% |   5.9700%
+Reqs with incoming score of   8 |    368 |   3.6800% |  97.7100% |   2.2900%
+Reqs with incoming score of   9 |      0 |   0.0000% |  97.7100% |   2.2900%
+Reqs with incoming score of  10 |      1 |   0.0100% |  97.7200% |   2.2800%
+Reqs with incoming score of  11 |      0 |   0.0000% |  97.7200% |   2.2800%
+Reqs with incoming score of  12 |      0 |   0.0000% |  97.7200% |   2.2800%
+Reqs with incoming score of  13 |      0 |   0.0000% |  97.7200% |   2.2800%
+Reqs with incoming score of  14 |      0 |   0.0000% |  97.7200% |   2.2800%
+Reqs with incoming score of  15 |      0 |   0.0000% |  97.7200% |   2.2800%
+Reqs with incoming score of  16 |      0 |   0.0000% |  97.7200% |   2.2800%
+Reqs with incoming score of  17 |      0 |   0.0000% |  97.7200% |   2.2800%
+Reqs with incoming score of  18 |      0 |   0.0000% |  97.7200% |   2.2800%
+Reqs with incoming score of  19 |      0 |   0.0000% |  97.7200% |   2.2800%
+Reqs with incoming score of  20 |      0 |   0.0000% |  97.7200% |   2.2800%
+Reqs with incoming score of  21 |      0 |   0.0000% |  97.7200% |   2.2800%
+Reqs with incoming score of  22 |      0 |   0.0000% |  97.7200% |   2.2800%
+Reqs with incoming score of  23 |      0 |   0.0000% |  97.7200% |   2.2800%
+Reqs with incoming score of  24 |      0 |   0.0000% |  97.7200% |   2.2800%
+Reqs with incoming score of  25 |     76 |   0.7600% |  98.4800% |   1.5200%
+Reqs with incoming score of  26 |      0 |   0.0000% |  98.4800% |   1.5200%
+Reqs with incoming score of  27 |      0 |   0.0000% |  98.4800% |   1.5200%
+Reqs with incoming score of  28 |      0 |   0.0000% |  98.4800% |   1.5200%
+Reqs with incoming score of  29 |      0 |   0.0000% |  98.4800% |   1.5200%
+Reqs with incoming score of  30 |     76 |   0.7600% |  99.2400% |   0.7600%
+Reqs with incoming score of  31 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  32 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  33 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  34 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  35 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  36 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  37 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  38 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  39 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  40 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  41 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  42 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  43 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  44 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  45 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  46 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  47 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  48 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  49 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  50 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  51 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  52 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  53 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  54 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  55 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  56 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  57 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  58 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  59 |      0 |   0.0000% |  99.2400% |   0.7600%
+Reqs with incoming score of  60 |     76 |   0.7600% | 100.0000% |   0.0000%
 
-Incoming average:   1.5119    Median   0.0000    Standard deviation   6.4334
+Incoming average:   1.3969    Median   0.0000    Standard deviation   6.3634
 
 
 OUTGOING                     Num of req. | % of req. |  Sum of % | Missing %
 Number of outgoing req. (total) |  10000 | 100.0000% | 100.0000% |   0.0000%
 
 Empty or miss. outgoing score   |      0 |   0.0000% |   0.0000% | 100.0000%
-Reqs with outgoing score of   0 |  10000 | 100.0000% | 100.0000% |   0.0000%
+Reqs with outgoing score of   0 |   9980 |  99.8000% |  99.8000% |   0.2000%
+Reqs with outgoing score of   1 |      0 |   0.0000% |  99.8000% |   0.2000%
+Reqs with outgoing score of   2 |      0 |   0.0000% |  99.8000% |   0.2000%
+Reqs with outgoing score of   3 |      0 |   0.0000% |  99.8000% |   0.2000%
+Reqs with outgoing score of   4 |     20 |   0.2000% | 100.0000% |   0.0000%
 
-Outgoing average:   0.0000    Median   0.0000    Standard deviation   0.0000
+Outgoing average:   0.0080    Median   0.0000    Standard deviation   0.1787
 ```
 
-If we compare this to the first run of the statistic script, we reduced the average score from 12.5 to 1.5. This is very impressive. So by focusing on a handful of high scoring requests, we improved the whole service by a lot.
+If we compare this to the first run of the statistic script, we reduced the average score from 12.5 to 1.4. This is very impressive. So by focusing on a handful of high scoring requests, we improved the whole service by a lot.
 
 We could expect the high scoring requests of 231 and 189 to be gone, but funnily enough, the cluster at 98 has also disappeared. We only covered 7 requests in the initial tuning, but a cluster with alerts from over 400 requests is gone, too.
 
@@ -601,15 +606,15 @@ Our next goal is the group of requests with a score of 60. Let's extract the rul
 ```bash
 $> egrep " 60 [0-9-]+$" tutorial-8-example-access-round-2.log | alreqid > ids
 $> grep -F -f ids tutorial-8-example-error-round-2.log | melidmsg | sucs
-     77 921180 HTTP Parameter Pollution (ARGS_NAMES:keys)
-     77 942100 SQL Injection Attack Detected via libinjection
-    154 942190 Detects MSSQL code execution and information gathering attempts
-    154 942200 Detects MySQL comment-/space-obfuscated injections and backtick termination
-    154 942260 Detects basic SQL authentication bypass attempts 2/3
-    154 942270 Looking for basic sql injection. Common attack string for mysql, oracle and others.
-    154 942410 SQL Injection Attack
+     76 921180 HTTP Parameter Pollution (ARGS_NAMES:keys)
+     76 942100 SQL Injection Attack Detected via libinjection
+    152 942190 Detects MSSQL code execution and information gathering attempts
+    152 942200 Detects MySQL comment-/space-obfuscated injections and backtick termination
+    152 942260 Detects basic SQL authentication bypass attempts 2/3
+    152 942270 Looking for basic sql injection. Common attack string for mysql, oracle and others.
+    152 942410 SQL Injection Attack
 $> grep -F -f ids tutorial-8-example-error-round-2.log | meluri | sucs
-    924 /drupal/index.php/search/node
+    912 /drupal/index.php/search/node
 ```
 
 So this points to a search form and payloads resembling SQL injections (outside of the first rule 921180, which we have seen before). It's obvious that a search form will attract SQL injection attacks. But then I know this was legitimate traffic (I filled in the forms personally when I searched for SQL statements in the Drupal articles I had posted as an exercise) and we are now facing a dilemma: If we suppress the rules, we open a door for SQL injections. If we leave the rules intact and reduce the limit, we will block legitimate traffic. I think it is OK to say that nobody should be using the search form to look for sql statements in our articles. But I could also say that Drupal is smart enough to fight off SQL attacks via the search form. As this is an exercise, this is our position for the moment: Let's exclude these rules. Let's feed it all into our helper script:
@@ -617,37 +622,37 @@ So this points to a search form and payloads resembling SQL injections (outside 
 ```bash
 $> grep -F -f ids tutorial-8-example-error-round-2.log | modsec-rulereport.rb -m combined
 
-77 x 921180 HTTP Parameter Pollution (ARGS_NAMES:keys)
+76 x 921180 HTTP Parameter Pollution (ARGS_NAMES:keys)
 ------------------------------------------------------
       # ModSec Rule Exclusion: 921180 : HTTP Parameter Pollution (ARGS_NAMES:keys)
       SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" "phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=921180;TX:paramcounter_ARGS_NAMES:keys"
 
-77 x 942100 SQL Injection Attack Detected via libinjection
+76 x 942100 SQL Injection Attack Detected via libinjection
 ----------------------------------------------------------
       # ModSec Rule Exclusion: 942100 : SQL Injection Attack Detected via libinjection
   No parameter available to create ignore-rule proposal. Please try and use different mode.
 
-154 x 942190 Detects MSSQL code execution and information gathering attempts
+152 x 942190 Detects MSSQL code execution and information gathering attempts
 ----------------------------------------------------------------------------
       # ModSec Rule Exclusion: 942190 : Detects MSSQL code execution and information gathering attempts
       SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" "phase:2,nolog,pass,id:10001,ctl:ruleRemoveTargetById=942190;ARGS:keys"
 
-154 x 942200 Detects MySQL comment-/space-obfuscated injections and backtick termination
+152 x 942200 Detects MySQL comment-/space-obfuscated injections and backtick termination
 ----------------------------------------------------------------------------------------
       # ModSec Rule Exclusion: 942200 : Detects MySQL comment-/space-obfuscated injections and backtick termination
       SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" "phase:2,nolog,pass,id:10002,ctl:ruleRemoveTargetById=942200;ARGS:keys"
 
-154 x 942260 Detects basic SQL authentication bypass attempts 2/3
+152 x 942260 Detects basic SQL authentication bypass attempts 2/3
 -----------------------------------------------------------------
       # ModSec Rule Exclusion: 942260 : Detects basic SQL authentication bypass attempts 2/3
       SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" "phase:2,nolog,pass,id:10003,ctl:ruleRemoveTargetById=942260;ARGS:keys"
 
-154 x 942270 Looking for basic sql injection. Common attack string for mysql, oracle and others.
+152 x 942270 Looking for basic sql injection. Common attack string for mysql, oracle and others.
 ------------------------------------------------------------------------------------------------
       # ModSec Rule Exclusion: 942270 : Looking for basic sql injection. Common attack string for mysql, oracle and others.
       SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" "phase:2,nolog,pass,id:10004,ctl:ruleRemoveTargetById=942270;ARGS:keys"
 
-154 x 942410 SQL Injection Attack
+152 x 942410 SQL Injection Attack
 ---------------------------------
       # ModSec Rule Exclusion: 942410 : SQL Injection Attack
       SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" "phase:2,nolog,pass,id:10005,ctl:ruleRemoveTargetById=942410;ARGS:keys"
@@ -734,31 +739,30 @@ INCOMING                     Num of req. | % of req. |  Sum of % | Missing %
 Number of incoming req. (total) |  10000 | 100.0000% | 100.0000% |   0.0000%
 
 Empty or miss. incoming score   |      0 |   0.0000% |   0.0000% | 100.0000%
-Reqs with incoming score of   0 |   8863 |  88.6300% |  88.6300% |  11.3700%
-Reqs with incoming score of   1 |      0 |   0.0000% |  88.6300% |  11.3700%
-Reqs with incoming score of   2 |      0 |   0.0000% |  88.6300% |  11.3700%
-Reqs with incoming score of   3 |      0 |   0.0000% |  88.6300% |  11.3700%
-Reqs with incoming score of   4 |      0 |   0.0000% |  88.6300% |  11.3700%
-Reqs with incoming score of   5 |    688 |   6.8800% |  95.5099% |   4.4901%
-Reqs with incoming score of   6 |      0 |   0.0000% |  95.5099% |   4.4901%
-Reqs with incoming score of   7 |      0 |   0.0000% |  95.5099% |   4.4901%
-Reqs with incoming score of   8 |    448 |   4.4799% |  99.9900% |   0.0100%
+Reqs with incoming score of   0 |   9192 |  91.9200% |  91.9200% |   8.0800%
+Reqs with incoming score of   1 |      0 |   0.0000% |  91.9200% |   8.0800%
+Reqs with incoming score of   2 |      0 |   0.0000% |  91.9200% |   8.0800%
+Reqs with incoming score of   3 |      0 |   0.0000% |  91.9200% |   8.0800%
+Reqs with incoming score of   4 |      0 |   0.0000% |  91.9200% |   8.0800%
+Reqs with incoming score of   5 |    439 |   4.3900% |  96.3100% |   3.6900%
+Reqs with incoming score of   6 |      0 |   0.0000% |  96.3100% |   3.6900%
+Reqs with incoming score of   7 |      0 |   0.0000% |  96.3100% |   3.6900%
+Reqs with incoming score of   8 |    368 |   3.6800% |  99.9900% |   0.0100%
 Reqs with incoming score of   9 |      0 |   0.0000% |  99.9900% |   0.0100%
 Reqs with incoming score of  10 |      1 |   0.0100% | 100.0000% |   0.0000%
 
-Incoming average:   0.7034    Median   0.0000    Standard deviation   2.0254
-
+Incoming average:   0.5149    Median   0.0000    Standard deviation   1.7882
 ```
 
 So again, a great deal of the false positives disappeared because of a bunch of exclusions for a score of 60. For this tuning round, we'll tackle the lone request at 10 and the cluster at 8, allowing us to reduce the anomaly threshold to 10 afterwards, which is already quite low.
 
 
 ```bash
-$> egrep " (10|8) [0-9-]+$" tutorial-8-example-access-round-2.log | alreqid > ids
+$> egrep " (10|8) [0-9-]+$" tutorial-8-example-access-round-3.log | alreqid > ids
 $> grep -F -f ids tutorial-8-example-error-round-3.log | melidmsg | sucs
       2 932160 Remote Command Execution: Unix Shell Code Found
-    448 921180 HTTP Parameter Pollution (ARGS_NAMES:editors[])
-    448 942431 Restricted SQL Character Anomaly Detection (args): # of special characters exceeded (6)
+    368 921180 HTTP Parameter Pollution (ARGS_NAMES:editors[])
+    368 942431 Restricted SQL Character Anomaly Detection (args): # of special characters exceeded (6)
 ```
 
 The first alert is funny: "Remote command execution." What's this?
@@ -851,19 +855,18 @@ These are the statistics:
 
 ```bash
 $> cat tutorial-8-example-access-round-4.log | alscores | modsec-positive-stats.rb --incoming
-
 INCOMING                     Num of req. | % of req. |  Sum of % | Missing %
 Number of incoming req. (total) |  10000 | 100.0000% | 100.0000% |   0.0000%
 
 Empty or miss. incoming score   |      0 |   0.0000% |   0.0000% | 100.0000%
-Reqs with incoming score of   0 |   9312 |  93.1200% |  93.1200% |   6.8800%
-Reqs with incoming score of   1 |      0 |   0.0000% |  93.1200% |   6.8800%
-Reqs with incoming score of   2 |      0 |   0.0000% |  93.1200% |   6.8800%
-Reqs with incoming score of   3 |      0 |   0.0000% |  93.1200% |   6.8800%
-Reqs with incoming score of   4 |      0 |   0.0000% |  93.1200% |   6.8800%
-Reqs with incoming score of   5 |    688 |   6.8800% | 100.0000% |   0.0000%
+Reqs with incoming score of   0 |   9561 |  95.6100% |  95.6100% |   4.3900%
+Reqs with incoming score of   1 |      0 |   0.0000% |  95.6100% |   4.3900%
+Reqs with incoming score of   2 |      0 |   0.0000% |  95.6100% |   4.3900%
+Reqs with incoming score of   3 |      0 |   0.0000% |  95.6100% |   4.3900%
+Reqs with incoming score of   4 |      0 |   0.0000% |  95.6100% |   4.3900%
+Reqs with incoming score of   5 |    439 |   4.3900% | 100.0000% |   0.0000%
 
-Incoming average:   0.3440    Median   0.0000    Standard deviation   1.2656
+Incoming average:   0.2195    Median   0.0000    Standard deviation   1.0244
 ```
 
 It seems that we are almost done. What rules are behind these remaining alerts?
@@ -873,8 +876,8 @@ It seems that we are almost done. What rules are behind these remaining alerts?
 $> cat tutorial-8-example-access-round-4.log | egrep " 5 [0-9-]+$"  | alreqid > ids
 $> grep -F -f ids tutorial-8-example-error-round-4.log  | melidmsg | sucs
      30 921180 HTTP Parameter Pollution (ARGS_NAMES:op)
-     56 932160 Remote Command Execution: Unix Shell Code Found
-    448 921180 HTTP Parameter Pollution (ARGS_NAMES:fields[])
+     41 932160 Remote Command Execution: Unix Shell Code Found
+    368 921180 HTTP Parameter Pollution (ARGS_NAMES:fields[])
 ```
 
 So our friend 921180 is back again for two parameters and another shell execution. Probably another occurrence of the password parameter. Let's check this:
@@ -882,7 +885,7 @@ So our friend 921180 is back again for two parameters and another shell executio
 ```bash
 $> grep -F -f ids tutorial-8-example-error-round-4.log  | grep 921180 | modsec-rulereport.rb -m combined
 
-478 x 921180 HTTP Parameter Pollution (ARGS_NAMES:op)
+398 x 921180 HTTP Parameter Pollution (ARGS_NAMES:op)
 -----------------------------------------------------
       # ModSec Rule Exclusion: 921180 : HTTP Parameter Pollution (ARGS_NAMES:op)
       SecRule REQUEST_URI "@beginsWith /drupal/index.php/quickedit/metadata" "phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=921180;TX:paramcounter_ARGS_NAMES:fields[]"
@@ -895,7 +898,7 @@ It's simple enough to add this in the usual place with new rule IDs. And then th
 ```bash
 $> grep -F -f ids tutorial-8-example-error-round-4.log  | grep 932160 | modsec-rulereport.rb -m combined
 
-56 x 932160 Remote Command Execution: Unix Shell Code Found
+41 x 932160 Remote Command Execution: Unix Shell Code Found
 -----------------------------------------------------------
       # ModSec Rule Exclusion: 932160 : Remote Command Execution: Unix Shell Code Found
       SecRule REQUEST_URI "@beginsWith /drupal/index.php/user/login" "phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=932160;ARGS:pass"
