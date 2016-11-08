@@ -674,7 +674,8 @@ This allows for the following exclusion rule:
 
 ```bash
 # ModSec Rule Exclusion: 942100 : SQL Injection Attack Detected via libinjection
-SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" "phase:2,nolog,pass,id:10004,ctl:ruleRemoveTargetById=942100;ARGS:keys"
+SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" \
+    "phase:2,nolog,pass,id:10003,ctl:ruleRemoveTargetById=942100;ARGS:keys"
 ```
 
 With the remaining ones, we use a shortcut:
@@ -710,7 +711,7 @@ SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" "phase:2,nolog,p
     ctl:ruleRemoveTargetById=942190;ARGS:keys,\
     ctl:ruleRemoveTargetById=942200;ARGS:keys,\
     ctl:ruleRemoveTargetById=942260;ARGS:keys,\
-    ctl:ruleRemoveTargetById=942270;ARGS:keys"
+    ctl:ruleRemoveTargetById=942270;ARGS:keys,\
     ctl:ruleRemoveTargetById=942410;ARGS:keys"
 ```
 
@@ -767,7 +768,7 @@ The first alert is funny: "Remote command execution." What's this?
 $> grep -F -f ids tutorial-8-example-error-round-3.log | grep 932160 | melmatch
 ARGS:account[pass][pass1]
 ARGS:account[pass][pass2]
-$>grep -F -f ids tutorial-8-example-error-round-3.log | grep 932160 | meldata
+$> grep -F -f ids tutorial-8-example-error-round-3.log | grep 932160 | meldata
 Matched Data: /bin/bash found within ARGS:account[pass
 Matched Data: /bin/bash found within ARGS:account[pass
 ```
@@ -834,7 +835,7 @@ You know the drill by now: The first one goes with the other 921180 exclusions (
 ```bash
 # ModSec Rule Exclusion: 942431 : Restricted SQL Character Anomaly Detection (args): # of special characters exceeded (6)
 SecRule REQUEST_URI "@beginsWith /drupal/index.php/quickedit/attachments" \
-    "phase:2,nolog,pass,id:10006,ctl:ruleRemoveTargetById=942431;ARGS:ajax_page_state[libraries]"
+    "phase:2,nolog,pass,id:10005,ctl:ruleRemoveTargetById=942431;ARGS:ajax_page_state[libraries]"
 ```
 
 Time to reduce the limit once more (down to 10 this time) and see what happens.
