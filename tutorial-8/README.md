@@ -316,7 +316,9 @@ _A quick overview over the stats generated above_
 
 
 
-I have used a logarithmic scale on the Y axis to emphasize the number of requests making up the long tail. So on the left, you have most of the requests, but on the right, you have the few requests with a lot of alerts. All together, these requests scored a ton of false positives that we need to address. But where to start? We start with the request returning the highest anomaly score, we start on the right side of the graph! This makes sense because we are in blocking mode and we would like to reduce the threshold. The group of requests standing in our way are the six requests with a score of 231 and the single request with a score of 189. Let's write exclusion rules to suppress the alarms leading to these scores.
+This is only a graph cobbled together on the quick. But it shows the problem that most requests are located near the left. They did not score at all, or they scored exactly 10 points. But there requests with higher scores and there is even a handful of outliers very far on the right outside the frame. So where do we start? 
+
+We start with the request returning the highest anomaly score, we start on the right side of the graph! This makes sense because we are in blocking mode and we would like to reduce the threshold. The group of requests standing in our way are the six requests with a score of 231 and the single request with a score of 189. Let's write rule exclusions to suppress the alarms leading to these scores.
 
 
 
@@ -1076,7 +1078,6 @@ When you grow more proficient, you can reduce the number of iterations and tackl
 We have now reached the end of the block consisting of three *ModSecurity tutorials*. The next one will look into setting up a *reverse proxy*.
 
 ###References
-- [OWASP ModSecurity Core Rule Setg](https://coreruleset.org)
 - [Spider Labs Blog Post: Exception Handling](http://blog.spiderlabs.com/2011/08/modsecurity-advanced-topic-of-the-week-exception-handling.html)
 - [ModSecurity Reference Manual](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual)
 
