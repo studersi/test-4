@@ -20,6 +20,14 @@
 # - order by number of hits per rule or rule id
 # - option to have anomaly scoring checks be included in the rule
 #     (hidden by default)
+# - Reorganise options:
+#   --startup
+#   --runtime
+#   --rule
+#   --parameter
+#   --byId
+#   --byTag
+#   optionally --byMsg
 
 # -----------------------------------------------------------
 # INIT
