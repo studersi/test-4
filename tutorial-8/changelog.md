@@ -1,5 +1,6 @@
 ##### Changelog
 
+* 2016-11-14: Fixing links to previous tutorials
 * 2016-11-08: Publication
 * 2016-11-07: Review of new text, added untuned distribution graph
 * 2016-11-06: Rewrite for CRS 3.0
