@@ -1,7 +1,7 @@
-Title: Compiling Apache  
+Title: Setting up a Reverse Proxy Server  
 Author: <a href="mailto:christian.folini@netnea.com">Christian Folini</a> (<a href="https://twitter.com/ChrFolini">@ChrFolini</a>)  
-Tutorial Number: 1  
-Last Update: 2016-10-10  
-Release Date: 2016-10-11  
-Difficulty: Simple  
-Duration: 1/2h  
+Tutorial Number: 9 
+Last Update: 2016-11-15  
+Release Date: 2016-11-15  
+Difficulty: Medium  
+Duration: 1h  
