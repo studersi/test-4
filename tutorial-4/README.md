@@ -111,6 +111,7 @@ DocumentRoot            /apache/htdocs
 <VirtualHost *:443>
 
         SSLEngine On
+        Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
 
         <Directory /apache/htdocs>
 
@@ -666,7 +667,7 @@ SSLSessionTickets       On
         SSLEngine On
         Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
 
-...
+        ...
 ```
 
 It’s also useful to enter the _ServerName_ matching the certificate in the _VirtualHost_. If we don’t do that, Apache will put up a warning (and then still select the only configured virtual host and continue to work correctly).
@@ -709,7 +710,7 @@ It is important to weigh the various risks and to come to a conclusion for the s
 * Define the variable `DOMAIN_KEY_LOCATION`
 * Define the variable `DOMAIN_CHAIN_LOCATION`
 * Define the variable `RELOAD_CMD`
-* Create the cronjob
+* Create the cron job
 
 The following entry in the _crontab_ calls `getssl` daily. The script will then decide if the renewal is due. The path to `getssl` might have to be adopted, depending on the location of the script and the config files (the `--no-check` option will tell the script it should not contact _github_ to look for a new version of itself):
 
