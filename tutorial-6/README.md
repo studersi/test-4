@@ -50,7 +50,7 @@ $> tar xvzf modsecurity-2.9.1.tar.gz
 $> cd modsecurity-2.9.1
 $> ./configure --with-apxs=/apache/bin/apxs \
 --with-apr=/usr/local/apr/bin/apr-1-config \
---with-pcre=/usr/bin/pcre-config \
+--with-pcre=/usr/bin/pcre-config
 ```
 
 We created the <i>/apache</i> symlink in the tutorial on compiling Apache. This again comes to our assistance, because independent from the Apache version being used, we can now have the ModSecurity configuration always work with the same parameters and always get access to the current Apache web server. The first two options establish the link to the Apache binary, since we have to make sure that ModSecurity is working with the right API version. The _with-pcre_ option defines that we are using the system’s own _PCRE-Library_, or Regular Expression Library, and not the one provided by Apache. This gives us a certain level of flexibility for updates, because we are becoming independent from Apache in this area, which has proven to work in practice. It requires the first installed _libpcre3-dev_ package.
@@ -202,28 +202,32 @@ SecAction "id:90004,phase:5,nolog,pass,setvar:TX.ModSecTimestamp5start=%{DURATIO
 SecRule REQUEST_HEADERS:Content-Type "text/xml" \
   "id:200000,phase:1,t:none,t:lowercase,pass,nolog,ctl:requestBodyProcessor=XML"
 
+SecRule REQUEST_HEADERS:Content-Type "application/json" \
+  "id:200001,phase:1,t:none,t:lowercase,pass,nolog,ctl:requestBodyProcessor=JSON"
+
 SecRule REQBODY_ERROR "!@eq 0" \
-  "id:200001,phase:2,t:none,deny,status:400,log,msg:'Failed to parse request body.',\
-logdata:'%{reqbody_error_msg}',severity:2"
+  "id:200002,phase:2,t:none,deny,status:400,log,\
+  msg:'Failed to parse request body.',logdata:'%{reqbody_error_msg}',severity:2"
 
 SecRule MULTIPART_STRICT_ERROR "!@eq 0" \
-"id:200002,phase:2,t:none,log,deny,status:403, \
-msg:'Multipart request body failed strict validation: \
-PE %{REQBODY_PROCESSOR_ERROR}, \
-BQ %{MULTIPART_BOUNDARY_QUOTED}, \
-BW %{MULTIPART_BOUNDARY_WHITESPACE}, \
-DB %{MULTIPART_DATA_BEFORE}, \
-DA %{MULTIPART_DATA_AFTER}, \
-HF %{MULTIPART_HEADER_FOLDING}, \
-LF %{MULTIPART_LF_LINE}, \
-SM %{MULTIPART_MISSING_SEMICOLON}, \
-IQ %{MULTIPART_INVALID_QUOTING}, \
-IP %{MULTIPART_INVALID_PART}, \
-IH %{MULTIPART_INVALID_HEADER_FOLDING}, \
-FL %{MULTIPART_FILE_LIMIT_EXCEEDED}'"
+  "id:200003,phase:2,t:none,deny,status:403,log, \
+  msg:'Multipart request body failed strict validation: \
+  PE %{REQBODY_PROCESSOR_ERROR}, \
+  BQ %{MULTIPART_BOUNDARY_QUOTED}, \
+  BW %{MULTIPART_BOUNDARY_WHITESPACE}, \
+  DB %{MULTIPART_DATA_BEFORE}, \
+  DA %{MULTIPART_DATA_AFTER}, \
+  HF %{MULTIPART_HEADER_FOLDING}, \
+  LF %{MULTIPART_LF_LINE}, \
+  SM %{MULTIPART_MISSING_SEMICOLON}, \
+  IQ %{MULTIPART_INVALID_QUOTING}, \
+  IP %{MULTIPART_INVALID_PART}, \
+  IH %{MULTIPART_INVALID_HEADER_FOLDING}, \
+  FL %{MULTIPART_FILE_LIMIT_EXCEEDED}'"
 
 SecRule TX:/^MSC_/ "!@streq 0" \
-  "id:200004,phase:2,t:none,deny,status:500,msg:'ModSecurity internal error flagged: %{MATCHED_VAR_NAME}'"
+  "id:200005,phase:2,t:none,deny,status:500,\
+  msg:'ModSecurity internal error flagged: %{MATCHED_VAR_NAME}'"
 
 
 # === ModSecurity Rules 
@@ -260,8 +264,8 @@ SSLCertificateKeyFile   /etc/ssl/private/ssl-cert-snakeoil.key
 SSLCertificateFile      /etc/ssl/certs/ssl-cert-snakeoil.pem
 
 SSLProtocol             All -SSLv2 -SSLv3
-SSLCipherSuite          'kEECDH+ECDSA kEECDH kEDH HIGH +SHA !aNULL !eNULL !LOW !MEDIUM !MD5 !EXP !DSS \
-!PSK !SRP !kECDH !CAMELLIA !RC4'
+SSLCipherSuite          'kEECDH+ECDSA kEECDH kEDH HIGH +SHA !aNULL !eNULL !LOW !MEDIUM !MD5 \
+!EXP !DSS !PSK !SRP !kECDH !CAMELLIA !RC4'
 SSLHonorCipherOrder     On
 
 SSLRandomSeed           startup file:/dev/urandom 2048
@@ -313,7 +317,7 @@ The ModSecurity base configuration begins on the next line: We define the base s
 
 On the response side we enable body access and in turn define a limit of 10 MB. No differentiation is made here in the transfer of forms or files; all of them are files.
 
-Now comes the memory reserved for the _PCRE library_. ModSecurity documentation suggests a value of 1500 bytes. But this quickly leads to problems in practice. Our base configuration with a limit of 100000 is much more robust. If problems still occur, values above 100000 are also manageable; memory requirements grow only marginally.
+Now comes the memory reserved for the _PCRE library_. ModSecurity documentation suggests a value of 1000 bytes. But this quickly leads to problems in practice. Our base configuration with a limit of 100000 is much more robust. If problems still occur, values above 100000 are also manageable; memory requirements grow only marginally.
 
 ModSecurity requires three directories for data storage. We put all of them in the _tmp directory_. For productive operation this is of course the wrong place, but for the first baby steps it’s fine and it is not easy to give general recommendations for the right choice of this directory, because the local environment plays a big role. For the aforementioned directories this concerns temporary data, then about session data that should be retained after a server restart, and finally temporary storage for file uploads which during inspection should not use too much memory and above a specific size are stored on the hard disk.
 
@@ -367,17 +371,19 @@ The rule with ID 90005 is commented out. We can enable it in order to set the Ap
 
 So much for this performance part. Now come the rules proposed by the *ModSecurity* project in the sample configuration file. They have rule IDs starting at 200,000 and are not very numerous. The first rule inspects the _request headers Content-Type_. The rule applies when these headers match the text _text/xml_. It is evaluated in phase 1. After the phase comes the _t:none_ instruction. This means _transformation: none_. We do not want to transform the parameters of the request prior to processing this rule. Following _t:none_ a transformation with the self-explanatory name _t:lowercase_ is applied to the text. Using _t:none_ we delete all predefined default transformations if need be and then execute _t:lowercase_. This means that we will be touching _text/xml_, _Text/Xml_, _TEXT/XML_ and all other combinations in the _Content-Type_ header. If this rule applies, then we perform a _control action_ at the very end of the line: We choose _XML_ as the processor of the _request body_. There is one detail still to be explained: The preceding commented out rule introduced the operator _@beginsWith_. By contrast, no operator is designated here. _Default-Operator @rx_ is applied. This is an operator for regular expressions (_regex_). As expected, _beginsWith_ is a very fast operator while working with regular expressions is cumbersome and slow.
 
+The next rule is an almost exact copy of this rule. It uses the same mechanism to apply the JSON request body processor to the request body. This allows us access to the individual parameters inside the post payload.
+
 By contrast, the next rule is a bit more complicated. We are inspecting the internal *REQBODY_ERROR* variable. In the condition part we use the numerical comparison operator _@eq_. The exclamation mark in front negates its value. The syntax thus means if the *REQBODY_ERROR* is not equal to zero. Of course, we could also work with a regular expression here, but the _@eq_ operator is more efficient when being processed by the module. In the action part of the rule _deny_ is applied for the first time. The request should thus be blocked if processing the request body resulted in an error. Specifically, we return HTTP status code _400 Bad Request_ (_status:400_). We would like to log first and specify the message. As additional information we also write to a separate log field called _logdata_ the exact description of the error. This information will appear in both the server’s error log as well as in the audit log. Finally, the _severity_ is assigned to the rule. This is the degree of importance for the rule, which can be used in evaluating very many rule violations.
 
-The rule with the ID 200002 also deals with errors in the request body. This concerns _multipart HTTP bodies_. It applies if files are to be transferred to the server via HTTP requests. This is very useful on the one hand, but poses a big security problem on the other. This is why ModSecurity very precisely inspects _multipart HTTP bodies_. It has an internal variable called *MULTIPART_STRICT_ERROR*, which combines the numerous checks. If there is a value other than 0 here, then we block the request using status code 403 (_forbidden_). In the log message we then report the results of the individual checks. In practice you have to know that in very rare cases this rule may also be applied to legitimate requests. If this is the case, it may have to be modified or disabled as a _false positive_. We will be returning to the elimination of false positives further below and will become familiar with the topic in detail in a subsequent tutorial.
+The rule with the ID 200003 also deals with errors in the request body. This concerns _multipart HTTP bodies_. It applies if files are to be transferred to the server via HTTP requests. This is very useful on the one hand, but poses a big security problem on the other. This is why ModSecurity very precisely inspects _multipart HTTP bodies_. It has an internal variable called *MULTIPART_STRICT_ERROR*, which combines the numerous checks. If there is a value other than 0 here, then we block the request using status code 403 (_forbidden_). In the log message we then report the results of the individual checks. In practice you have to know that in very rare cases this rule may also be applied to legitimate requests. If this is the case, it may have to be modified or disabled as a _false positive_. We will be returning to the elimination of false positives further below and will become familiar with the topic in detail in a subsequent tutorial.
 
 The ModSecurity distribution sample configuration has another rule with ID 200003. However, I have not included it in the tutorial, because in practice it blocks too many legitimate requests (_false positives_). The *MULTIPART_UNMATCHED_BOUNDARY* variable is checked. This value, which signifies an error in the boundary of multipart bodies, is prone to error and frequently reports text snippets which do not indicate boundaries. In my opinion, it has not shown itself to be useful in practice.
 
-With 200004 comes another rule which intercepts internal processing errors. Unlike the preceding internal variables, here we are looking for a group of variables dynamically provided along with the current request. A data sheet called _TX_ (transaction) is opened for each request. In ModSecurity jargon we refer to a _collection_ of variables and values. While processing a request ModSecurity now in some circumstances sets additional values in the _TX collection_, in addition to the variables already inspected. The names of these variables begin with the prefix *MSC_*. We now access in parallel all variables of this pattern in the collection. This is done via the *TX:/^MSC_/* construct. Thus, the transaction collection and then variable names matching the regular expression *^MSC_*: A word beginning with *MSC_*. If one of these found variables is not equal to zero, we then block the request using HTTP status 500 (_internal server error_) and write the variable names in the log file.
+With 200005 comes another rule which intercepts internal processing errors. Unlike the preceding internal variables, here we are looking for a group of variables dynamically provided along with the current request. A data sheet called _TX_ (transaction) is opened for each request. In ModSecurity jargon we refer to a _collection_ of variables and values. While processing a request ModSecurity now in some circumstances sets additional values in the _TX collection_, in addition to the variables already inspected. The names of these variables begin with the prefix *MSC_*. We now access in parallel all variables of this pattern in the collection. This is done via the *TX:/^MSC_/* construct. Thus, the transaction collection and then variable names matching the regular expression *^MSC_*: A word beginning with *MSC_*. If one of these found variables is not equal to zero, we then block the request using HTTP status 500 (_internal server error_) and write the variable names in the log file.
 
 We have now looked at a few rules and have become familiar with the principle functioning of the ModSecurity _WAF_. The rule language is demanding, but very systematic. The structure is unavoidably oriented to the structure of Apache directives. Because before ModSecurity is able to process the directives, they are read by Apache's configuration parser. This is also accompanied by complexity in the way they are expressed. *ModSecurity* is currently being developed in a direction making the module independent from Apache. We will hopefully be benefitting from a configuration that is easier to read.
 
-Now comes a comment in the configuration file which marks the spot for additional rules to be entered. Following this block, which in some circumstances can become very large, come yet more rules that provide performance data for the performance log defined above. The block containing rule IDs 90010 to 90014 stores the time of the end of the individual ModSecurity phases. This corresponds to the 90000 - 90004 block of IDs we became familiar with above. Calculations with the performance data collected are then performed in the last ModSecurity block. For us this means that we totaling up the time that phase 1 and phase 2 need in the *perf_modsecinbound* variable. In the rule with ID 90100 this variable is set to the performance of phase 1, in the following rule the performance of phase 2 is added to it. We have to calculate the variable *perf_application* from the timestamps. To do this, we subtract the end of phase 2 from the start of phase 3 in the subsequent `setvar` actions of the same rule. This is of course not an exact calculation of the time that the application itself needs on the server, because other Apache modules play a role (such as authentication), but the value is an indication that sheds light on whether ModSecurity is actually limiting performance or whether the problem more likely lies with the application. The final variable calculations in the rule work on phases 3 and 4, similar to phases 1 and 2. This gives us three relevant values which simply summarize performance: *perf_modsecinbound*, *perf_application* and *perf_modsecoutbound*. They appear in a separate performance log. We have, however, provided enough space for these three values in the normal access log. There we have _ModSecTimeIn_, _ApplicationTime_ and _ModSecTimeOut_. The following `setenv` actions, still in the same rule, are used to export our _perf_ values to the corresponding environment variables in order for them to appear in the _access log_. And finally, we export the _OWASP ModSecurity Core Rules_ anomaly values. These values are not yet written, but because we will be making these rules available in the next tutorial, we can already prepare for variable export here.
+Now comes a comment in the configuration file which marks the spot for additional rules to be entered. Following this block, which in some circumstances can become very large, come yet more rules that provide performance data for the performance log defined above. The block containing rule IDs 90010 to 90014 stores the time of the end of the individual ModSecurity phases. This corresponds to the 90000 - 90004 block of IDs we became familiar with above. Calculations with the performance data collected are then performed in the last ModSecurity block. For us this means that we totaling up the time that phase 1 and phase 2 need in the *perf_modsecinbound* variable. In the rule with ID 90100 this variable is first set to the performance of phase 1. Then, the performance of phase 2 is added to it. We have to calculate the variable *perf_application* from the timestamps. To do this, we subtract the end of phase 2 from the start of phase 3 in the subsequent `setvar` actions of the same rule. This is of course not an exact calculation of the time that the application itself needs on the server, because other Apache modules play a role (such as authentication), but the value is an indication that sheds light on whether ModSecurity is actually limiting performance or whether the problem more likely lies with the application. The final variable calculations in the rule work on phases 3 and 4, similar to phases 1 and 2. This gives us three relevant values which simply summarize performance: *perf_modsecinbound*, *perf_application* and *perf_modsecoutbound*. They appear in a separate performance log. We have, however, provided enough space for these three values in the normal access log. There we have _ModSecTimeIn_, _ApplicationTime_ and _ModSecTimeOut_. The following `setenv` actions, still in the same rule, are used to export our _perf_ values to the corresponding environment variables in order for them to appear in the _access log_. And finally, we export the _OWASP ModSecurity Core Rule Set_ anomaly values. These values are not yet written, but because we will be making these rules available in the next tutorial, we can already prepare for variable export here.
 
 We are now at the point that we can understand the performance log. The definition above is accompanied by the following parts:
 
