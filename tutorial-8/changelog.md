@@ -1,5 +1,6 @@
 ##### Changelog
 
+* 2016-12-08: Typos
 * 2016-11-14: Fixing links to previous tutorials
 * 2016-11-08: Publication
 * 2016-11-07: Review of new text, added untuned distribution graph

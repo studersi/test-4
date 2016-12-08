@@ -6,7 +6,7 @@ To successfully ward off attackers, we are reducing the number of *false positiv
 
 ###Why are we doing this?
 
-A fresh installation of *core rules* will typically have some false alarms. In some special cases, there can be thousands of them. In the last tutorial, we saw a number of approaches for suppressing individual false alarms. It's always hard at the beginning. What we're missing is a strategy for coping with different kinds of false alarms. Reducing the number of false alarms is the prerequisite for lowering the *Core Rule Set* (CRS) anomaly threshold and this, in turn is required in order to use *ModSecurity* to actually ward off attackers. And only after the false alarms really are disabled, or at least curtailed to a large extent, do we get a picture of the real attackers.
+A fresh installation of *core rules* will typically have some false alarms. In some special cases, namely at higher paranoia levels, there can be thousands of them. In the last tutorial, we saw a number of approaches for suppressing individual false alarms. It's always hard at the beginning. What we're missing is a strategy for coping with different kinds of false alarms. Reducing the number of false alarms is the prerequisite for lowering the *Core Rule Set* (CRS) anomaly threshold and this, in turn, is required in order to use *ModSecurity* to actually ward off attackers. And only after the false alarms really are disabled, or at least curtailed to a large extent, do we get a picture of the real attackers.
 
 ###Requirements
 
@@ -24,7 +24,7 @@ There is no point in learning to fight false positives on a lab server without t
 
 It is difficult to provide real production logs for an exercise due to all the sensitive data in the logs. So, I went and created false positives from scratch. With the Core Rule Set 2.2.x, this would have been simple, but with the 3.0 release (CRS3), most of the false positives in the default install are now gone. What I did was set the CRS to Paranoia Level 4 and then install a local Drupal site. I then published a couple of articles and then read the articles in the browser. Rinse and repeat up to 10,000 requests.
 
-Drupal and the core rules are not really in a loving relationship. Whenever the two software packages meet, they tend to have a falling out with each other, since the CRS is so pedantic and Drupal's habit of having square brackets in parameter names drives the CRS crazy. However, the default CRS3 installation at Paranoia Level 1, and especially the new optional exclusion rules for Drupal (see the `crs-setup.conf` file for details), wards of almost all of the remaining false positives with a core Drupal installation.
+Drupal and the core rules are not really in a loving relationship. Whenever the two software packages meet, they tend to have a falling out with each other, since the CRS is so pedantic and Drupal's habit of having square brackets in parameter names drives the CRS crazy. However, the default CRS3 installation at Paranoia Level 1, and especially the new optional exclusion rules for Drupal (see the `crs-setup.conf` file and [this blog post](/cms/2016/11/22/securing-drupal-with-modsecurity-and-the-core-rule-set-crs3/) for details), wards of almost all of the remaining false positives with a core Drupal installation.
 
 But things look completely different when you do not use these exclusion rules and if you raise the Paranoia Level to 4, you will get plenty of false positives. For the 10,000 requests in my test run, I received over 27,000 false alarms. That should do for a training session.
 
@@ -351,11 +351,11 @@ $> grep -F -f ids tutorial-8-example-error.log  | melidmsg | sucs
     150 942432 Restricted SQL Character Anomaly Detection (args): # of special characters exceeded (2)
 ```
 
-So these are the culprits. Let's go through them one by one. 921180 is a rule that identifies when a parameter (*ids[]* here) is submitted more than once within the same request. It's an advanced rule which appeared in the CRS3 for the first time (based on a mechanic I developed). Drupal seems to do this and we can instruct it to stop this behaviour. 942450 looks for strings of the pattern `0x` with two additional hexadecimal digits. This is a hexadecimal encoding which can point to an exploit being used. The problem with this encoding is that session cookies can sometimes contain this pattern. Session cookies are randomly generated strings and at times you get this pattern in such an identifier. When you do, there is a paranoia level 2 rule that looks for attack patterns in hexadecimal encoding that try to sneak past our ruleset. So, we are facing a false positive in a very classical way.
+So these are the culprits. Let's go through them one by one. 921180 is a rule that identifies when a parameter (*ids[]* here) is submitted more than once within the same request. It's an advanced rule which appeared in the CRS3 for the first time (based on a mechanic I developed). Drupal seems to do this and we can hardly instruct it to stop this behaviour. 942450 looks for strings of the pattern `0x` with two additional hexadecimal digits. This is a hexadecimal encoding which can point to an exploit being used. The problem with this encoding is that session cookies can sometimes contain this pattern. Session cookies are randomly generated strings and at times you get this pattern in such an identifier. When you do, there is a paranoia level 2 rule that looks for attack patterns in hexadecimal encoding that try to sneak past our ruleset. So, we are facing a false positive in a very classical way.
 
 942431 and 942432 are closely related. We call these siblings. They form a group with 942430, the base rule looking for 12 special characters like square brackets, colons, semicolons, asterisks, etc. (paranoia level 2). 942431 is a strict sibling doing the same things, but with a limit of 6 characters at paranoia level 3 and finally the paranoid zealot in the family, 942432, is going crazy after the 2nd special character (paranoia level 4).
 
-942130 is one of the big group of SQL injection rules (this is a field the CRS are very strong in) and finally, 920273, another paranoid rule from paranoia level 4 defining the set of allowed ASCII characters (i.e. `38,44-46,48-58,61,65-90,95,97-122`).
+942130 is one from the big group of SQL injection rules (this is a field the CRS are very strong in) and finally, 920273, another paranoid rule from paranoia level 4 defining the set of allowed ASCII characters (i.e. `38,44-46,48-58,61,65-90,95,97-122`).
 
 For every alert, we need to write a rule exclusion and as we have seen in the previous tutorial, there are multiple options. It takes a bit of experience to make the right choice and very often, multiple approaches can be suitable. Let's look at the cheat sheet again:
 
@@ -369,7 +369,6 @@ Let's start with a simple case: 920273. We could look at this in great detail an
 
 # ModSec Rule Exclusion: 920273 : Invalid character in request (outside of very strict set)
 SecRuleRemoveById 920273
-
 ```
 
 Next are the alerts for 942432:
@@ -435,7 +434,7 @@ The mode _combined_ instructs the script to write a rule that combines a path co
 
 Here is how the configuration looks when we enter this construct (line break introduced for display reasons):
 
-```
+```bash
 # === ModSec Core Rules: Runtime Exclusion Rules (ids: 10000-49999)
 
 # ModSec Rule Exclusion: 942130 : SQL Injection Attack: SQL Tautology Detected.
@@ -599,7 +598,7 @@ Outgoing average:   0.0080    Median   0.0000    Standard deviation   0.1787
 
 If we compare this to the first run of the statistic script, we reduced the average score from 12.5 to 1.4. This is very impressive. So by focusing on a handful of high scoring requests, we improved the whole service by a lot.
 
-We could expect the high scoring requests of 231 and 189 to be gone, but funnily enough, the cluster at 98 has also disappeared. We only covered 7 requests in the initial tuning, but a cluster with alerts from over 400 requests is gone, too.
+We could expect the high scoring requests of 231 and 189 to be gone, but funnily enough, the cluster at 98 has also disappeared. We only covered 7 requests in the initial tuning, but a cluster with alerts from over 400 requests is gone, too. And this is not an exceptional effect. It is the standard behaviour if we work with this tuning method: a few rule exclusions that we derieved from the highest scoring requests does away with most of the false alarms.
 
 Our next goal is the group of requests with a score of 60. Let's extract the rule IDs and then examine the alerts a bit.
 
@@ -658,7 +657,7 @@ $> grep -F -f ids tutorial-8-example-error-round-2.log | modsec-rulereport.rb -m
       SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" "phase:2,nolog,pass,id:10005,ctl:ruleRemoveTargetById=942410;ARGS:keys"
 ```
 
-We had separated a spot for 921180 exclusions before. We put the first rule into that position and up with the following:
+We had separated a spot for 921180 exclusions before. We put the first rule into that position and end up with the following:
 
 ```bash
 # ModSec Rule Exclusion: 921180 : HTTP Parameter Pollution (multiple variables)
@@ -780,7 +779,6 @@ Matched Data: /bin/bash found within ARGS:account[pass
 OK, so there seems to be a password `/bin/bash`. That is probably not the smartest choice, but nothing that should harm us. We can easily suppress this rule for this parameter. Or looking forward a bit, we can expect other funny passwords to trigger all sorts of rules on the password field. And, in fact, the password field is not a typical target of an attack. So this might be a situation where it makes sense to disable a whole class of rules. We have multiple options. We can disable by tag, or we can disable by rule ID range. Let's look over the various rules files:
 
 ```bash
-REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf.example
 REQUEST-901-INITIALIZATION.conf
 REQUEST-903.9001-DRUPAL-EXCLUSION-RULES.conf
 REQUEST-903.9002-WORDPRESS-EXCLUSION-RULES.conf
@@ -806,7 +804,6 @@ RESPONSE-953-DATA-LEAKAGES-PHP.conf
 RESPONSE-954-DATA-LEAKAGES-IIS.conf
 RESPONSE-959-BLOCKING-EVALUATION.conf
 RESPONSE-980-CORRELATION.conf
-RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf.example
 ```
 
 We do not want to ignore the protocol attacks, but all the application stuff should be off limits. So let's kick the rules from `REQUEST-930-APPLICATION-ATTACK-LFI.conf` to `REQUEST-943-APPLICATION-ATTACK-SESSION-FIXATION.conf`. This is effectively the rule range from 930,000 to 943,999. We can exclude the two parameters for all these rules with the following startup time directives:
@@ -912,7 +909,7 @@ SecRuleUpdateTargetById 930000-943999 "!ARGS:pass"
 
 And with this, we are done. We have successfully fought all the false positives of a content management system with peculiar parameter formats and a ModSecurity rule set pushed to insanely paranoid levels. 
 
-###Step 8: Summarizing all ignore rules
+###Step 8: Summarizing all rule exclusions
 
 Time to look back and rearrange the configuration file with all the rule exclusions. I have regrouped them a bit, I added some comments and reassigned rule IDs. As outlined before, it is not obvious how to arrange the rules. Here, I ordered them by ID, but also included a block where I cover the search form separately.
 
