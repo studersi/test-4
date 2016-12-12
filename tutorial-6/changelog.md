@@ -1,5 +1,6 @@
 ##### Changelog
 
+* 2016-12-12: Bugfix with anomaly score env variable
 * 2016-12-05: Adding JSON recommended rule, typos
 * 2016-11-14: Fixing links to previous tutorials
 * 2016-10-31: Raised PCRE limits to 100K

@@ -1,5 +1,6 @@
 ##### Changelog
 
+* 2016-12-11: Reworded two passages for easier understanding
 * 2016-12-08: Typos
 * 2016-11-14: Fixing links to previous tutorials
 * 2016-11-08: Publication

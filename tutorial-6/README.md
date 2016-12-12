@@ -256,7 +256,7 @@ SecAction "id:90100,phase:5,pass,nolog,\
   setenv:ModSecTimeIn=%{TX.perf_modsecinbound},\
   setenv:ApplicationTime=%{TX.perf_application},\
   setenv:ModSecTimeOut=%{TX.perf_modsecoutbound},\
-  setenv:ModSecAnomalyScoreIn=%{TX.inbound_anomaly_score},\
+  setenv:ModSecAnomalyScoreIn=%{TX.anomaly_score},\
   setenv:ModSecAnomalyScoreOut=%{TX.outbound_anomaly_score}"
 
 

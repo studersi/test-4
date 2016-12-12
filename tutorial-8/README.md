@@ -2,7 +2,7 @@
 
 ###What are we doing?
 
-To successfully ward off attackers, we are reducing the number of *false positives* for a fresh installation of *OWASP ModSecurity Core Rules* and will then set the anomaly limits to a strict level.
+To successfully ward off attackers, we are reducing the number of *false positives* for a fresh installation of *OWASP ModSecurity Core Rules* and set the anomaly limits to a stricter level step by step.
 
 ###Why are we doing this?
 
@@ -598,7 +598,7 @@ Outgoing average:   0.0080    Median   0.0000    Standard deviation   0.1787
 
 If we compare this to the first run of the statistic script, we reduced the average score from 12.5 to 1.4. This is very impressive. So by focusing on a handful of high scoring requests, we improved the whole service by a lot.
 
-We could expect the high scoring requests of 231 and 189 to be gone, but funnily enough, the cluster at 98 has also disappeared. We only covered 7 requests in the initial tuning, but a cluster with alerts from over 400 requests is gone, too. And this is not an exceptional effect. It is the standard behaviour if we work with this tuning method: a few rule exclusions that we derieved from the highest scoring requests does away with most of the false alarms.
+We could expect the high scoring requests of 231 and 189 to be gone, but funnily enough, the cluster at 98 and the one at 10 have also disappeared. We only covered 7 requests in the initial tuning, but two clusters with alerts from over 400 repectively over 3,000 requests are gone, too. And this is not an exceptional effect. It is the standard behaviour if we work with this tuning method: a few rule exclusions that we derieved from the highest scoring requests does away with most of the false alarms.
 
 Our next goal is the group of requests with a score of 60. Let's extract the rule IDs and then examine the alerts a bit.
 
@@ -1066,7 +1066,7 @@ INCOMING SCORE 231
     132 942432 Restricted SQL Character Anomaly Detection (args): # of special characters exceeded (2)
 ```
 
-I said it's only the request alerts, but strictly speaking, the responses to the requests are also listed for the low *scores* along with the error messages; in cases where they were triggered on requests, they encountered rule violations in the requests themselves. However, this detail does not negate the usefulness of the construct above. A similar script that has been slightly extended is part of my private toolbox.
+A similar script that has been slightly extended is part of my private toolbox.
 
 Before we finish with this tutorial, let me present my tuning policy again:
 
