@@ -1,5 +1,6 @@
 ##### Changelog
 
+* 2016-12-28: Fixing links to example log files, fixing comments in apache config, Apache 2.4.23 -> 2.4.25
 * 2016-12-11: Reworded two passages for easier understanding
 * 2016-12-08: Typos
 * 2016-11-14: Fixing links to previous tutorials

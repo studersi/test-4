@@ -4,7 +4,7 @@
 [2016-11-08 08:58:32.879033] [ssl:debug] - - AH02412: [localhost:443] Cert does not match for name 'localhost' [subject: CN=anastasia / issuer: CN=anastasia / serial: A0DF233157FAF23D / notbefore: Oct  1 15:09:38 2015 GMT / notafter: Sep 28 15:09:38 2025 GMT]
 [2016-11-08 08:58:32.879039] [ssl:warn] - - AH01909: localhost:443:0 server certificate does NOT include an ID which matches the server name
 [2016-11-08 08:58:32.879043] [ssl:info] - - AH02568: Certificate and private key localhost:443:0 configured from /etc/ssl/certs/ssl-cert-snakeoil.pem and /etc/ssl/private/ssl-cert-snakeoil.key
-[2016-11-08 08:58:32.879098] [ssl:info] - - AH01876: mod_ssl/2.4.17 compiled against Server: Apache/2.4.17, Library: OpenSSL/1.0.1f
+[2016-11-08 08:58:32.879098] [ssl:info] - - AH01876: mod_ssl/2.4.25 compiled against Server: Apache/2.4.25, Library: OpenSSL/1.0.1f
 [2016-11-08 08:58:32.879202] [unique_id:info] - - AH01566: using ip addr 127.0.1.1
 [2016-11-08 08:58:33.002281] [-:notice] - - ModSecurity for Apache/2.9.0 (http://www.modsecurity.org/) configured.
 [Tue Nov 08 08:58:33.002337 2016] [:notice] [pid 31818:tid 139662384498496] ModSecurity: APR compiled version="1.5.2"; loaded version="1.5.2"
@@ -18,7 +18,7 @@
 [2016-11-08 08:58:33.043882] [ssl:debug] - - AH02412: [localhost:443] Cert does not match for name 'localhost' [subject: CN=anastasia / issuer: CN=anastasia / serial: A0DF233157FAF23D / notbefore: Oct  1 15:09:38 2015 GMT / notafter: Sep 28 15:09:38 2025 GMT]
 [2016-11-08 08:58:33.043887] [ssl:warn] - - AH01909: localhost:443:0 server certificate does NOT include an ID which matches the server name
 [2016-11-08 08:58:33.043891] [ssl:info] - - AH02568: Certificate and private key localhost:443:0 configured from /etc/ssl/certs/ssl-cert-snakeoil.pem and /etc/ssl/private/ssl-cert-snakeoil.key
-[2016-11-08 08:58:33.043948] [ssl:info] - - AH01876: mod_ssl/2.4.17 compiled against Server: Apache/2.4.17, Library: OpenSSL/1.0.1f
+[2016-11-08 08:58:33.043948] [ssl:info] - - AH01876: mod_ssl/2.4.25 compiled against Server: Apache/2.4.25, Library: OpenSSL/1.0.1f
 [2016-11-08 08:58:33.044002] [unique_id:info] - - AH01566: using ip addr 127.0.1.1
 [2016-11-08 08:58:34.004719] [proxy:debug] - - AH00925: initializing worker proxy:reverse shared
 [2016-11-08 08:58:34.004761] [proxy:debug] - - AH00927: initializing worker proxy:reverse local

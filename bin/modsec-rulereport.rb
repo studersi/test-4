@@ -1,5 +1,7 @@
 #!/usr/bin/ruby
 #
+# Copyright (c) 2014-2017 netnea AG. (https://www.netnea.com/)
+#
 # A ruby script which extracts ModSec alerts out of an apache
 # error log and displays them in a terse report.
 #
@@ -20,6 +22,11 @@
 # - order by number of hits per rule or rule id
 # - option to have anomaly scoring checks be included in the rule
 #     (hidden by default)
+# - multiline rules like CRS
+# - distrinction between startup and runtime mode
+# - save last rule ID in ENV variable and use that at next call as base
+#   or in file if env is not possible
+# - also cover 942100 (libinjection)
 # - Reorganise options:
 #   --startup
 #   --runtime

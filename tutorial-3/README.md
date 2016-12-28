@@ -29,8 +29,8 @@ ServerTokens            Prod
 UseCanonicalName        On
 TraceEnable             Off
 
-Timeout                 5
-MaxRequestWorkers       250
+Timeout                 10
+MaxRequestWorkers       100
 
 Listen                  127.0.0.1:80
 
@@ -102,12 +102,12 @@ The web server configured in Tutorial 2 runs as user _www-data_ or, depending on
 Let’s enter the directory with the Apache source code and compile the server once more. 
 
 ```bash
-$> cd /usr/src/apache/httpd-2.4.17
-$> ./configure --prefix=/opt/apache-2.4.17 --enable-mods-shared=all \
+$> cd /usr/src/apache/httpd-2.4.25
+$> ./configure --prefix=/opt/apache-2.4.25 --enable-mods-shared=all \
    --with-apr=/usr/local/apr/bin/apr-1-config \
    --with-apr-util=/usr/local/apr/bin/apu-1-config --enable-mpms-shared="event worker" \
    --enable-nonportable-atomics=yes --enable-suexec --with-suexec-caller=www-data \
-   --with-suexec-docroot=/opt/apache-2.4.17/bin && make && sudo make install
+   --with-suexec-docroot=/opt/apache-2.4.25/bin && make && sudo make install
 ```
 
 Besides _configure_, which we are familiar with, three options have been added for handling _suexec_. _Enable-suexec_ is self-explanatory, _with-suexec-caller_ we tell the conscientious module that only the user _www-data_ is to be given permission to access the program behind the module. We are after all telling the module where scripts being called are located. For simplicity’s sake let’s use the existing _bin directory_. _suexec_ is however a bit fussy and we are unable to use the symlink. So it will have to be the fully qualified path.
@@ -130,7 +130,7 @@ $> sha1sum --check mod_fcgid-2.3.9.tar.gz.sha1
 We again expect an _OK_. When it is correctly returned, it’s time for unpacking, compiling and installing.
 
 ```bash
-$> tar xvzf mod_fcgid-2.3.9.tar.gz
+$> tar -xvzf mod_fcgid-2.3.9.tar.gz
 $> cd mod_fcgid-2.3.9
 $> APXS=/apache/bin/apxs ./configure.apxs
 $> make

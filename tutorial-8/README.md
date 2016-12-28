@@ -19,8 +19,8 @@ A fresh installation of *core rules* will typically have some false alarms. In s
 
 There is no point in learning to fight false positives on a lab server without traffic. What you need is a real set of false alarms. This will let you practice writing rules exclusions so the false alarms disappear from the installation. I have prepared two such files for you:
 
-* [tutorial-8-example-access.log](./tutorial-8-example-access.log)
-* [tutorial-8-example-error.log](./tutorial-8-example-error.log)
+* [tutorial-8-example-access.log](https://www.netnea.com/files/tutorial-8-example-access.log)
+* [tutorial-8-example-error.log](https://www.netnea.com/files/tutorial-8-example-error.log)
 
 It is difficult to provide real production logs for an exercise due to all the sensitive data in the logs. So, I went and created false positives from scratch. With the Core Rule Set 2.2.x, this would have been simple, but with the 3.0 release (CRS3), most of the false positives in the default install are now gone. What I did was set the CRS to Paranoia Level 4 and then install a local Drupal site. I then published a couple of articles and then read the articles in the browser. Rinse and repeat up to 10,000 requests.
 
@@ -359,7 +359,8 @@ So these are the culprits. Let's go through them one by one. 921180 is a rule th
 
 For every alert, we need to write a rule exclusion and as we have seen in the previous tutorial, there are multiple options. It takes a bit of experience to make the right choice and very often, multiple approaches can be suitable. Let's look at the cheat sheet again:
 
-<a href="https://www.netnea.com/cms/rule-exclusion-cheatsheet-download/"><img src="/files/tutorial-7-rule-exclusion-cheatsheet_small.png" alt="Rule Exclusion CheatSheet" width="476" height="673" /></a>
+<a href="https://www.netnea.com/cms/rule-exclusion-cheatsheet-download/"><img src="https://www.netnea.com/files/tutorial-7-rule-exclusion-cheatsheet_small.png" alt="Rule Exclusion CheatSheet" width="476" height="673" /></a>
+
 _Click to get to the download of the large version_
 
 Let's start with a simple case: 920273. We could look at this in great detail and check out all the different parameters triggering this rule. Depending on the security level we want to provide for our application, this would be the right approach. But then this is an exercise, so we will keep it simple: Let's kick this rule out completely. We'll opt for a startup rule (to be placed after the CRS include).
@@ -506,8 +507,8 @@ But before we get there, we need to add few more rule exclusions.
 
 After the first batch of rule exclusions, we would observe the service and end up with the following new logs:
 
-* [tutorial-8-example-access-round-2.log](./tutorial-8-example-access-round-2.log)
-* [tutorial-8-example-error-round-2.log](./tutorial-8-example-error-round-2.log)
+* [tutorial-8-example-access-round-2.log](https://www.netnea.com/files/tutorial-8-example-access-round-2.log)
+* [tutorial-8-example-error-round-2.log](https://www.netnea.com/files/tutorial-8-example-error-round-2.log)
 
 We start again with a look at the score distribution:
 
@@ -726,8 +727,8 @@ And done. This time, we cleaned out all the scores above 50. Time to reduce the 
 
 Here are the new exercise files. It's still the same traffic, but with fewer alerts again thanks to the rule exclusions.
 
-* [tutorial-8-example-access-round-3.log](./tutorial-8-example-access-round-3.log)
-* [tutorial-8-example-error-round-3.log](./tutorial-8-example-error-round-3.log)
+* [tutorial-8-example-access-round-3.log](https://www.netnea.com/files/tutorial-8-example-access-round-3.log)
+* [tutorial-8-example-error-round-3.log](https://www.netnea.com/files/tutorial-8-example-error-round-3.log)
 
 
 This brings us to the following statistics (this time only printing numbers for the incoming requests):
@@ -845,8 +846,8 @@ Time to reduce the limit once more (down to 10 this time) and see what happens.
 
 We have a new pair of logs: 
 
-* [tutorial-8-example-access-round-4.log](./tutorial-8-example-access-round-4.log)
-* [tutorial-8-example-error-round-4.log](./tutorial-8-example-error-round-4.log)
+* [tutorial-8-example-access-round-4.log](https://www.netnea.com/files/tutorial-8-example-access-round-4.log)
+* [tutorial-8-example-error-round-4.log](https://www.netnea.com/files/tutorial-8-example-error-round-4.log)
 
 These are the statistics:
 
@@ -960,17 +961,17 @@ SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" "phase:2,nolog,p
 Include    /apache/conf/crs/rules/*.conf
 
 
-# === ModSecurity Ignore Rules After Core Rules Inclusion; order by id of ignored rule (ids: 50000-79999)
+# === ModSec Core Rules: Startup Time Rules Exclusions
 
 # ModSec Rule Exclusion: 942450 : SQL Hex Encoding Identified
 SecRuleUpdateTargetById 942450 "!REQUEST_COOKIES
 SecRuleUpdateTargetById 942450 "!REQUEST_COOKIES_NAMES
 
-
+# ModSec Rule Exclusion: 920273 : Invalid character in request (outside of very strict set)
 # ModSec Rule Exclusion: 942432 : Restricted SQL Character Anomaly Detection (args): 
 # number of special characters exceeded (2) (severity:  NONE/UNKOWN)
-SecRuleRemoveById 942432
 SecRuleRemoveById 920273
+SecRuleRemoveById 942432
 
 # ModSec Rule Exclusion: 930000 - 943999 : All application rules for password parameters
 SecRuleUpdateTargetById 930000-943999 "!ARGS:account[pass][pass1]"

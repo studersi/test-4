@@ -128,7 +128,7 @@ Alternatively:
 ```bash
 $> sudo tshark -i lo -w /tmp/localhost-port443.pcap -s0 port 443
 tshark: Lua: Error during loading:
- [string "/usr/share/wireshark/init.lua"]:46: dofile has been disabled due to running Wireshark as superuser. See http://wiki.wireshark.org/CaptureSetup/CapturePrivileges for help in running Wireshark as an unprivileged user.
+ [string "/usr/share/wireshark/init.lua"]:46: dofile has been disabled due to running Wireshark as ...
 Running as user "root" and group "root". This could be dangerous.
 Capturing on 'Loopback'
 ...
@@ -382,7 +382,8 @@ Listen	127.0.0.1:8443
         SSLCertificateFile      /etc/ssl/certs/ssl-cert-snakeoil.pem
         SSLProtocol             All -SSLv2 -SSLv3
         SSLHonorCipherOrder     On
-        SSLCipherSuite          "AES256-SHA"
+        SSLCipherSuite          'kEECDH+ECDSA kEECDH kEDH HIGH +SHA !aNULL !eNULL !LOW !MEDIUM \
++!MD5 !EXP !DSS !PSK !SRP !kECDH !CAMELLIA !RC4'
 
         <Directory /apache/htdocs>
 
@@ -433,7 +434,7 @@ $> curl -v -k https://localhost:8443/index.html
 < 
 <html><body><h1>It works!</h1></body></html>
 * Connection #0 to host localhost left intact
-$> curl -v -k http://localhost:8000/index.html
+$> curl -v http://localhost:8000/index.html
 * Hostname was NOT found in DNS cache
 *   Trying 127.0.0.1...
 * Connected to localhost (127.0.0.1) port 8000 (#0)

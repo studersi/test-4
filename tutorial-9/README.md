@@ -845,8 +845,8 @@ DocumentRoot            /apache/htdocs
 
 ### References
 
-* Apache mod_proxy [https://httpd.apache.org/docs/2.4/mod/mod_proxy.html)](https://httpd.apache.org/docs/2.4/mod/mod_proxy.html)
-* Apache mod_rewrite [https://httpd.apache.org/docs/2.4/mod/mod_rewrite.html)](https://httpd.apache.org/docs/2.4/mod/mod_rewrite.html)
+* Apache mod_proxy [https://httpd.apache.org/docs/2.4/mod/mod_proxy.html](https://httpd.apache.org/docs/2.4/mod/mod_proxy.html)
+* Apache mod_rewrite [https://httpd.apache.org/docs/2.4/mod/mod_rewrite.html](https://httpd.apache.org/docs/2.4/mod/mod_rewrite.html)
 
 ### License / Copying / Further use
 

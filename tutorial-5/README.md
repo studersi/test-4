@@ -422,7 +422,7 @@ alias alscores='cut -d\" -f9 | cut -d\  -f12,13 | tr " " ";" | tr "-" "0"'
 
 All of the aliases begin with _al_. This stands for _ApacheLog_ or _AccessLog_. This is followed by the field name. The individual aliases are not sorted alphabetically. They instead follow the sequence of the fields in the format of the log file.
 
-This list with alias definitions is available in the file [apache-modsec.alias](https://github.com/Apache-Labor/labor/blob/master/bin/.apache-modsec.alias). They have been put together there with a few additional aliases that we will be defining in subsequent tutorials. If you often work with Apache and its log files, then it is advisable to place these alias definitions in the home directory and to load them when logging in. By using the following entry in the _.bashrc_ file or via another related mechanism.
+This list with alias definitions is available in the file [.apache-modsec.alias](https://github.com/Apache-Labor/labor/blob/master/bin/.apache-modsec.alias). They have been put together there with a few additional aliases that we will be defining in subsequent tutorials. If you often work with Apache and its log files, then it is advisable to place these alias definitions in the home directory and to load them when logging in. By using the following entry in the _.bashrc_ file or via another related mechanism.
 
 ```bash
 test -e ~/.apache-modsec.alias && . ~/.apache-modsec.alias

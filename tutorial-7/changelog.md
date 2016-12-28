@@ -1,5 +1,6 @@
 ##### Changelog
 
+* 2016-12-28: Removing single quotes from id actions in ModSec rules, fixing broken link
 * 2016-11-14: Fixing links to previous tutorials
 * 2016-11-02: CRS 3.0.0-rc2 -> CRS 3.0.0-rc3, fixed broken link to stats script
 * 2016-11-01: Adding Cheatsheet. Publication.

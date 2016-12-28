@@ -1,5 +1,6 @@
 ##### Changelog
 
+* 2016-12-28: Typo
 * 2016-11-15: Review, update ModSecurity config to CRS3
 * 2016-10-10: Fixing small issues
 * 2016-07-15: Apache 2.4.20 -> 2.4.23
