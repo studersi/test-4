@@ -220,12 +220,12 @@ This is how log files can be very freely defined in Apache. What’s more intere
 
 Let’s configure the extended access log in the _extended_ format as described above and work a bit with the server.
 
-We could use _ApacheBench_ as described in the second tutorial for this, but that would result in a very uniform log file. We can change things up a bit with the following two one-liners.
+We could use _ApacheBench_ as described in the second tutorial for this, but that would result in a very uniform log file. We can change things up a bit with the following two one-liners (note the _insecure_ flag, that does away with certificate warnings in curl).
 
 ```bash
-$> for N in {1..100}; do curl --silent http://localhost/index.html?n=${N}a >/dev/null; done
+$> for N in {1..100}; do curl --silent --insecure https://localhost/index.html?n=${N}a >/dev/null; done
 $> for N in {1..100}; do PAYLOAD=$(uuid -n $N | xargs); \
-   curl --silent --data "payload=$PAYLOAD" http://localhost/index.html?n=${N}b >/dev/null; \
+   curl --silent --data "payload=$PAYLOAD" --insecure https://localhost/index.html?n=${N}b >/dev/null; \
    done
 ```
 

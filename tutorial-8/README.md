@@ -24,7 +24,7 @@ There is no point in learning to fight false positives on a lab server without t
 
 It is difficult to provide real production logs for an exercise due to all the sensitive data in the logs. So, I went and created false positives from scratch. With the Core Rule Set 2.2.x, this would have been simple, but with the 3.0 release (CRS3), most of the false positives in the default install are now gone. What I did was set the CRS to Paranoia Level 4 and then install a local Drupal site. I then published a couple of articles and then read the articles in the browser. Rinse and repeat up to 10,000 requests.
 
-Drupal and the core rules are not really in a loving relationship. Whenever the two software packages meet, they tend to have a falling out with each other, since the CRS is so pedantic and Drupal's habit of having square brackets in parameter names drives the CRS crazy. However, the default CRS3 installation at Paranoia Level 1, and especially the new optional exclusion rules for Drupal (see the `crs-setup.conf` file and [this blog post](/cms/2016/11/22/securing-drupal-with-modsecurity-and-the-core-rule-set-crs3/) for details), wards of almost all of the remaining false positives with a core Drupal installation.
+Drupal and the core rules are not really in a loving relationship. Whenever the two software packages meet, they tend to have a falling out with each other, since the CRS is so pedantic and Drupal's habit of having square brackets in parameter names drives the CRS crazy. However, the default CRS3 installation at Paranoia Level 1, and especially the new optional exclusion rules for Drupal (see the `crs-setup.conf` file and [this blog post](/cms/2016/11/22/securing-drupal-with-modsecurity-and-the-core-rule-set-crs3/) for details), wards off almost all of the remaining false positives with a core Drupal installation.
 
 But things look completely different when you do not use these exclusion rules and if you raise the Paranoia Level to 4, you will get plenty of false positives. For the 10,000 requests in my test run, I received over 27,000 false alarms. That should do for a training session.
 
@@ -53,7 +53,7 @@ The character of the application, the paranoia level and the amount of traffic a
 
 One would think that the error log with the alerts is the place to go. But, we are looking at the access log first. We defined the log format in a way that gives us the anomaly scores for every request. This helps us with this step.
 
-In the previous tutorial, we used the script [modsec-positive-stats.rb](https://www.netnea.com/cms/files/modsec-positive-stats.rb). We return to this script with the example access log as the target:
+In the previous tutorial, we used the script [modsec-positive-stats.rb](https://www.netnea.com/files/modsec-positive-stats.rb). We return to this script with the example access log as the target:
 
 ```bash
 $> cat tutorial-8-example-access.log | alscores | modsec-positive-stats.rb
@@ -339,7 +339,7 @@ WBux0H8AAQEAAEdTokEAAABL
 
 With this one-liner, we *grep* for the requests with score 231 or 189. We know it is the second item from the end of the log line. The final value is the outgoing anomaly score. In our case, all responses scored 0, but theoretically, this value could be any number or undefined (-> `-`) so it is generally a good practice to write the pattern this way. The alias *alreqid* extracts the unique ID and *tee* will show us the IDs and write them to the file *ids* at the same time.
 
-We can then take the IDs in this file and use them to extract the alerts belonging to the requests we're focused on. We use `grep -f` to perform this step. The `-F` flag tells *grep* that our pattern file is actually a list of fixed strings separated by newlines. Thus equipped, *grep* is a lot more performing than without the flag.  The *melidmsg* alias extracts the ID and the message explaining the alert. Combining both is very helpful. The already familiar *sucs* alias is then used to sum it all up:
+We can then take the IDs in this file and use them to extract the alerts belonging to the requests we're focused on. We use `grep -f` to perform this step. The `-F` flag tells *grep* that our pattern file is actually a list of fixed strings separated by newlines. Thus equipped, *grep* is a lot more efficient than without the flag.  The *melidmsg* alias extracts the ID and the message explaining the alert. Combining both is very helpful. The already familiar *sucs* alias is then used to sum it all up:
 
 ```bash
 $> grep -F -f ids tutorial-8-example-error.log  | melidmsg | sucs
@@ -419,7 +419,7 @@ $> grep -F -f ids tutorial-8-example-error.log  | grep 942130 | meluri | sucs
      75 /drupal/index.php/contextual/render
 ```
 
-So this is always the same URI. Let's exclude the parameter `ids[]` from being examined when it occurs in requests to this location. This boils down to a run-time exclusion rule. In the previous tutorial, we have seen that writing these kind of rules is cumbersome. It would be nice to have a script do the work for us. So, I created such a script: introducing [modsec-rulereport.rb](https://www.netnea.com/cms/files/modsec-rulereport.rb). It takes an alert message (or the error log in a more general sense) on STDIN and proposes one of many rules exclusions of different types (see modsec-rulereport.rb -h` for an overview). 
+So this is always the same URI. Let's exclude the parameter `ids[]` from being examined when it occurs in requests to this location. This boils down to a run-time exclusion rule. In the previous tutorial, we have seen that writing these kind of rules is cumbersome. It would be nice to have a script do the work for us. So, I created such a script: introducing [modsec-rulereport.rb](https://www.netnea.com/files/modsec-rulereport.rb). It takes an alert message (or the error log in a more general sense) on STDIN and proposes one of many rules exclusions of different types (see modsec-rulereport.rb -h` for an overview). 
 
 
 ```bash

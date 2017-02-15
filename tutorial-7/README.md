@@ -657,7 +657,7 @@ The results give us an idea of the situation: The vast majority of requests pass
 
 A score of 41 appears twice, corresponding to a high number of serious rule infractions. This is very common in practice, where a serious SQL injection attempt sets off a series of alarms. In 41 cases, we didn’t get any score for the server’s responses. These are log entries of empty requests in which a connection with the client was established, but no request was made. We have taken this possibility into account in the regular expression using *egrep* and are also taking into account the default value, "-". Besides these empty entries, nothing else is conspicuous at all. This is typical, if a bit high. In all likelihood, we will be seeing a fair number of violations from the requests and very few alarms from the responses.
 
-But this still doesn’t give us the right idea about the *tuning steps* that would be needed to run this install smoothly. To present this information in a suitable form, I have prepared a script that analyzes *anomaly scores*. [modsec-positive-stats.rb](https://www.netnea.com/cms/files/modsec-positive-stats.rb). It takes the two anomaly scores as input and we need to separate them with a semicolon in order to pipe them into the script. We can do this like this:
+But this still doesn’t give us the right idea about the *tuning steps* that would be needed to run this install smoothly. To present this information in a suitable form, I have prepared a script that analyzes *anomaly scores*. [modsec-positive-stats.rb](https://www.netnea.com/files/modsec-positive-stats.rb). It takes the two anomaly scores as input and we need to separate them with a semicolon in order to pipe them into the script. We can do this like this:
 
 ```
 $> cat tutorial-5-example-access.log  | egrep -o "[0-9-]+ [0-9-]+$" | tr " " ";" | modsec-positive-stats.rb
@@ -777,7 +777,7 @@ Now this is harder to read. Watch out for the *ctl* statement: `ctl:ruleRemoveBy
 
 As with the startup rule exclusions, we are not limited to an exclusion by rule ID. Exclusions by tag will work just as well (`ctl:ruleRemoveByTag`). Again, regular expressions are supported, but only to a certain extent.
 
-Startup time rule exclusions and runtime rule exclusions have the same effect, but internally, they are really different. With the runtime exclusions, you gain granular control at the cost of performance, as the exclusion is being evaluated for every single request. Startup time exclusions are performing better and they are easier to read and write.
+Startup time rule exclusions and runtime rule exclusions have the same effect, but internally, they are really different. With the runtime exclusions, you gain granular control at the cost of performance, as the exclusion is being evaluated for every single request. Startup time exclusions are performing faster and they are easier to read and write.
 
 ###Step 8: Handling false positives: Disabling individual rules for specific parameters
 
