@@ -189,7 +189,8 @@ Another trick for test operation: Apache is actually a daemon running as a backg
 There is likely to be a warning when starting:
 
 ```bash
-AH00558: httpd: Could not reliably determine the server's fully qualified domain name, using 127.0.1.1. Set the 'ServerName' directive globally to suppress this message
+AH00558: httpd: Could not reliably determine the server's fully qualified domain name, using …
+127.0.1.1. Set the 'ServerName' directive globally to suppress this message
 ```
 
 This is unimportant and we can ignore the warning for the time being.

@@ -1,5 +1,6 @@
 ##### Changelog
 
+* 2017-02-16: Reformatting
 * 2017-02-15: Updated curl call in loop from http to https
 * 2016-12-28: Bugfix with filename
 * 2016-12-04: Typo, reduce example output

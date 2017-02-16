@@ -303,16 +303,17 @@ Registering account
 Registered
 Verify each domain
 Verifing christian-folini.ch
-copying challenge token to /apache/htdocs/.well-known/acme-challenge/xiM4FlHAqxo9fuAG-Ag-BTV_DsUJAbegPoZ6-l_luSA
+copying challenge token to /apache/htdocs/.well-known/acme-challenge/xiM4FlHAqxo9fuAG-Ag-…
 Pending
 Verified christian-folini.ch
 Verifing www.christian-folini.ch
-copying challenge token to /apache/htdocs/.well-known/acme-challenge/QK4x1EyQ1Su7qZ-XTJL7EIqP6brNCRY8ZcGpZpyEc3E
+copying challenge token to /apache/htdocs/.well-known/acme-challenge/QK4x1EyQ1Su7qZ-XTJL7… 
 Verified www.christian-folini.ch
 Verification completed, obtaining certificate.
 Certificate saved in /home/folini/.getssl/christian-folini.ch/christian-folini.ch.crt
 The intermediate CA cert is in /home/folini/.getssl/christian-folini.ch/chain.crt
-getssl: christian-folini.ch - certificate obtained but certificate on server is different from the new certificate
+getssl: christian-folini.ch - certificate obtained but certificate on server is different …
+from the new certificate
 ```
 
 You can see how a new key was first created. Then the script created a `Certificate Signing Request` with the file ending `csr` and the test file `/apache/htdocs/.well-known/acme-challenge/xiM4FlHAqxo9fuAG-Ag-BTV_DsUJAbegPoZ6-l_luSA`. This was followed by the request to check the domain and sign the certificate. In the server's access log, we will then see the following entry (the IP addresses of the validation server and the exact filename can vary):

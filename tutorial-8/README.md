@@ -428,7 +428,8 @@ $> grep -F -f ids tutorial-8-example-error.log  | grep 942130 | modsec-rulerepor
 75 x 942130 SQL Injection Attack: SQL Tautology Detected.
 --------------------------------------------------------------------------------
       # ModSec Rule Exclusion: 942130 : SQL Injection Attack: SQL Tautology Detected.
-      SecRule REQUEST_URI "@beginsWith /drupal/index.php/contextual/render" "phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=942130;ARGS:ids[]"
+      SecRule REQUEST_URI "@beginsWith /drupal/index.php/contextual/render" \
+              "phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=942130;ARGS:ids[]"
 ```
 
 The mode _combined_ instructs the script to write a rule that combines a path condition with a rule ID and a certain parameter. First, it reports the number of occurrences, then it proposes an exclusion rule which we can copy together with the comment into our Apache configuration file 1:1. The proposed rule has an ID of 10,000. If we continue to use the script, we will have to edit this ID ourselves to avoid ID collisions, but that's a simple task.
@@ -450,9 +451,10 @@ This is script is very handy. Let's throw in 942431 and see what happens:
 ```bash
 $> grep -F -f ids tutorial-8-example-error.log  | grep 942431 | modsec-rulereport.rb --mode combined
 35 x 942431 Restricted SQL Character Anomaly Detection (args): # of special characters exceeded (6)
-----------------------------------------------------------------------------------------------------------------------------
-      # ModSec Rule Exclusion: 942431 : Restricted SQL Character Anomaly Detection (args): # of special characters exceeded (6)
-      SecRule REQUEST_URI "@beginsWith /drupal/index.php/contextual/render" "phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=942431;ARGS:ids[]"
+---------------------------------------------------------------------------------------------------
+      # ModSec Rule Exclusion: 942431 : Restricted SQL Character Anomaly Detection (args): …
+      SecRule REQUEST_URI "@beginsWith /drupal/index.php/contextual/render" \
+              "phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=942431;ARGS:ids[]"
 ```
 
 So that's almost the same thing. We can thus take out the control action (the bit starting with `ctl`) and append it to the previous statement:
@@ -477,7 +479,8 @@ $> grep -F -f ids tutorial-8-example-error.log  | grep 921180 | modsec-rulerepor
 7 x 921180 HTTP Parameter Pollution (ARGS_NAMES:ids[])
 ------------------------------------------------------
       # ModSec Rule Exclusion: 921180 : HTTP Parameter Pollution (ARGS_NAMES:ids[])
-      SecRule REQUEST_URI "@beginsWith /drupal/index.php/contextual/render" "phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=921180;TX:paramcounter_ARGS_NAMES:ids[]"
+      SecRule REQUEST_URI "@beginsWith /drupal/index.php/contextual/render" \
+               "phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=921180;TX:paramcounter_ARGS_NAMES:ids[]"
 ```
 
 This is a special case. It's caused by submitting a single parameter multiple times. The rule works with a separate counter introduced for every parameter which will then check the counter in rule 921180. If we want to suppress the alarm, we'd best suppress the examination of this counter as the script proposes. We are facing the same URI again, but I have that feeling that this rule will be triggered by other parameters as well. We will see.
@@ -609,9 +612,9 @@ $> grep -F -f ids tutorial-8-example-error-round-2.log | melidmsg | sucs
      76 921180 HTTP Parameter Pollution (ARGS_NAMES:keys)
      76 942100 SQL Injection Attack Detected via libinjection
     152 942190 Detects MSSQL code execution and information gathering attempts
-    152 942200 Detects MySQL comment-/space-obfuscated injections and backtick termination
+    152 942200 Detects MySQL comment-/space-obfuscated injections and backtick …
     152 942260 Detects basic SQL authentication bypass attempts 2/3
-    152 942270 Looking for basic sql injection. Common attack string for mysql, oracle and others.
+    152 942270 Looking for basic sql injection. Common attack string for mysql, …
     152 942410 SQL Injection Attack
 $> grep -F -f ids tutorial-8-example-error-round-2.log | meluri | sucs
     912 /drupal/index.php/search/node
@@ -625,7 +628,8 @@ $> grep -F -f ids tutorial-8-example-error-round-2.log | modsec-rulereport.rb -m
 76 x 921180 HTTP Parameter Pollution (ARGS_NAMES:keys)
 ------------------------------------------------------
       # ModSec Rule Exclusion: 921180 : HTTP Parameter Pollution (ARGS_NAMES:keys)
-      SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" "phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=921180;TX:paramcounter_ARGS_NAMES:keys"
+      SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" \
+              "phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=921180;TX:paramcounter_ARGS_NAMES:keys"
 
 76 x 942100 SQL Injection Attack Detected via libinjection
 ----------------------------------------------------------
@@ -635,27 +639,32 @@ $> grep -F -f ids tutorial-8-example-error-round-2.log | modsec-rulereport.rb -m
 152 x 942190 Detects MSSQL code execution and information gathering attempts
 ----------------------------------------------------------------------------
       # ModSec Rule Exclusion: 942190 : Detects MSSQL code execution and information gathering attempts
-      SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" "phase:2,nolog,pass,id:10001,ctl:ruleRemoveTargetById=942190;ARGS:keys"
+      SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" \
+              "phase:2,nolog,pass,id:10001,ctl:ruleRemoveTargetById=942190;ARGS:keys"
 
 152 x 942200 Detects MySQL comment-/space-obfuscated injections and backtick termination
 ----------------------------------------------------------------------------------------
-      # ModSec Rule Exclusion: 942200 : Detects MySQL comment-/space-obfuscated injections and backtick termination
-      SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" "phase:2,nolog,pass,id:10002,ctl:ruleRemoveTargetById=942200;ARGS:keys"
+      # ModSec Rule Exclusion: 942200 : Detects MySQL comment-/space-obfuscated injections and backtick …
+      SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" \
+              "phase:2,nolog,pass,id:10002,ctl:ruleRemoveTargetById=942200;ARGS:keys"
 
 152 x 942260 Detects basic SQL authentication bypass attempts 2/3
 -----------------------------------------------------------------
       # ModSec Rule Exclusion: 942260 : Detects basic SQL authentication bypass attempts 2/3
-      SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" "phase:2,nolog,pass,id:10003,ctl:ruleRemoveTargetById=942260;ARGS:keys"
+      SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" \
+              "phase:2,nolog,pass,id:10003,ctl:ruleRemoveTargetById=942260;ARGS:keys"
 
 152 x 942270 Looking for basic sql injection. Common attack string for mysql, oracle and others.
 ------------------------------------------------------------------------------------------------
-      # ModSec Rule Exclusion: 942270 : Looking for basic sql injection. Common attack string for mysql, oracle and others.
-      SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" "phase:2,nolog,pass,id:10004,ctl:ruleRemoveTargetById=942270;ARGS:keys"
+      # ModSec Rule Exclusion: 942270 : Looking for basic sql injection. Common attack string for mysql, …
+      SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" \
+              "phase:2,nolog,pass,id:10004,ctl:ruleRemoveTargetById=942270;ARGS:keys"
 
 152 x 942410 SQL Injection Attack
 ---------------------------------
       # ModSec Rule Exclusion: 942410 : SQL Injection Attack
-      SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" "phase:2,nolog,pass,id:10005,ctl:ruleRemoveTargetById=942410;ARGS:keys"
+      SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" \
+              "phase:2,nolog,pass,id:10005,ctl:ruleRemoveTargetById=942410;ARGS:keys"
 ```
 
 We had separated a spot for 921180 exclusions before. We put the first rule into that position and end up with the following:
@@ -672,7 +681,15 @@ With 942100, the script did not come up with a good proposal. This is because th
 
 ```bash
 $> grep -F -f ids tutorial-8-example-error-round-2.log | grep 942100 | head -1
-[2016-11-05 09:47:18.423889] [-:error] - - [client 127.0.0.1] ModSecurity: Warning. detected SQLi using libinjection with fingerprint 'UEkn' [file "/apache/conf/owasp-modsecurity-crs-3.0.0-rc1/rules/REQUEST-942-APPLICATION-ATTACK-SQLI.conf"] [line "67"] [id "942100"] [rev "1"] [msg "SQL Injection Attack Detected via libinjection"] [data "Matched Data: UEkn found within ARGS:keys: union select from users"] [ver "OWASP_CRS/3.0.0"] [maturity "1"] [accuracy "8"] [tag "application-multi"] [tag "language-multi"] [tag "platform-multi"] [tag "attack-sqli"] [tag "OWASP_CRS/WEB_ATTACK/SQL_INJECTION"] [tag "WASCTC/WASC-19"] [tag "OWASP_TOP_10/A1"] [tag "OWASP_AppSensor/CIE1"] [tag "PCI/6.5.2"] [hostname "localhost"] [uri "/drupal/index.php/search/node"] [unique_id "WB2cln8AAQEAAAehPc8AAADK"]
+[2016-11-05 09:47:18.423889] [-:error] - - [client 127.0.0.1] ModSecurity: Warning. detected SQLi …
+using libinjection with fingerprint 'UEkn' [file …
+"/apache/conf/owasp-modsecurity-crs-3.0.0-rc1/rules/REQUEST-942-APPLICATION-ATTACK-SQLI.conf"] …
+[line "67"] [id "942100"] [rev "1"] [msg "SQL Injection Attack Detected via libinjection"] [data …
+"Matched Data: UEkn found within ARGS:keys: union select from users"] [ver "OWASP_CRS/3.0.0"] …
+[maturity "1"] [accuracy "8"] [tag "application-multi"] [tag "language-multi"] [tag "platform-multi"] …
+[tag "attack-sqli"] [tag "OWASP_CRS/WEB_ATTACK/SQL_INJECTION"] [tag "WASCTC/WASC-19"] [tag …
+"OWASP_TOP_10/A1"] [tag "OWASP_AppSensor/CIE1"] [tag "PCI/6.5.2"] [hostname "localhost"] …
+[uri "/drupal/index.php/search/node"] [unique_id "WB2cln8AAQEAAAehPc8AAADK"]
 ```
 
 This allows for the following exclusion rule:
@@ -686,18 +703,24 @@ SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" \
 With the remaining ones, we use a shortcut:
 
 ```bash
-$> grep -F -f ids tutorial-8-example-error-round-2.log | grep -v "942100\|921180" | modsec-rulereport.rb -m combined | sort
+$> grep -F -f ids tutorial-8-example-error-round-2.log | grep -v "942100\|921180" | \
+modsec-rulereport.rb -m combined | sort
 ...
       # ModSec Rule Exclusion: 942190 : Detects MSSQL code execution and information gathering attempts
-      # ModSec Rule Exclusion: 942200 : Detects MySQL comment-/space-obfuscated injections and backtick termination
+      # ModSec Rule Exclusion: 942200 : Detects MySQL comment-/space-obfuscated injections and backtick …
       # ModSec Rule Exclusion: 942260 : Detects basic SQL authentication bypass attempts 2/3
-      # ModSec Rule Exclusion: 942270 : Looking for basic sql injection. Common attack string for mysql, oracle and others.
+      # ModSec Rule Exclusion: 942270 : Looking for basic sql injection. Common attack string for mysql, …
       # ModSec Rule Exclusion: 942410 : SQL Injection Attack
-      SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" "phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=942190;ARGS:keys"
-      SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" "phase:2,nolog,pass,id:10001,ctl:ruleRemoveTargetById=942200;ARGS:keys"
-      SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" "phase:2,nolog,pass,id:10002,ctl:ruleRemoveTargetById=942260;ARGS:keys"
-      SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" "phase:2,nolog,pass,id:10003,ctl:ruleRemoveTargetById=942270;ARGS:keys"
-      SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" "phase:2,nolog,pass,id:10004,ctl:ruleRemoveTargetById=942410;ARGS:keys"
+      SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" \
+              "phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=942190;ARGS:keys"
+      SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" \
+              "phase:2,nolog,pass,id:10001,ctl:ruleRemoveTargetById=942200;ARGS:keys"
+      SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" \
+              "phase:2,nolog,pass,id:10002,ctl:ruleRemoveTargetById=942260;ARGS:keys"
+      SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" \
+              "phase:2,nolog,pass,id:10003,ctl:ruleRemoveTargetById=942270;ARGS:keys"
+      SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" \
+              "phase:2,nolog,pass,id:10004,ctl:ruleRemoveTargetById=942410;ARGS:keys"
 
 ```
 
@@ -707,9 +730,9 @@ We can simplify this into the following rule, which is then appended to the prev
 ```bash
 # ModSec Rule Exclusion: 942100 : SQL Injection Attack Detected via libinjection
 # ModSec Rule Exclusion: 942190 : Detects MSSQL code execution and information gathering attempts
-# ModSec Rule Exclusion: 942200 : Detects MySQL comment-/space-obfuscated injections and backtick termination
+# ModSec Rule Exclusion: 942200 : Detects MySQL comment-/space-obfuscated injections and backtick …
 # ModSec Rule Exclusion: 942260 : Detects basic SQL authentication bypass attempts 2/3
-# ModSec Rule Exclusion: 942270 : Looking for basic sql injection. Common attack string for mysql, oracle and others.
+# ModSec Rule Exclusion: 942270 : Looking for basic sql injection. Common attack string for mysql, …
 # ModSec Rule Exclusion: 942410 : SQL Injection Attack
 SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" "phase:2,nolog,pass,id:10004,\
     ctl:ruleRemoveTargetById=942100;ARGS:keys,\
@@ -762,7 +785,7 @@ $> egrep " (10|8) [0-9-]+$" tutorial-8-example-access-round-3.log | alreqid > id
 $> grep -F -f ids tutorial-8-example-error-round-3.log | melidmsg | sucs
       2 932160 Remote Command Execution: Unix Shell Code Found
     368 921180 HTTP Parameter Pollution (ARGS_NAMES:editors[])
-    368 942431 Restricted SQL Character Anomaly Detection (args): # of special characters exceeded (6)
+    368 942431 Restricted SQL Character Anomaly Detection (args): # of special characters …
 ```
 
 The first alert is funny: "Remote command execution." What's this?
@@ -818,24 +841,28 @@ SecRuleUpdateTargetById 930000-943999 "!ARGS:account[pass][pass2]"
 We are left with another instance of 921180, plus the 942431 which we have seen before too. Here is what the script proposes:
 
 ```bash
-$> grep -F -f ids tutorial-8-example-error-round-3.log | grep "921180\|942431" | modsec-rulereport.rb -m combined 
+$> grep -F -f ids tutorial-8-example-error-round-3.log | grep "921180\|942431" | \
+modsec-rulereport.rb -m combined 
 
 448 x 921180 HTTP Parameter Pollution (ARGS_NAMES:editors[])
 ------------------------------------------------------------
       # ModSec Rule Exclusion: 921180 : HTTP Parameter Pollution (ARGS_NAMES:editors[])
-      SecRule REQUEST_URI "@beginsWith /drupal/index.php/quickedit/attachments" "phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=921180;TX:paramcounter_ARGS_NAMES:editors[]"
+      SecRule REQUEST_URI "@beginsWith /drupal/index.php/quickedit/attachments" \
+              "phase:2,nolog,pass,id:10000,\
+              ctl:ruleRemoveTargetById=921180;TX:paramcounter_ARGS_NAMES:editors[]"
 
 448 x 942431 Restricted SQL Character Anomaly Detection (args): # of special characters exceeded (6)
 ----------------------------------------------------------------------------------------------------
-      # ModSec Rule Exclusion: 942431 : Restricted SQL Character Anomaly Detection (args): # of special characters exceeded (6)
-      SecRule REQUEST_URI "@beginsWith /drupal/index.php/quickedit/attachments" "phase:2,nolog,pass,id:10001,ctl:ruleRemoveTargetById=942431;ARGS:ajax_page_state[libraries]"
+      # ModSec Rule Exclusion: 942431 : Restricted SQL Character Anomaly Detection (args): …
+      SecRule REQUEST_URI "@beginsWith /drupal/index.php/quickedit/attachments" \
+              "phase:2,nolog,pass,id:10001,ctl:ruleRemoveTargetById=942431;ARGS:ajax_page_state[libraries]"
 ```
 
 You know the drill by now: The first one goes with the other 921180 exclusions (don't forget to pick a new rule ID) and the second is added as a new entry:
 
 
 ```bash
-# ModSec Rule Exclusion: 942431 : Restricted SQL Character Anomaly Detection (args): # of special characters exceeded (6)
+# ModSec Rule Exclusion: 942431 : Restricted SQL Character Anomaly Detection (args): …
 SecRule REQUEST_URI "@beginsWith /drupal/index.php/quickedit/attachments" \
     "phase:2,nolog,pass,id:10005,ctl:ruleRemoveTargetById=942431;ARGS:ajax_page_state[libraries]"
 ```
@@ -886,8 +913,11 @@ $> grep -F -f ids tutorial-8-example-error-round-4.log  | grep 921180 | modsec-r
 398 x 921180 HTTP Parameter Pollution (ARGS_NAMES:op)
 -----------------------------------------------------
       # ModSec Rule Exclusion: 921180 : HTTP Parameter Pollution (ARGS_NAMES:op)
-      SecRule REQUEST_URI "@beginsWith /drupal/index.php/quickedit/metadata" "phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=921180;TX:paramcounter_ARGS_NAMES:fields[]"
-      SecRule REQUEST_URI "@beginsWith /drupal/core/install.php" "phase:2,nolog,pass,id:10001,ctl:ruleRemoveTargetById=921180;TX:paramcounter_ARGS_NAMES:op"
+      SecRule REQUEST_URI "@beginsWith /drupal/index.php/quickedit/metadata" \
+              "phase:2,nolog,pass,id:10000,\
+              ctl:ruleRemoveTargetById=921180;TX:paramcounter_ARGS_NAMES:fields[]"
+      SecRule REQUEST_URI "@beginsWith /drupal/core/install.php" \
+              "phase:2,nolog,pass,id:10001,ctl:ruleRemoveTargetById=921180;TX:paramcounter_ARGS_NAMES:op"
 ```
 
 It's simple enough to add this in the usual place with new rule IDs. And then the final alert:
@@ -899,7 +929,8 @@ $> grep -F -f ids tutorial-8-example-error-round-4.log  | grep 932160 | modsec-r
 41 x 932160 Remote Command Execution: Unix Shell Code Found
 -----------------------------------------------------------
       # ModSec Rule Exclusion: 932160 : Remote Command Execution: Unix Shell Code Found
-      SecRule REQUEST_URI "@beginsWith /drupal/index.php/user/login" "phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=932160;ARGS:pass"
+      SecRule REQUEST_URI "@beginsWith /drupal/index.php/user/login" \
+              "phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=932160;ARGS:pass"
 ```
 
 So yes, it is the password field again. I think it is best to execute the same process we performed with the other occurrences of the password. That was probably the registration, while this time it is the login form.
@@ -930,12 +961,12 @@ SecRule REQUEST_URI "@beginsWith /drupal/core/install.php" \
     "phase:2,nolog,pass,id:10005,ctl:ruleRemoveTargetById=921180;TX:paramcounter_ARGS_NAMES:op"
 
 # ModSec Rule Exclusion: 942130 : SQL Injection Attack: SQL Tautology Detected.
-# ModSec Rule Exclusion: 942431 : Restricted SQL Character Anomaly Detection (args): # of special characters exceeded (6) (severity:  NONE/UNKOWN)
+# ModSec Rule Exclusion: 942431 : Restricted SQL Character Anomaly Detection (args): …
 SecRule REQUEST_URI "@beginsWith /drupal/index.php/contextual/render" \
     "phase:2,nolog,pass,id:10006,ctl:ruleRemoveTargetById=942130;ARGS:ids[],\
                                  ctl:ruleRemoveTargetById=942431;ARGS:ids[]"
 
-# ModSec Rule Exclusion: 942431 : Restricted SQL Character Anomaly Detection (args): # of special characters exceeded (6)
+# ModSec Rule Exclusion: 942431 : Restricted SQL Character Anomaly Detection (args): …
 SecRule REQUEST_URI "@beginsWith /drupal/index.php/quickedit/attachments" \
     "phase:2,nolog,pass,id:10007,ctl:ruleRemoveTargetById=942431;ARGS:ajax_page_state[libraries]"
 
@@ -943,9 +974,9 @@ SecRule REQUEST_URI "@beginsWith /drupal/index.php/quickedit/attachments" \
 # Handling alerts for the search form:
 # ModSec Rule Exclusion: 942100 : SQL Injection Attack Detected via libinjection
 # ModSec Rule Exclusion: 942190 : Detects MSSQL code execution and information gathering attempts
-# ModSec Rule Exclusion: 942200 : Detects MySQL comment-/space-obfuscated injections and backtick termination
+# ModSec Rule Exclusion: 942200 : Detects MySQL comment-/space-obfuscated injections and backtick …
 # ModSec Rule Exclusion: 942260 : Detects basic SQL authentication bypass attempts 2/3
-# ModSec Rule Exclusion: 942270 : Looking for basic sql injection. Common attack string for mysql, oracle and others.
+# ModSec Rule Exclusion: 942270 : Looking for basic sql injection. Common attack string for mysql, …
 # ModSec Rule Exclusion: 942410 : SQL Injection Attack
 SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" "phase:2,nolog,pass,id:10100,\
    ctl:ruleRemoveTargetById=942100;ARGS:keys,\

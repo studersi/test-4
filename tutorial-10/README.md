@@ -167,8 +167,13 @@ echo "$TIME $STATUS $SCORES $METHOD_PATH ($ID)"
 echo
 
 echo "ModSecurity Rules Triggered:"
-MODSEC=$(tail -500 $ERRORLOG | grep $ID | grep -o -E " (at|against) .*\[file.*\[id \"[0-9]+.*\[msg \"[^\"]+" | tr -d \" | sed -e "s/ at the end of input at/ at/" -e "s/ required. /. /" -e "s/\[rev .*\[msg/[msg/" -e "s/\. / /" -e "s/(Total .*/(Total ...) .../" | tr -d \] | cut -d\  -f3,9,11- |
-sed -e "s/^\([^ ]*\) \([^ ]*\)/\2 \1/" | awk "{ printf \"%+6s %-35s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s\n\", \$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$10, \$11, \$12, \$13, \$14, \$15, \$16, \$17, \$18, \$19, \$20 }" | sed -e "s/\ *$//")
+MODSEC=$(tail -500 $ERRORLOG | grep $ID | grep -o -E " (at|against) .*\[file.*\[id \"[0-9]+.*\
+\[msg \"[^\"]+" | tr -d \" | sed -e "s/ at the end of input at/ at/" -e "s/ required. /. /" \
+-e "s/\[rev .*\[msg/[msg/" -e "s/\. / /" -e "s/(Total .*/(Total ...) .../" | tr -d \] | \
+cut -d\  -f3,9,11- |
+sed -e "s/^\([^ ]*\) \([^ ]*\)/\2 \1/" | awk "{ printf \"%+6s %-35s %s %s %s %s %s %s %s %s %s \
+%s %s %s %s %s %s %s %s %s\n\", \$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$10, \$11, \$12, \
+\$13, \$14, \$15, \$16, \$17, \$18, \$19, \$20 }" | sed -e "s/\ *$//")
 # This is a crazy one-liner. A description starting with "grep -o -E":
 # We grep for the various ModSec alert messages and take the content from the
 # at/against via the parameter name, the id up and including the message. tr
@@ -210,15 +215,19 @@ $> lastrequestsummary /apache/logs/access.log /apache/logs/error.log
 07:53:14 200 2 0 GET /index.html?a=..... (VqkfSH8AAQEAAHjqe40AAAAC)
 
 ModSecurity Rules Triggered:
-981172 ARGS:a                                           Restricted SQL Character Anomaly Detection Alert - Total # of special characters exceeded
+981172 ARGS:a                                           Restricted SQL Character Anomaly Detection Alert - …
 
 Apache Error Log:
-[2016-01-27 07:53:14.334862] [authz_core:debug] 127.0.0.1:36837 VqkfSH8AAQEAAHjqe40AAAAC AH01626: authorization result of Require all granted: granted
-[2016-01-27 07:53:14.334899] [authz_core:debug] 127.0.0.1:36837 VqkfSH8AAQEAAHjqe40AAAAC AH01626: authorization result of <RequireAll>: granted
-[2016-01-27 07:53:14.334914] [authz_core:debug] 127.0.0.1:36837 VqkfSH8AAQEAAHjqe40AAAAC AH01626: authorization result of <RequireAny>: granted
+[2016-01-27 07:53:14.334862] [authz_core:debug] 127.0.0.1:36837 VqkfSH8AAQEAAHjqe40AAAAC AH01626: …
+authorization result of Require all granted: granted
+[2016-01-27 07:53:14.334899] [authz_core:debug] 127.0.0.1:36837 VqkfSH8AAQEAAHjqe40AAAAC AH01626: …
+authorization result of <RequireAll>: granted
+[2016-01-27 07:53:14.334914] [authz_core:debug] 127.0.0.1:36837 VqkfSH8AAQEAAHjqe40AAAAC AH01626: …
+authorization result of <RequireAny>: granted
 
 Full Apache Access Log:
-127.0.0.1 - - [2016-01-27 07:53:14.333396] "GET /index.html?a=..... HTTP/1.1" 200 45 "-" "curl/7.35.0" localhost 127.0.0.1 80 - - + "-" VqkfSH8AAQEAAHjqe40AAAAC - - 125 256 -% 4294 560 130 250 2 0
+127.0.0.1 - - [2016-01-27 07:53:14.333396] "GET /index.html?a=..... HTTP/1.1" 200 45 "-" "curl/7.35.0" …
+localhost 127.0.0.1 80 - - + "-" VqkfSH8AAQEAAHjqe40AAAAC - - 125 256 -% 4294 560 130 250 2 0
 ```
 
 On the third line we see the timestamp of the request, the HTTP status, the ModSecurity core rules incoming anomaly score, the outgoing anomaly score, method, path and finally in brackets, the unique request ID. The other lines are self-explanatory and are simply an illustration of what can be done with such a script.
