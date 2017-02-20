@@ -1,5 +1,6 @@
 ##### Changelog
 
+* 2017-02-18: Bugfix in config roundup near the end (removed a doubled passage)
 * 2016-12-28: Typo
 * 2016-11-15: Review, update ModSecurity config to CRS3
 * 2016-10-10: Fixing small issues

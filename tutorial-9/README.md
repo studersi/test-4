@@ -630,82 +630,6 @@ IH %{MULTIPART_INVALID_HEADER_FOLDING}, \
 FL %{MULTIPART_FILE_LIMIT_EXCEEDED}'"
 
 SecRule TX:/^MSC_/ "!@streq 0" \
-  "id:200004,phase:2,t:none,deny,status:500,msg:'ModSecurity internal error flagged: %{MATCHED_VAR_NAME}'"
-SecRuleEngine                 On
-
-SecRequestBodyAccess          On
-SecRequestBodyLimit           10000000
-SecRequestBodyNoFilesLimit    64000
-
-SecResponseBodyAccess         On
-SecResponseBodyLimit          10000000
-
-SecPcreMatchLimit             100000
-SecPcreMatchLimitRecursion    100000
-
-SecTmpDir                     /tmp/
-SecDataDir                    /tmp/
-SecUploadDir                  /tmp/
-
-SecDebugLog                   /apache/logs/modsec_debug.log
-SecDebugLogLevel              0
-
-SecAuditEngine                RelevantOnly
-SecAuditLogRelevantStatus     "^(?:5|4(?!04))"
-SecAuditLogParts              ABEFHIJKZ
-
-SecAuditLogType               Concurrent
-SecAuditLog                   /apache/logs/modsec_audit.log
-SecAuditLogStorageDir         /apache/logs/audit/
-
-SecDefaultAction              "phase:1,pass,log,tag:'Local Lab Service'"
-
-# == ModSec Rule ID Namespace Definition
-# Service-specific before Core-Rules:    10000 -  49999
-# Service-specific after Core-Rules:     50000 -  79999
-# Locally shared rules:                  80000 -  99999
-#  - Performance:                        90000 -  90199
-# Recommended ModSec Rules (few):       200000 - 200010
-# OWASP Core-Rules:                     900000 - 999999
-
-
-# === ModSec timestamps at the start of each phase (ids: 90000 - 90009)
-
-SecAction "id:90000,phase:1,nolog,pass,setvar:TX.ModSecTimestamp1start=%{DURATION}"
-SecAction "id:90001,phase:2,nolog,pass,setvar:TX.ModSecTimestamp2start=%{DURATION}"
-SecAction "id:90002,phase:3,nolog,pass,setvar:TX.ModSecTimestamp3start=%{DURATION}"
-SecAction "id:90003,phase:4,nolog,pass,setvar:TX.ModSecTimestamp4start=%{DURATION}"
-SecAction "id:90004,phase:5,nolog,pass,setvar:TX.ModSecTimestamp5start=%{DURATION}"
-                      
-# SecRule REQUEST_FILENAME "@beginsWith /" \
-#    "id:90005,phase:5,t:none,nolog,noauditlog,pass,setenv:write_perflog"
-
-# === ModSec Recommended Rules (in modsec src package) (ids: 200000-200010)
-
-SecRule REQUEST_HEADERS:Content-Type "text/xml" \
-  "id:200000,phase:1,t:none,t:lowercase,pass,nolog,ctl:requestBodyProcessor=XML"
-
-SecRule REQBODY_ERROR "!@eq 0" \
-  "id:200001,phase:2,t:none,deny,status:400,log,msg:'Failed to parse request body.',\
-  logdata:'%{reqbody_error_msg}',severity:2"
-
-SecRule MULTIPART_STRICT_ERROR "!@eq 0" \
-  "id:200002,phase:2,t:none,log,deny,status:403, \
-  msg:'Multipart request body failed strict validation: \
-  PE %{REQBODY_PROCESSOR_ERROR}, \
-  BQ %{MULTIPART_BOUNDARY_QUOTED}, \
-  BW %{MULTIPART_BOUNDARY_WHITESPACE}, \
-  DB %{MULTIPART_DATA_BEFORE}, \
-  DA %{MULTIPART_DATA_AFTER}, \
-  HF %{MULTIPART_HEADER_FOLDING}, \
-  LF %{MULTIPART_LF_LINE}, \
-  SM %{MULTIPART_MISSING_SEMICOLON}, \
-  IQ %{MULTIPART_INVALID_QUOTING}, \
-  IP %{MULTIPART_INVALID_PART}, \
-  IH %{MULTIPART_INVALID_HEADER_FOLDING}, \
-  FL %{MULTIPART_FILE_LIMIT_EXCEEDED}'"
-
-SecRule TX:/^MSC_/ "!@streq 0" \
   "id:200004,phase:2,t:none,deny,status:500,\
   msg:'ModSecurity internal error flagged: %{MATCHED_VAR_NAME}'"
 
@@ -758,7 +682,7 @@ SecAction "id:90100,phase:5,pass,nolog,\
   setenv:ModSecTimeIn=%{TX.perf_modsecinbound},\
   setenv:ApplicationTime=%{TX.perf_application},\
   setenv:ModSecTimeOut=%{TX.perf_modsecoutbound},\
-  setenv:ModSecAnomalyScoreIn=%{TX.inbound_anomaly_score},\
+  setenv:ModSecAnomalyScoreIn=%{TX.anomaly_score},\
   setenv:ModSecAnomalyScoreOut=%{TX.outbound_anomaly_score}"
 
 # === ModSec finished
