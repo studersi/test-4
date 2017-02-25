@@ -995,8 +995,8 @@ Include    /apache/conf/crs/rules/*.conf
 # === ModSec Core Rules: Startup Time Rules Exclusions
 
 # ModSec Rule Exclusion: 942450 : SQL Hex Encoding Identified
-SecRuleUpdateTargetById 942450 "!REQUEST_COOKIES
-SecRuleUpdateTargetById 942450 "!REQUEST_COOKIES_NAMES
+SecRuleUpdateTargetById 942450 "!REQUEST_COOKIES"
+SecRuleUpdateTargetById 942450 "!REQUEST_COOKIES_NAMES"
 
 # ModSec Rule Exclusion: 920273 : Invalid character in request (outside of very strict set)
 # ModSec Rule Exclusion: 942432 : Restricted SQL Character Anomaly Detection (args): 

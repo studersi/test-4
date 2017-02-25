@@ -7,7 +7,7 @@ We are configuring a minimal Apache web server and will occasionally be talking 
 ###Why are we doing this?
 
 A secure server is one that permits only as much as what is really needed. Ideally, you would build a server based on a minimal system by enabling additional features individually. This is also preferable in terms of understanding what’s going on, because this is the only way of knowing what is really configured.
-Starting with a minimal system is also helpful in debugging. If the error is still present in the minimal system, features are added individually and the search for the error goes on. When the error occurs, it can then be narrowed down to the last configuration directive added.
+Starting with a minimal system is also helpful in debugging. If the error is not present in the minimal system, features are added individually and the search for the error goes on. When the error occurs, it is identified to be related to the last configuration directive added.
 
 ###Requirements
 
@@ -58,7 +58,6 @@ DocumentRoot            /apache/htdocs
 	Require all denied
 
 	Options SymLinksIfOwnerMatch
-	AllowOverride None
 
 </Directory>
 
@@ -69,7 +68,6 @@ DocumentRoot            /apache/htdocs
         Require all granted
 
         Options None
-        AllowOverride None
 
       </Directory>
 
@@ -134,11 +132,9 @@ Now comes a _directory_ block. We use this block to prevent files from being del
 
 We set the _Options_ directive to _SymLinksIfOwnerMatch_. We can use _Options_ to define the special features to take into account when sending the / directory. Actually, none at all and that’s why in production we would write Options _None_. But in our case we have set _DocumentRoot_ to a symbolic link and it can only be searched for and found if we assign _SymLinksIfOwnerMatch_ to the server, also allowing symlinks below /. At least if the permissions are clear. For security reasons, on production systems it is best to not to rely on symlinks when serving files. But convenience still takes precedence on our test system.
 
-_AllowOverride_ tells the server to ignore _.htaccess_ files, since we are not planning to use them. These files are mainly of interest to web hosters and shared hosting services. This doesn’t really apply to us.
-
 Let’s now open up a _VirtualHost_. It corresponds to the _Listen_ directive defined above. Together with the _Directory_ block we just defined, it defines that by default our web server does not permit any access at all. However, we want to permit access to IP address _127.0.0.1, Port 80_, which is defined in this block.
 
-Specifically, we permit access to our _DocumentRoot_. The final instruction here is _Require all granted_, where unlike the _/_ directory we permit full access. Unlike above, from this path on no provision is made for symlinks or any special capabilities: _Options None_, _AllowOverride None_.
+Specifically, we permit access to our _DocumentRoot_. The final instruction here is _Require all granted_, where unlike the _/_ directory we permit full access. Unlike above, from this path on no provision is made for symlinks or any special capabilities: _Options None_.
 
 ###Step 3: Starting the server
 

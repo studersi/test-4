@@ -63,7 +63,6 @@ DocumentRoot            /apache/htdocs
         Require all denied
 
         Options         SymLinksIfOwnerMatch
-        AllowOverride   None
 
 </Directory>
 
@@ -74,7 +73,6 @@ DocumentRoot            /apache/htdocs
         Require all granted
 
         Options          ExecCGI
-        AllowOverride    None
 
         FCGIWrapper      /apache/bin/php-fcgi-starter/php-fcgi-starter.php
 

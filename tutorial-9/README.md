@@ -85,7 +85,6 @@ ProxyPassReverse   /service1    http://localhost:8000/service1
 
 	Require all granted
 
-	AllowOverride  None
 	Options None
 
 </Proxy>
@@ -224,7 +223,6 @@ Let's use ModRewrite to configure a reverse proxy. We do this as follows:
 
 	Require all granted
 
-	AllowOverride None
 	Options None
 
     </Proxy>
@@ -273,7 +271,6 @@ We are now ready to configure the load balancer. We can set it up via the Rewrit
 
         Require all granted
 
-        AllowOverride None
         Options None
 
     </Proxy>
@@ -389,7 +386,6 @@ RewriteRule     ^/service1/(.*) \
 
     Require all granted
 
-    AllowOverride None
     Options None
 
 </Proxy>
@@ -398,7 +394,6 @@ RewriteRule     ^/service1/(.*) \
 
     Require all granted
 
-    AllowOverride None
     Options None
 
 </Proxy>
@@ -712,7 +707,6 @@ DocumentRoot            /apache/htdocs
       Require all denied
 
       Options SymLinksIfOwnerMatch
-      AllowOverride None
 
 </Directory>
 
@@ -727,7 +721,6 @@ DocumentRoot            /apache/htdocs
         Require all granted
 
         Options None
-        AllowOverride None
 
     </Directory>
 
@@ -750,7 +743,6 @@ DocumentRoot            /apache/htdocs
 
         Require all granted
 
-        AllowOverride None
         Options None
 
     </Proxy>
@@ -760,7 +752,6 @@ DocumentRoot            /apache/htdocs
         Require all granted
 
         Options None
-        AllowOverride None
 
     </Directory>
 

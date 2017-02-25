@@ -1,5 +1,6 @@
 ##### Changelog
 
+* 2017-02-25: Getting rid of AllowOverride completely, mentioning ruby package
 * 2017-02-16: Reformatting
 * 2017-02-15: Typos pointed out by Osama Elnaggar
 * 2016-12-28: Removing single quotes from id actions in ModSec rules, fixing broken link

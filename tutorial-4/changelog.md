@@ -1,5 +1,6 @@
 ##### Changelog
 
+* 2017-02-25: Getting rid of AllowOverride completely
 * 2017-02-16: Reformatting
 * 2017-02-15: Updates to session cache and session tickets description
 * 2017-02-14: Updated the description of the Let's Encrypt mechanics, added new link to 'How-it-works'
