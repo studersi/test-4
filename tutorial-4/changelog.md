@@ -1,5 +1,6 @@
 ##### Changelog
 
+* 2017-03-04: Fixed IP address of VirtualHosts to 127.0.0.1, updated stdout of curl calls
 * 2017-02-25: Getting rid of AllowOverride completely
 * 2017-02-16: Reformatting
 * 2017-02-15: Updates to session cache and session tickets description

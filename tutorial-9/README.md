@@ -280,29 +280,26 @@ We are also defining two backends, one on the previously configured port 8000 an
 
 ```bash
 $> curl -v -k https://localhost/service1/index.html https://localhost/service1/index.html
-* Hostname was NOT found in DNS cache
+* Rebuilt URL to: https://localhost:40443/
 *   Trying 127.0.0.1...
-* Connected to localhost (127.0.0.1) port 443 (#0)
-* successfully set certificate verify locations:
-*   CAfile: none
-  CApath: /etc/ssl/certs
-* SSLv3, TLS handshake, Client hello (1):
-* SSLv3, TLS handshake, Server hello (2):
-* SSLv3, TLS handshake, CERT (11):
-* SSLv3, TLS handshake, Server key exchange (12):
-* SSLv3, TLS handshake, Server finished (14):
-* SSLv3, TLS handshake, Client key exchange (16):
-* SSLv3, TLS change cipher, Client hello (1):
-* SSLv3, TLS handshake, Finished (20):
-* SSLv3, TLS change cipher, Client hello (1):
-* SSLv3, TLS handshake, Finished (20):
-* SSL connection using ECDHE-RSA-AES256-GCM-SHA384
-* Server certificate:
-* 	 subject: CN=lubuntu.fritz.box
-* 	 start date: 2013-10-26 18:00:21 GMT
-* 	 expire date: 2023-10-24 18:00:21 GMT
-* 	 issuer: CN=lubuntu.fritz.box
-* 	 SSL certificate verify ok.
+* Connected to localhost (127.0.0.1) port 40443 (#0)
+* found 173 certificates in /etc/ssl/certs/ca-certificates.crt
+* found 697 certificates in /etc/ssl/certs
+* ALPN, offering http/1.1
+* SSL connection using TLS1.2 / ECDHE_RSA_AES_256_GCM_SHA384
+*        server certificate verification SKIPPED
+*        server certificate status verification SKIPPED
+*        common name: ubuntu (does not match 'localhost')
+*        server certificate expiration date OK
+*        server certificate activation date OK
+*        certificate public key: RSA
+*        certificate version: #3
+*        subject: CN=ubuntu
+*        start date: Mon, 27 Feb 2017 20:46:21 GMT
+*        expire date: Thu, 25 Feb 2027 20:46:21 GMT
+*        issuer: CN=ubuntu
+*        compression: NULL
+* ALPN, server accepted to use http/1.1
 > GET /service1/index.html HTTP/1.1
 > User-Agent: curl/7.35.0
 > Host: localhost

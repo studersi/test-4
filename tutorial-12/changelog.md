@@ -1,5 +1,6 @@
 ##### Changelog
 
+* 2017-03-04: Updated stdout of curl calls
 * 2017-02-16: Reformatting
 * 2016-12-28: Cutting length of line, bugfix in config, remove unnecessary "-k" from curl command
 * 2016-10-10: Fixing small issues
