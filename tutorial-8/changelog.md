@@ -1,5 +1,6 @@
 ##### Changelog
 
+* 2017-03-05: Update text about rule 942100
 * 2017-02-25: Closing quotes in rules sum-up
 * 2017-02-16: Reformatting
 * 2017-02-15: Small fixes throughout the tutorial after input from Osama Elnaggar

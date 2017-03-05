@@ -1,5 +1,6 @@
 ##### Changelog
 
+* 2017-03-04: Typo User-agent -> User-Agent
 * 2017-02-25: Introducing CRS in Step 5
 * 2017-02-16: Reformatting
 * 2017-02-15: Updated curl call in loop from http to https

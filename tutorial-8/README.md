@@ -634,7 +634,8 @@ $> grep -F -f ids tutorial-8-example-error-round-2.log | modsec-rulereport.rb -m
 76 x 942100 SQL Injection Attack Detected via libinjection
 ----------------------------------------------------------
       # ModSec Rule Exclusion: 942100 : SQL Injection Attack Detected via libinjection
-  No parameter available to create ignore-rule proposal. Please try and use different mode.
+      SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" \
+              "phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=942100;ARGS:keys"
 
 152 x 942190 Detects MSSQL code execution and information gathering attempts
 ----------------------------------------------------------------------------
@@ -677,7 +678,7 @@ SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" \
     "phase:2,nolog,pass,id:10002,ctl:ruleRemoveTargetById=921180;TX:paramcounter_ARGS_NAMES:keys"
 ```
 
-With 942100, the script did not come up with a good proposal. This is because the rule alert for this rule has a different format and the script is not smart enough to parse it correctly. Let's examine the alert message to find the URI and the parameter in question. Unfortunately, *melmatch* won't be able to cope with this either. So we really have to work by hand this time:
+With 942100, the case it quite clear. But let's look at the alert message itself. There we see that ModSecurity used a special library to identify what it thought an SQL injection attempt. So instead of a regular expression, a dedicated injection parser was used.
 
 ```bash
 $> grep -F -f ids tutorial-8-example-error-round-2.log | grep 942100 | head -1
@@ -692,7 +693,7 @@ using libinjection with fingerprint 'UEkn' [file …
 [uri "/drupal/index.php/search/node"] [unique_id "WB2cln8AAQEAAAehPc8AAADK"]
 ```
 
-This allows for the following exclusion rule:
+For the treatment of the false positive, this does not matter though, and we take the proposal by the script:
 
 ```bash
 # ModSec Rule Exclusion: 942100 : SQL Injection Attack Detected via libinjection

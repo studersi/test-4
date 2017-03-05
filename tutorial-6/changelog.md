@@ -1,5 +1,7 @@
 ##### Changelog
 
+* 2017-03-05: Make the package list a bullet list; reordered ModSec data dirs
+* 2017-03-04: MaxClients -> MaxRequestWorkers
 * 2017-02-25: Getting rid of AllowOverride completely, bugfix in error log step 7, bugfix in step 9 (curl call)
 * 2017-02-16: Reformatting
 * 2017-02-15: Replaced "bytes" with "matches" in pcre description, more small fixes

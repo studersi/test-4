@@ -155,7 +155,7 @@ UseCanonicalName  On
 TraceEnable       Off
 
 Timeout           10
-MaxClients        100
+MaxRequestWorkers 100
 
 Listen            127.0.0.1:80
 Listen            127.0.0.1:443

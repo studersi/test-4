@@ -339,6 +339,10 @@ First, the configuration of the reverse proxy:
 
 
         <Proxy http://localhost:8000/>
+	    
+	    Require all granted
+
+	    Options None
 
         </Proxy>
 

@@ -41,7 +41,12 @@ modsecurity-2.9.1.tar.gz: OK
 
 ###Step 2: Unpacking and configuring the compiler
 
-We now unpack the source code and initiate the configuration. But before this it is essential to install four packages that constitute the prerequisite for compiling _ModSecurity_. A library for parsing XML structures, the base header files of the system’s own Regular Expression Library and everything to work with JSON files. Like in the previous tutorials, we are working on a system from the Debian family. The packages are thus named _libxml2-dev_, _libexpat1-dev_, _libpcre3-dev_, and _libyajl-dev_.
+We now unpack the source code and initiate the configuration. But before this it is essential to install four packages that constitute the prerequisite for compiling _ModSecurity_. A library for parsing XML structures, the base header files of the system’s own Regular Expression Library and everything to work with JSON files. Like in the previous tutorials, we are working on a system from the Debian family. The packages are thus named as follows:
+
+* libxml2-dev
+* libexpat1-dev
+* libpcre3-dev
+* libyajl-dev
 
 The stage is thus set and we are ready for ModSecurity.
 
@@ -92,7 +97,7 @@ UseCanonicalName  On
 TraceEnable       Off
 
 Timeout           10
-MaxClients        100
+MaxRequestWorkers 100
 
 Listen            127.0.0.1:80
 Listen            127.0.0.1:443
@@ -158,8 +163,8 @@ SecPcreMatchLimit             100000
 SecPcreMatchLimitRecursion    100000
 
 SecTmpDir                     /tmp/
-SecDataDir                    /tmp/
 SecUploadDir                  /tmp/
+SecDataDir                    /tmp/
 
 SecDebugLog                   /apache/logs/modsec_debug.log
 SecDebugLogLevel              0
@@ -316,7 +321,7 @@ On the response side we enable body access and in turn define a limit of 10 MB. 
 
 Now comes the memory reserved for the _PCRE library_. ModSecurity documentation suggests a value of 1000 matches. But this quickly leads to problems in practice. Our base configuration with a limit of 100000 is much more robust. If problems still occur, values above 100000 are also manageable; memory requirements grow only marginally.
 
-ModSecurity requires three directories for data storage. We put all of them in the _tmp directory_. For productive operation this is of course the wrong place, but for the first baby steps it’s fine and it is not easy to give general recommendations for the right choice of this directory, because the local environment plays a big role. For the aforementioned directories this concerns temporary data, then about session data that should be retained after a server restart, and finally temporary storage for file uploads which during inspection should not use too much memory and above a specific size are stored on the hard disk.
+ModSecurity requires three directories for data storage. We put all of them in the _tmp directory_. For productive operation this is of course the wrong place, but for the first baby steps it’s fine and it is not easy to give general recommendations for the right choice of this directory, because the local environment plays a big role.  For the aforementioned directories this concerns temporary data, a storage for file uploads that raised suspicion and finally about session data that should be retained after a server restart, 
 
 ModSecurity has a very detailed _debug log_. The configurable log level ranges from 0 to 9. We leave it at 0 and are prepared to be able to increase it when problems occur in order to see exactly how the module is working. In addition to the actual _rule engine_, an _audit engine_ also runs within ModSecurity. It organizes the logging of requests. Because in case of attack we would like to get as much information as possible. With _SecAuditEngine RelevantOnly_ we define that only _relevant_ requests should be logged. What’s relevant to us is what we define on the next line via a regular expression: All requests whose HTTP status begins with 4 or 5, but not 404. At a later point in time we will see that other things can be defined as relevant, but this rough classification is good enough for the start. It then continues with a definition of the parts of this request that should be logged. We are already familiar with the request header (part B), the request body (part I), the response header (part F) and the response body (part E). Then comes additional information from ModSecurity (parts A, H, K, Z) and details about uploaded files, which we do not map completely (part J). A detailed explanation of these audit log parts are available in the ModSecurity reference manual.
 
