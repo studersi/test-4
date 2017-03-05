@@ -557,8 +557,8 @@ SecPcreMatchLimit             100000
 SecPcreMatchLimitRecursion    100000
 
 SecTmpDir                     /tmp/
-SecDataDir                    /tmp/
 SecUploadDir                  /tmp/
+SecDataDir                    /tmp/
 
 SecDebugLog                   /apache/logs/modsec_debug.log
 SecDebugLogLevel              0

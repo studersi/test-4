@@ -1,6 +1,6 @@
 ##### Changelog
 
-* 2017-03-05: MaxClients -> MaxRequestWorkers
+* 2017-03-05: MaxClients -> MaxRequestWorkers; changed order of ModSec data folders
 * 2017-03-04: Updated stdout of curl calls
 * 2017-02-25: Getting rid of AllowOverride completely
 * 2017-02-18: Bugfix in config roundup near the end (removed a doubled passage)
