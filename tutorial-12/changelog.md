@@ -1,5 +1,6 @@
 ##### Changelog
 
+* 2017-03-28: Publication
 * 2017-03-05: Added default directives into proxy stanza
 * 2017-03-04: Updated stdout of curl calls
 * 2017-02-16: Reformatting
