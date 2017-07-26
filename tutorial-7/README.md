@@ -24,26 +24,26 @@ The ModSecurity Core Rule Set are being developed under the umbrella of *OWASP*,
 
 ```
 $> cd /apache/conf
-$> wget https://github.com/SpiderLabs/owasp-modsecurity-crs/archive/v3.0.0.tar.gz
-$> tar xvzf v3.0.0.tar.gz
-owasp-modsecurity-crs-3.0.0/
-owasp-modsecurity-crs-3.0.0/CHANGES
-owasp-modsecurity-crs-3.0.0/IDNUMBERING
-owasp-modsecurity-crs-3.0.0/INSTALL
-owasp-modsecurity-crs-3.0.0/KNOWN_BUGS
-owasp-modsecurity-crs-3.0.0/LICENSE
-owasp-modsecurity-crs-3.0.0/README.md
-owasp-modsecurity-crs-3.0.0/crs-setup.conf.example
-owasp-modsecurity-crs-3.0.0/documentation/
-owasp-modsecurity-crs-3.0.0/documentation/OWASP-CRS-Documentation/
-owasp-modsecurity-crs-3.0.0/documentation/README
+$> wget https://github.com/SpiderLabs/owasp-modsecurity-crs/archive/v3.0.2.tar.gz
+$> tar xvzf v3.0.2.tar.gz
+owasp-modsecurity-crs-3.0.2/
+owasp-modsecurity-crs-3.0.2/CHANGES
+owasp-modsecurity-crs-3.0.2/IDNUMBERING
+owasp-modsecurity-crs-3.0.2/INSTALL
+owasp-modsecurity-crs-3.0.2/KNOWN_BUGS
+owasp-modsecurity-crs-3.0.2/LICENSE
+owasp-modsecurity-crs-3.0.2/README.md
+owasp-modsecurity-crs-3.0.2/crs-setup.conf.example
+owasp-modsecurity-crs-3.0.2/documentation/
+owasp-modsecurity-crs-3.0.2/documentation/OWASP-CRS-Documentation/
+owasp-modsecurity-crs-3.0.2/documentation/README
 ...
-$> sudo ln -s owasp-modsecurity-crs-3.0.0 /apache/conf/crs
+$> sudo ln -s owasp-modsecurity-crs-3.0.2 /apache/conf/crs
 $> cp crs/crs-setup.conf.example crs/crs-setup.conf
-$> rm v3.0.0.tar.gz
+$> rm v3.0.2.tar.gz
 ```
 
-This unpacks the base part of the Core Rule Set in the directory `/apache/conf/owasp-modsecurity-crs-3.0.0`. We create a link from `/apache/conf/crs` to this folder. Then we copy a file named `crs-setup.conf.example` to a new file `crs-setup.conf` and finally, we delete the Core Rule Set tar file.
+This unpacks the base part of the Core Rule Set in the directory `/apache/conf/owasp-modsecurity-crs-3.0.2`. We create a link from `/apache/conf/crs` to this folder. Then we copy a file named `crs-setup.conf.example` to a new file `crs-setup.conf` and finally, we delete the Core Rule Set tar file.
 
 The setup file allows us to tweak many different settings. It is worth a look - if only to see what is included. However, we are OK with the default settings and will not touch the file: We just make sure it is available under the new filename `crs-setup.conf`. Then we can continue to update the configuration to include the rules files.
 
@@ -423,7 +423,7 @@ authorization result of <RequireAny>: granted
 ModSecurity: Warning. Matched phrase "/bin/bash" at ARGS:exec. …
 [file "/apache/conf/crs/rules/REQUEST-932-APPLICATION-ATTACK-RCE.conf"] [line "448"] [id "932160"] …
 [rev "1"] [msg "Remote Command Execution: Unix Shell Code Found"] [data "Matched Data: /bin/bash found …
-within ARGS:exec: /bin/bash"] [severity "CRITICAL"] [ver "OWASP_CRS/3.0.0"] [maturity "1"] [accuracy "8"] …
+within ARGS:exec: /bin/bash"] [severity "CRITICAL"] [ver "OWASP_CRS/3.0.2"] [maturity "1"] [accuracy "8"] …
 [tag "application-multi"] [tag "language-shell"] [tag "platform-unix"] [tag "attack-rce"] …
 [tag "OWASP_CRS/WEB_ATTACK/COMMAND_INJECTION"] [tag "WASCTC/WASC-31"] [tag "OWASP_TOP_10/A1"] …
 [tag "PCI/6.5.2"] [hostname "localhost"] [uri "/index.html"] [unique_id "WA7@QX8AAQEAABC4maIAAAAV"]
