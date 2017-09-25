@@ -25,23 +25,23 @@ Since the release of version 2.4, the Apache web server comes without two import
 Let’s start with _apr_ and download the package.
 
 ```bash
-$> wget http://mirror.switch.ch/mirror/apache/dist/apr/apr-1.5.2.tar.bz2
+$> wget https://mirror.switch.ch/mirror/apache/dist/apr/apr-1.6.2.tar.bz2
 ```
 
 We’ll now download the checksum of the source code file from Apache. Unfortunately, _www.apache.org_ only offers an md5 checksum for `apr`. We’ll verify it anyway. For better security we’ll be using a secure connection for downloading. Without https this verification doesn’t make much sense. Both files, the source code and the small checksum file, should be placed together in `/usr/src/apache`. We can now verify the checksum:
 
 
 ```bash
-$> wget https://www.apache.org/dist/apr/apr-1.5.2.tar.bz2.md5
-$> md5sum --check apr-1.5.2.tar.bz2.md5
-apr-1.5.2.tar.bz2: OK
+$> wget https://www.apache.org/dist/apr/apr-1.6.2.tar.bz2.md5
+$> md5sum --check apr-1.6.2.tar.bz2.md5
+apr-1.6.2.tar.bz2: OK
 ```
 
 The test should not result in any problems, _OK_. We can now continue with unpacking, pre-configuring and compiling _apr_.
 
 ```bash
-$> tar -xvjf apr-1.5.2.tar.bz2
-$> cd apr-1.5.2
+$> tar -xvjf apr-1.6.2.tar.bz2
+$> cd apr-1.6.2
 $> ./configure --prefix=/usr/local/apr/
 ```
 
@@ -73,12 +73,12 @@ Once this is successful, we'll do the same with _apr-util_.
 
 ```bash
 $> cd /usr/src/apache
-$> wget http://mirror.switch.ch/mirror/apache/dist/apr/apr-util-1.5.4.tar.bz2
-$> wget https://www.apache.org/dist/apr/apr-util-1.5.4.tar.bz2.md5
-$> md5sum --check apr-util-1.5.4.tar.bz2.md5
-apr-util-1.5.4.tar.bz2: OK
-$> tar -xvjf apr-util-1.5.4.tar.bz2
-$> cd apr-util-1.5.4
+$> wget https://mirror.switch.ch/mirror/apache/dist/apr/apr-util-1.6.0.tar.bz2
+$> wget https://www.apache.org/dist/apr/apr-util-1.6.0.tar.bz2.md5
+$> md5sum --check apr-util-1.6.0.tar.bz2.md5
+apr-util-1.6.0.tar.bz2: OK
+$> tar -xvjf apr-util-1.6.0.tar.bz2
+$> cd apr-util-1.6.0
 $> ./configure --prefix=/usr/local/apr/ --with-apr=/usr/local/apr/
 $> make
 $> sudo make install
@@ -92,7 +92,7 @@ We’ll now download the program code from the internet. This can be done by dow
 
 ```bash
 $> cd /usr/src/apache
-$> wget http://mirror.switch.ch/mirror/apache/dist//httpd/httpd-2.4.25.tar.bz2
+$> wget https://mirror.switch.ch/mirror/apache/dist//httpd/httpd-2.4.27.tar.bz2
 ```
 
 The compressed source code is approximately 5 MB in size.
@@ -100,9 +100,9 @@ The compressed source code is approximately 5 MB in size.
 We’ll now download the checksum of the source code file from Apache. At least it’s available as a _sha1 checksum_. We’ll again be using a secure connection for better security. Without https this verification doesn’t make much sense.
 
 ```bash
-$> wget https://www.apache.org/dist/httpd/httpd-2.4.25.tar.bz2.sha1
-$> sha1sum --check httpd-2.4.25.tar.bz2.sha1 
-httpd-2.4.25.tar.bz2: OK
+$> wget https://www.apache.org/dist/httpd/httpd-2.4.27.tar.bz2.sha1
+$> sha1sum --check httpd-2.4.27.tar.bz2.sha1 
+httpd-2.4.27.tar.bz2: OK
 ```
 
 ###Step 4: Unpacking and configuring the compiler
@@ -110,7 +110,7 @@ httpd-2.4.25.tar.bz2: OK
 After verification we can unpack the package.
 
 ```bash
-$> tar -xvjf httpd-2.4.25.tar.bz2
+$> tar -xvjf httpd-2.4.27.tar.bz2
 ```
 
 This results in approximately 38 MB.
@@ -118,8 +118,8 @@ This results in approximately 38 MB.
 We now enter the directory and configure the compiler with our entries and with information about our system. Unlike _apr_, our entries are very extensive.
 
 ```bash
-$> cd httpd-2.4.25
-$> ./configure --prefix=/opt/apache-2.4.25  --with-apr=/usr/local/apr/bin/apr-1-config \
+$> cd httpd-2.4.27
+$> ./configure --prefix=/opt/apache-2.4.27  --with-apr=/usr/local/apr/bin/apr-1-config \
    --with-apr-util=/usr/local/apr/bin/apu-1-config \
    --enable-mpms-shared=event \
    --enable-mods-shared=all \
@@ -163,13 +163,13 @@ $> sudo make install
 Installation may also take some time.
 
 ```bash
-$> sudo chown -R `whoami` /opt/apache-2.4.25
+$> sudo chown -R `whoami` /opt/apache-2.4.27
 ```
 
 And now for a trick: If you work professionally with Apache then you often have several different versions on the test server. Different versions, different patches, other modules, etc. result in tedious and long pathnames with version numbers and other descriptions. To ease things, I create a soft link from `/apache` to the current Apache web server when I switch to a new version. Care must be given that we and not the root user are the owners of the soft link (this is important in configuring the server).
 
 ```bash
-$> sudo ln -s /opt/apache-2.4.25 /apache
+$> sudo ln -s /opt/apache-2.4.27 /apache
 $> sudo chown `whoami` --no-dereference /apache
 $> cd /apache
 ```
@@ -220,11 +220,11 @@ $> sudo ./bin/httpd -V
 ```
 
 ```bash
-Server version: Apache/2.4.25 (Unix)
-Server built:   Dec 28 2016 06:09:49
+Server version: Apache/2.4.27 (Unix)
+Server built:   Aug 28 2017 06:09:49
 Server's Module Magic Number: 20120211:47
-Server loaded:  APR 1.5.2, APR-UTIL 1.5.4
-Compiled using: APR 1.5.2, APR-UTIL 1.5.4
+Server loaded:  APR 1.6.2, APR-UTIL 1.6.0
+Compiled using: APR 1.6.2, APR-UTIL 1.6.0
 Architecture:   64-bit
 Server MPM:     event
   threaded:     yes (fixed thread count)
@@ -239,8 +239,8 @@ Server compiled with....
  -D APR_HAS_OTHER_CHILD
  -D AP_HAVE_RELIABLE_PIPED_LOGS
  -D DYNAMIC_MODULE_LIMIT=256
- -D HTTPD_ROOT="/opt/apache-2.4.25"
- -D SUEXEC_BIN="/opt/apache-2.4.25/bin/suexec"
+ -D HTTPD_ROOT="/opt/apache-2.4.27"
+ -D SUEXEC_BIN="/opt/apache-2.4.27/bin/suexec"
  -D DEFAULT_PIDLOG="logs/httpd.pid"
  -D DEFAULT_SCOREBOARD="logs/apache_runtime_status"
  -D DEFAULT_ERRORLOG="logs/error_log"
@@ -384,9 +384,9 @@ total 8.8M
 These are all of the modules distributed along with the server by Apache and we are well aware that we selected the _all_ option for the modules to compile. Additional modules are available from third parties. We don’t need all of these modules, but there are some you'll almost always want to have: They are ready to be included.
 
 #####References
-- Apache: [http://httpd.apache.org](http://httpd.apache.org)
+- Apache: [https://httpd.apache.org](https://httpd.apache.org)
 - File Hierarchy Standard: [http://www.pathname.com/fhs/](http://www.pathname.com/fhs/)
-- Apache ./configure documentation: [http://httpd.apache.org/docs/trunk/programs/configure.html](http://httpd.apache.org/docs/trunk/programs/configure.html)
+- Apache ./configure documentation: [https://httpd.apache.org/docs/trunk/programs/configure.html](https://httpd.apache.org/docs/trunk/programs/configure.html)
 
 
 ### License / Copying / Further use

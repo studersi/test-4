@@ -1,5 +1,6 @@
 ##### Changelog
 
+* 2017-09-25: Update apr (1.6.2), apr-util (1.6.0) and Apache (2.4.27)
 * 2017-02-16: Reformatting
 * 2016-12-28: Added tar options prefix "-", Apache 2.4.23 -> 2.4.25
 * 2016-10-10: Fixing small issues
