@@ -1,4 +1,4 @@
-##Tutorial 4 - Enabling Encryption with SSL/TLS
+##Enabling Encryption with SSL/TLS
 
 ###What are we doing?
 

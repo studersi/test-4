@@ -1,4 +1,4 @@
-##Tutorial 5 - Extending and analyzing the access log
+##Extending and analyzing the access log
 
 ###What are we doing?
 

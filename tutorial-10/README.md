@@ -1,4 +1,4 @@
-##Tutorial 10 - Efficiently configuring and debugging Apache and ModSec in the shell
+##Efficiently configuring and debugging Apache and ModSec in the shell
 
 ###What are we doing?
 

@@ -1,4 +1,4 @@
-##Tutorial 3 - Setting up an Apache/PHP application server
+##Setting up an Apache/PHP application server
 
 ###What are we doing?
 
@@ -236,7 +236,7 @@ Here again is a summary of the relevant files and their owners:
 
 Of note is the _suid bit_ on the _suexec binary_.
 
-###Step 9 (Bonus): A little performance test
+###Step 9 (Goodie): A little performance test
 
 Compared to Apache with integrated _PHP_, the application server built here is very high performance. A little performance test can illustrate this. We start our web server in _daemon mode_ and use ApacheBench to put it to the test it with 5 users. The _-l_ option is new. It instructs the tool to ignore deviations in the length of the responses. This is because the page is generated dynamically and the content, as well as its length, will of course be a bit different now and then. We again quit the server following the performance test.
 

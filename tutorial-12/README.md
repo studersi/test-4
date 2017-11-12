@@ -1,4 +1,4 @@
-##Tutorial 12 - Capturing and decrypting the entire traffic
+##Capturing and decrypting the entire traffic
 
 ###What are we doing?
 

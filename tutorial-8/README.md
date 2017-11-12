@@ -1,4 +1,4 @@
-##Tutorial 8 - Handling False Positives with the OWASP ModSecurity Core Rule Set
+##Handling False Positives with the OWASP ModSecurity Core Rule Set
 
 ###What are we doing?
 
@@ -1013,7 +1013,7 @@ SecRuleUpdateTargetById 930000-943999 "!ARGS:pass"
 ```
 
 
-###Goodie: Getting a quicker overview
+###Step 9 (Goodie): Getting a quicker overview
 
 If you do this the first time, it all looks a bit overwhelming. But then it's only been an hour of work or so, which seems reasonable - even more so if you stretch it out over multiple iterations. One thing to help you get up to speed is getting an overview of all the alerts standing behind the scores. It’s a good idea to have a look at the distribution of the scores as described above. A good next step is to get a report of how exactly the *anomaly scores* occurred, such as an overview of the rule violations for each anomaly score. The following construct generates a report like this. On the first line, we extract a list of anomaly scores from the incoming requests which actually appear in the log file. We then build a loop around these *scores*, read the *request ID* for each *score*, save it in the file `ids` and perform a short analysis for these *IDs* in the *error log*.
 

@@ -1,4 +1,4 @@
-##Tutorial 11 - Visualizing Apache and ModSecurity Log Files
+##Visualizing Apache and ModSecurity Log Files
 
 ###What are we doing?
 
@@ -760,7 +760,7 @@ $> paste  /tmp/tmp.get /tmp/tmp.post | awk '{ print $1 "\t"  $2 " " $4 }' \
 
 We are now working with two separate data files, which we separate via the `paste` Unix command. Afterwards we use `awk` and tab to get the labels into the data and to remove the label repeated in the third column of data. The display of two values no longer works in blocking mode, which is why we are again relying on lines. The two lines are drawn over each over on differing scales. This enables a good comparison. Less surprisingly, POST requests take a bit longer. What is surprising is that they last so little longer that the GET requests.
 
-###Goodie: Output at different widths and as a PNG
+###Step 6 (Goodie): Output at different widths and as a PNG
 
 `arbigraph` adapts to the width of the terminal for output. If it should be narrower, this can be controlled via the `--width` option. Similarly, the height can be adjusted via `--height`. Export as a PNG image is also included in the script. Export is still rather rudimentary, but the resulting images may be good enough to use in a report.
 

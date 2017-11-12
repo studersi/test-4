@@ -1,4 +1,4 @@
-##Tutorial 6 - Embedding ModSecurity 
+##Embedding ModSecurity 
 
 ###What are we doing?
 We are compiling the ModSecurity module, embedding it in the Apache web server, creating a base configuration and dealing with _false positives_ for the first time.
@@ -661,7 +661,7 @@ code 403 (phase 2). Operator GT matched 1 at ARGS_POST. [file …
 
 It works from top to bottom and it seems the behaviour is just what we expected.
 
-###Step 10 Goodie: Writing all client traffic to disk
+###Step 10 (Goodie): Writing all client traffic to disk
 
 Before coming to the end of this tutorial here’s one more tip that often proves useful in practice: _ModSecurity_ is not just a _Web Application Firewall_. It is also a very precise debugging tool. The entire traffic between client and server can be logged. This is done as follows:
 

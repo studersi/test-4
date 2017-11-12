@@ -1,4 +1,4 @@
-##Tutorial 2 - Configuring a minimal Apache server
+##Configuring a minimal Apache server
 
 ###What are we doing?
 
@@ -369,7 +369,7 @@ Percentage of the requests served within a certain time (ms)
 
 What’s of primary interest to us is the number of errors (_Failed requests_) and the number of requests per second (_Requests per second_). A value above one thousand is a good start. Especially considering that we are still working with a single process and not a parallelized daemon (which is also why the _concurrency level_ is set to 1).
 
-###Step 9: Viewing directives and modules
+###Step 9 (Goodie): Viewing directives and modules
 
 At the end of this tutorial we are going to be looking at a variety of directives, which an Apache web server started with our configuration file is familiar with, The different loaded modules extend the server’s set of commands. The available configuration parameters are well documented on the Apache Project’s website. In fact, in special cases it can however be helpful to get an overview of the directives made available from the loaded modules. You can get the directives by using the command line flag _-L_.
 

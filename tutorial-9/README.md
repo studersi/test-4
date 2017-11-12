@@ -1,4 +1,4 @@
-##Tutorial 9 - Setting up a reverse proxy server
+##Setting up a reverse proxy server
 
 ###What are we doing?
 
@@ -73,7 +73,7 @@ ProxyRequests Off
 
 This directive actually means forwarding requests to servers on the internet, even if the name indicates a general setting. As mentioned before, the directive is correctly set for Apache 2.4 and it is only being mentioned here to guard against questions or incorrect settings in the future.
 
-### Step 3: ProxyPass
+###Step 3: ProxyPass
 
 This brings us to the actual proxying settings: There are many ways for instructing Apache to forward a request to a backend application. We’ll be looking at each option in turn. The most common way of proxying requests is based on the ProxyPass directive. It is used as follows:
 
@@ -94,13 +94,13 @@ The most important directive is ProxyPass. It defines a `/service1` path and spe
 
 On the next line comes a related directive that despite having a similar name performs only a small auxiliary function. Redirect responses from the backend are fully qualified in http-compliant form. Such as `https://backend.example.com/service1`, for example. The address is however not accessible by the client. For this reason, the reverse proxy has to rewrite the backend’s location header, `backend.example.com`, replacing it with its own name and thus mapping it back to its own namespace. ProxyPassReverse, with such a great name, only has a simple search and replace feature touching the location headers. As already seen in the ProxyPass directive, proxying is again symmetric: the paths are rewritten 1:1. We are free to ignore this rule, but I urgently recommend keeping it, because misunderstandings and confusion lie beyond. In addition to accessing location headers, there is a series of further reverse directives for handling things like cookies. They can be useful from case to case.
 
-### Step 4: Proxy stanza
+###Step 4: Proxy stanza
 
 Continuing on in the configuration: now comes the Proxy block where the connection to the backend is more precisely defined. Specifically, this is where requests are authenticated and authorized. Further below in the tutorial we will also be adding a load balancer to this block.
 
 The proxy bock is similar to the location and the directory block we have previously become familiar with in our configuration. These are called containers. Containers specify to the web server how to structure the work. When a container appears in the configuration, it prepares a processing structure for it. In the case of `mod_proxy` the backend can also be accessed without a Proxy container. However, access protection is not taken into account and other directives no longer have any place where it can be inserted. Without the Proxy block the processing of complex servers remains a bit haphazard and it would do us well to configure this part as well. Using the ProxySet directive enables us to intervene even more here and specify things like the connection behavior. Min, max and smax can be used to specify the number of threads assigned to the proxy connection pool. This can impact performance from case to case. The keep-alive behavior of the proxy connection can be influenced and a variety of different timeouts defined for it. Additional information is available in the Apache Project documentation.
 
-### Step 5: Defining exceptions when proxying and making other settings
+###Step 5: Defining exceptions when proxying and making other settings
 
 The `ProxyPass` directive we are using has forwarded all requests for `/service1` to the backend. However, in practice it is often the case that you don’t want to forward everything. Let’s suppose there’s a path `/service1/admin` that we don’t want to expose to the internet. This can also be prevented by the appropriate `ProxyPass` setting, where the exception is initiated by using an exclamation mark. What's important is to define the exception before configuring the actual proxy command:
 
@@ -130,7 +130,7 @@ Backend systems often pay less attention to security than a reverse proxy. Error
 ProxyErrorOverride      On
 ```
 
-### Step 6: ModRewrite
+###Step 6: ModRewrite
 
 In addition to the `ProxyPass` directive, the Rewrite module can be used to enable reverse proxy features. Compared to ProxyPass, it enables more flexible configuration. We have not seen ModRewrite up to this point. Since this is a very important module, we should take a good look at it.
 
@@ -204,7 +204,7 @@ The schema we want is now clear. But to the left of it comes a new item. We don�
 
 ModRewrite has been introduced. For further examples refer to the documentation or the sections of this tutorial below where it will become familiar with yet more recipes.
 
-### Step 7: ModRewrite [proxy]
+###Step 7: ModRewrite [proxy]
 
 Let's use ModRewrite to configure a reverse proxy. We do this as follows:
 
@@ -235,7 +235,7 @@ So much for the simple configuration using a rewrite rule. There is no real adva
 
 However, it may now be that we want to use a single reverse proxy to combine multiple backends or to distribute the load over multiple servers. This calls for our own load balancer. We’ll be looking at it in the next section:
 
-### Step 8: Balancer [proxy]
+###Step 8: Balancer [proxy]
 
 We first have to load the Apache load balancer module:
 
@@ -348,7 +348,7 @@ Besides the keep-alive header, the request handler is also of interest. The requ
 
 In a subsequent tutorial we will be seeing that the proxy balancer can also be used in other situations. For the moment we will however be content with what is happening and will now be turning to RewriteMaps. A RewriteMap is an auxiliary structure which again increases the power of ModRewrite. Combined with the proxy server, flexibility rises substantially.
 
-### Step 9: RewriteMap [proxy]
+###Step 9: RewriteMap [proxy]
 
 RewriteMaps come in a number of different variations. They works by assigning a value to a key parameter at every request. A hash table is a simple example. But it is then also possible to configure external scripts as a programmable RewriteMap. The following types of maps are possible:
 
@@ -462,7 +462,7 @@ Connection: close
 
 The different extended header lines are listed sequentially and are filled in with values where present.
 
-###Step 11 (Goodie): Configuration of the complete reverse proxy server including the preceding tutorials
+###Step 11 (Goodie): Configuration of the complete reverse proxy server
 
 This small extension brings us to the end of this tutorial and also to the end of the basic block of different tutorials. Over several tutorials we have seen how to set up an Apache web server for a lab, from compiling it to the basic configuration, and ModSecurity tuning to reverse proxies, gaining deep insight into the how of the server and its most important modules work.
 

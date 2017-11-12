@@ -1,4 +1,4 @@
-##Tutorial 1 - Compiling an Apache web server
+##Compiling an Apache web server
 
 ###What are we doing?
 
@@ -211,7 +211,7 @@ Fantastic! Goal achieved: The self-compiled Apache is running.
 
 Return to the shell and stop the server via CTRL-C.
 
-###Step 9 (Bonus): Inspecting the binaries and the modules
+###Step 9 (Goodie): Inspecting the binaries and the modules
 
 Before completing the tutorial, we’d like to take a closer look at the server. Let’s open the engine compartment and take a peek inside. We can get information about our binary as follows:
 
@@ -383,7 +383,7 @@ total 8.8M
 
 These are all of the modules distributed along with the server by Apache and we are well aware that we selected the _all_ option for the modules to compile. Additional modules are available from third parties. We don’t need all of these modules, but there are some you'll almost always want to have: They are ready to be included.
 
-#####References
+###References
 - Apache: [https://httpd.apache.org](https://httpd.apache.org)
 - File Hierarchy Standard: [http://www.pathname.com/fhs/](http://www.pathname.com/fhs/)
 - Apache ./configure documentation: [https://httpd.apache.org/docs/trunk/programs/configure.html](https://httpd.apache.org/docs/trunk/programs/configure.html)
