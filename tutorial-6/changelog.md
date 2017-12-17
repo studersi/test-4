@@ -1,5 +1,6 @@
 ##### Changelog
 
+* 2017-12-17: Reworded the installation of additional packages
 * 2017-09-25: Update apr (1.6.2), apr-util (1.6.0), Apache (2.4.27) and ModSecurity (2.9.2)
 * 2017-03-05: Make the package list a bullet list; reordered ModSec data dirs
 * 2017-03-04: MaxClients -> MaxRequestWorkers

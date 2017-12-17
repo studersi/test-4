@@ -25,23 +25,23 @@ Since the release of version 2.4, the Apache web server comes without two import
 Let’s start with _apr_ and download the package.
 
 ```bash
-$> wget https://mirror.switch.ch/mirror/apache/dist/apr/apr-1.6.2.tar.bz2
+$> wget https://www-eu.apache.org/dist/apr/apr-1.6.3.tar.bz2
 ```
 
 We’ll now download the checksum of the source code file from Apache. Unfortunately, _www.apache.org_ only offers an md5 checksum for `apr`. We’ll verify it anyway. For better security we’ll be using a secure connection for downloading. Without https this verification doesn’t make much sense. Both files, the source code and the small checksum file, should be placed together in `/usr/src/apache`. We can now verify the checksum:
 
 
 ```bash
-$> wget https://www.apache.org/dist/apr/apr-1.6.2.tar.bz2.md5
-$> md5sum --check apr-1.6.2.tar.bz2.md5
-apr-1.6.2.tar.bz2: OK
+$> wget https://www.apache.org/dist/apr/apr-1.6.3.tar.bz2.md5
+$> md5sum --check apr-1.6.3.tar.bz2.md5
+apr-1.6.3.tar.bz2: OK
 ```
 
 The test should not result in any problems, _OK_. We can now continue with unpacking, pre-configuring and compiling _apr_.
 
 ```bash
-$> tar -xvjf apr-1.6.2.tar.bz2
-$> cd apr-1.6.2
+$> tar -xvjf apr-1.6.3.tar.bz2
+$> cd apr-1.6.3
 $> ./configure --prefix=/usr/local/apr/
 ```
 
@@ -50,9 +50,19 @@ The configure command frequently complains about missing components. One thing i
 
 Things typically missing:
 
-- build-essential
-- binutils
-- gcc
+* build-essential
+* binutils
+* gcc
+
+And once we are at it, let's install everything else we are going to need throughout this and the following tutorials:
+
+* libexpat1-dev
+* libpcre3-dev
+* libssl-dev
+* libxml2-dev
+* libyajl-dev
+* zlibc
+* zlib1g-dev
 
 These are the package names on Debian-based distributions. The packages may have different names elsewhere. 
 The absence of these files can be easily rectified by re-installing them using the utilities from your own distribution. Afterwards, run _configure_ again, perhaps re-install something again and eventually the script will run successfully (individual warnings during the _configure_ steps are no big problem. We just need to be sure the script did not die unexpectedly).
@@ -73,12 +83,13 @@ Once this is successful, we'll do the same with _apr-util_.
 
 ```bash
 $> cd /usr/src/apache
-$> wget https://mirror.switch.ch/mirror/apache/dist/apr/apr-util-1.6.0.tar.bz2
-$> wget https://www.apache.org/dist/apr/apr-util-1.6.0.tar.bz2.md5
-$> md5sum --check apr-util-1.6.0.tar.bz2.md5
-apr-util-1.6.0.tar.bz2: OK
-$> tar -xvjf apr-util-1.6.0.tar.bz2
-$> cd apr-util-1.6.0
+
+$> wget https://www-eu.apache.org/dist/apr/apr-util-1.6.1.tar.bz2
+$> wget https://www.apache.org/dist/apr/apr-util-1.6.1.tar.bz2.md5
+$> md5sum --check apr-util-1.6.1.tar.bz2.md5
+apr-util-1.6.1.tar.bz2: OK
+$> tar -xvjf apr-util-1.6.1.tar.bz2
+$> cd apr-util-1.6.1
 $> ./configure --prefix=/usr/local/apr/ --with-apr=/usr/local/apr/
 $> make
 $> sudo make install
@@ -92,7 +103,7 @@ We’ll now download the program code from the internet. This can be done by dow
 
 ```bash
 $> cd /usr/src/apache
-$> wget https://mirror.switch.ch/mirror/apache/dist//httpd/httpd-2.4.27.tar.bz2
+$> wget https://www-eu.apache.org/dist//httpd/httpd-2.4.29.tar.bz2
 ```
 
 The compressed source code is approximately 5 MB in size.
@@ -100,9 +111,9 @@ The compressed source code is approximately 5 MB in size.
 We’ll now download the checksum of the source code file from Apache. At least it’s available as a _sha1 checksum_. We’ll again be using a secure connection for better security. Without https this verification doesn’t make much sense.
 
 ```bash
-$> wget https://www.apache.org/dist/httpd/httpd-2.4.27.tar.bz2.sha1
-$> sha1sum --check httpd-2.4.27.tar.bz2.sha1 
-httpd-2.4.27.tar.bz2: OK
+$> wget https://www.apache.org/dist/httpd/httpd-2.4.29.tar.bz2.sha1
+$> sha1sum --check httpd-2.4.29.tar.bz2.sha1 
+httpd-2.4.29.tar.bz2: OK
 ```
 
 ###Step 4: Unpacking and configuring the compiler
@@ -110,7 +121,7 @@ httpd-2.4.27.tar.bz2: OK
 After verification we can unpack the package.
 
 ```bash
-$> tar -xvjf httpd-2.4.27.tar.bz2
+$> tar -xvjf httpd-2.4.29.tar.bz2
 ```
 
 This results in approximately 38 MB.
@@ -118,8 +129,8 @@ This results in approximately 38 MB.
 We now enter the directory and configure the compiler with our entries and with information about our system. Unlike _apr_, our entries are very extensive.
 
 ```bash
-$> cd httpd-2.4.27
-$> ./configure --prefix=/opt/apache-2.4.27  --with-apr=/usr/local/apr/bin/apr-1-config \
+$> cd httpd-2.4.29
+$> ./configure --prefix=/opt/apache-2.4.29  --with-apr=/usr/local/apr/bin/apr-1-config \
    --with-apr-util=/usr/local/apr/bin/apu-1-config \
    --enable-mpms-shared=event \
    --enable-mods-shared=all \
@@ -130,17 +141,7 @@ This is where we define the target directory for the future Apache web server, a
 
 We then define that we want all (_all_) modules to be compiled. Of note here is that _all_ does not really mean all. For historical reasons _all_ means only all of the core modules, of which there are quite a few. The _shared_ keyword indicates that we would like to have the modules compiled separately in order to then be able to link them as optional modules. And lastly, `enable-nonportable-atomics` is a compiler flag which instructs the compiler to use special options which are available only on modern x86 processors and have a favorable impact on performance.
 
-When executing the _configure_ command for the web server, it may be necessary to install additional packages. These may include:
-
-- libpcre3-dev
-- libssl-dev
-- zlibc
-- zlib1g-dev
-
-Depending on distribution, one or more of these packages may have different names.
-
-When compiling it is often the case that some components are missing. Installing packages is at times more difficult than in our case and versions may be incompatible in the worst case. There’s often a solution to the problem on the internet, but now and again you’ll have to dive really deep into the system to get to the root of the difficulties. This should not be an issue in our simple case.
-
+When executing the _configure_ command for the web server, it may be necessary to install additional packages. However, if you have installed all those named in the second step, you should be covered.
 
 ###Step 5: Compiling
 
@@ -163,13 +164,13 @@ $> sudo make install
 Installation may also take some time.
 
 ```bash
-$> sudo chown -R `whoami` /opt/apache-2.4.27
+$> sudo chown -R `whoami` /opt/apache-2.4.29
 ```
 
 And now for a trick: If you work professionally with Apache then you often have several different versions on the test server. Different versions, different patches, other modules, etc. result in tedious and long pathnames with version numbers and other descriptions. To ease things, I create a soft link from `/apache` to the current Apache web server when I switch to a new version. Care must be given that we and not the root user are the owners of the soft link (this is important in configuring the server).
 
 ```bash
-$> sudo ln -s /opt/apache-2.4.27 /apache
+$> sudo ln -s /opt/apache-2.4.29 /apache
 $> sudo chown `whoami` --no-dereference /apache
 $> cd /apache
 ```
@@ -220,11 +221,11 @@ $> sudo ./bin/httpd -V
 ```
 
 ```bash
-Server version: Apache/2.4.27 (Unix)
-Server built:   Aug 28 2017 06:09:49
+Server version: Apache/2.4.29 (Unix)
+Server built:   Dec 17 2017 06:09:49
 Server's Module Magic Number: 20120211:47
-Server loaded:  APR 1.6.2, APR-UTIL 1.6.0
-Compiled using: APR 1.6.2, APR-UTIL 1.6.0
+Server loaded:  APR 1.6.3, APR-UTIL 1.6.1
+Compiled using: APR 1.6.3, APR-UTIL 1.6.1
 Architecture:   64-bit
 Server MPM:     event
   threaded:     yes (fixed thread count)
@@ -239,8 +240,8 @@ Server compiled with....
  -D APR_HAS_OTHER_CHILD
  -D AP_HAVE_RELIABLE_PIPED_LOGS
  -D DYNAMIC_MODULE_LIMIT=256
- -D HTTPD_ROOT="/opt/apache-2.4.27"
- -D SUEXEC_BIN="/opt/apache-2.4.27/bin/suexec"
+ -D HTTPD_ROOT="/opt/apache-2.4.29"
+ -D SUEXEC_BIN="/opt/apache-2.4.29/bin/suexec"
  -D DEFAULT_PIDLOG="logs/httpd.pid"
  -D DEFAULT_SCOREBOARD="logs/apache_runtime_status"
  -D DEFAULT_ERRORLOG="logs/error_log"

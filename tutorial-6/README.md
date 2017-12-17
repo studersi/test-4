@@ -41,7 +41,7 @@ modsecurity-2.9.2.tar.gz: OK
 
 ###Step 2: Unpacking and configuring the compiler
 
-We now unpack the source code and initiate the configuration. But before this it is essential to install four packages that constitute the prerequisite for compiling _ModSecurity_. A library for parsing XML structures, the base header files of the system’s own Regular Expression Library and everything to work with JSON files. Like in the previous tutorials, we are working on a system from the Debian family. The packages are thus named as follows:
+We now unpack the source code and initiate the configuration. But before this it is essential to install several packages that constitute the prerequisite for compiling _ModSecurity_. If you did the first tutorial in this series, you should be covered, but it's still worth checking the following list of packages is really ready: A library for parsing XML structures, the base header files of the system’s own Regular Expression Library and everything to work with JSON files. Like in the previous tutorials, we are working on a system from the Debian family. The packages are thus named as follows:
 
 * libxml2-dev
 * libexpat1-dev
