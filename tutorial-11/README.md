@@ -27,7 +27,7 @@ For this reason, we will be using a little-known feature of `gnuplot`.
 The appearance of entries in log files follows a chronological sequence. However, it is actually relatively difficult to follow this chronological sequence in the text file. Visualization of the log files is the answer. Dashboards have already been mentioned and a variety of commercial products and open source projects have become established in the past few years. These tools are very useful. But they are not always easily accessible or the log data must first be imported and sometimes even converted or indexed. There is thus a big gap in displaying graphs in the shell. The graphical tool `gnuplot` can in fact do this in ASCII and be controlled completely from the command line.
 
 
-`gnuplot` can be demanding to use and control and if you only use it occasionally you face the same learning curve again and again. For this reason, I have developed a wrapper script called `arbigraph` that uses gnuplot to display simple graphs: [arbigraph](https://github.com/Apache-Labor/labor/blob/master/bin/arbigraph) We will be using this script in different situations in this tutorial and become familiar with a large number of command line options. So, let’s start off with a simple case:
+`gnuplot` can be demanding to use and control and if you only use it occasionally you face the same learning curve again and again. For this reason, I have developed a wrapper script called `arbigraph` that uses gnuplot to display simple graphs: [arbigraph](https://raw.githubusercontent.com/Apache-Labor/labor/master/bin/arbigraph) We will be using this script in different situations in this tutorial and become familiar with a large number of command line options. So, let’s start off with a simple case:
 
 Let’s generate a simple graph in which the number of requests per hour is presented on a time line. As an example, to do this we are using the access log that we became familiar with while fine tuning ModSecurity false positives in one of the preceding tutorials: [tutorial-8-example-access.log](https://raw.githubusercontent.com/Apache-Labor/labor/master/tutorial-8/tutorial-8-example-access.log).
 
@@ -771,14 +771,14 @@ $> paste  /tmp/tmp.get /tmp/tmp.post | awk '{ print  $2 " " $4 }'  | arbigraph -
 Plot written to file /tmp/duration-get-vs-post.png.
 ```
 
-![Graph: Gnuplot with PNG Terminal](./duration-get-vs-post.png)
+![Graph: Gnuplot with PNG Terminal](https://www.netnea.com/files/duration-get-vs-post.png)
 
 
 ###References
 
 * [gnuplot](http://www.gnuplot.info)
-* [arbigraph](https://github.com/Apache-Labor/labor/blob/master/bin/arbigraph)
-* [do-binning.rb](https://github.com/Apache-Labor/labor/blob/master/bin/do-binning.rb)
+* [arbigraph](https://raw.githubusercontent.com/Apache-Labor/labor/master/bin/arbigraph)
+* [do-binning.rb](https://raw.githubusercontent.com/Apache-Labor/labor/master/bin/do-binning.rb)
 
 ### License / Copying / Further use
 

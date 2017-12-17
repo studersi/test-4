@@ -1,7 +1,7 @@
 Title: Configuring an Apache/PHP Application Server  
 Author: <a href="mailto:christian.folini@netnea.com">Christian Folini</a> (<a href="https://twitter.com/ChrFolini">@ChrFolini</a>)  
 Tutorial Number: 3  
-Last Update: 2016-09-25  
+Last Update: 2017-12-17  
 Release Date: 2016-10-11  
 Difficulty: Medium  
 Duration: 1h  

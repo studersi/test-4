@@ -1,5 +1,6 @@
 ##### Changelog
 
+* 2017-12-17: Fixed several links
 * 2017-02-16: Reformatting
 * 2016-10-10: Fixing small issues
 * 2016-07-15: Apache 2.4.20 -> 2.4.23

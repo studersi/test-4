@@ -56,6 +56,7 @@ Things typically missing:
 
 And once we are at it, let's install everything else we are going to need throughout this and the following tutorials:
 
+* gawk
 * libexpat1-dev
 * libpcre3-dev
 * libssl-dev
@@ -204,7 +205,7 @@ The engine is running. But is it also working? Time for the function test: We ac
 
 We then expect the following:
 
-![Screenshot: It works!](./apache-tutorial-1-screenshot-it-works.png)
+![Screenshot: It works!](https://www.netnea.com/files/apache-tutorial-1-screenshot-it-works.png)
 
 Apache shows the first signs of life in the browser.
 

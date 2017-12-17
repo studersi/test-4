@@ -675,7 +675,7 @@ Of course, this adjustment will have consequences in terms of performance. You w
 
 Now that we are sure to own an officially signed certificate with a valid chain of trust and now that we understand all the other configuration options in detail, we can turn to the browser and call the domain we configured. In my case, this is [https://www.christian-folini.ch](https://www.christian-folini.ch).
 
-![Screenshot: christian-folini.ch](./apache-tutorial-4-screenshot-christian-folini.ch.png)
+![Screenshot: christian-folini.ch](https://www.netnea.com/files/apache-tutorial-4-screenshot-christian-folini.ch.png)
 
 The browser confirms, this is a secure connection.
 
@@ -709,7 +709,7 @@ Interestingly, there is something like a checking instance in the internet, wher
 
 Ivan Ristić, mentioned above as the author of several books on Apache and SSL, launched an analysis service that checks _SSL web servers_. He has sold the site to Qualys in the meantime, but it is still being maintained and actively expanded. It is available at [www.ssllabs.com](https://www.ssllabs.com/ssldb/index.html). A web server configured like the one above earned me the highest grade of _A+_ on the test.
 
-![Screenshot: SSLLabs](./apache-tutorial-4-screenshot-ssllabs.png)
+![Screenshot: SSLLabs](https://www.netnea.com/files/apache-tutorial-4-screenshot-ssllabs.png)
 
 The highest grade is attainable by following these instructions.
 

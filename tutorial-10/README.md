@@ -263,13 +263,13 @@ This cyclical workflow is kept very lean. It enables me to go through one to thr
 
 Here’s a screenshot of my desktop:
 
-![Screenshot: 4 Shells](./4-shells-screenshot.png)
+![Screenshot: 4 Shells](https://www.netnea.com/files/4-shells-screenshot.png)
 
 ###References
 
-* [apachex](https://github.com/Apache-Labor/labor/blob/master/bin/apachex)
-* [lastrequestsummary](https://github.com/Apache-Labor/labor/blob/master/bin/lastrequestsummary)
-* [watch-lastrequestsummary](https://github.com/Apache-Labor/labor/blob/master/bin/watch-lastrequestsummary)
+* [apachex](https://raw.githubusercontent.com/Apache-Labor/labor/master/bin/apachex)
+* [lastrequestsummary](https://raw.githubusercontent.com/Apache-Labor/labor/master/bin/lastrequestsummary)
+* [watch-lastrequestsummary](https://raw.githubusercontent.com/Apache-Labor/labor/master/bin/watch-lastrequestsummary)
 * [Semaphore](https://en.wikipedia.org/wiki/Semaphore_%28programming%29)
 
 ### License / Copying / Further use

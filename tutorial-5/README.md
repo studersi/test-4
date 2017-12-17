@@ -353,7 +353,7 @@ So much for these first finger exercises. On the basis of this self-filled log f
 
 Analyses using a real log file from a production server are much more exciting. Here’s one with 10,000 requests:
 
-[tutorial-5-example-access.log](./tutorial-5-example-access.log)
+[tutorial-5-example-access.log](https://www.netnea.com/files/tutorial-5-example-access.log)
 
 ```bash
 $> head tutorial-5-example-access.log
@@ -482,7 +482,7 @@ alias alscores='cut -d\" -f9 | cut -d\  -f12,13 | tr " " ";" | tr "-" "0"'
 
 All of the aliases begin with _al_. This stands for _ApacheLog_ or _AccessLog_. This is followed by the field name. The individual aliases are not sorted alphabetically. They instead follow the sequence of the fields in the format of the log file.
 
-This list with alias definitions is available in the file [.apache-modsec.alias](https://github.com/Apache-Labor/labor/blob/master/bin/.apache-modsec.alias). They have been put together there with a few additional aliases that we will be defining in subsequent tutorials. If you often work with Apache and its log files, then it is advisable to place these alias definitions in the home directory and to load them when logging in. By using the following entry in the _.bashrc_ file or via another related mechanism.
+This list with alias definitions is available in the file [.apache-modsec.alias](https://raw.githubusercontent.com/Apache-Labor/labor/master/bin/.apache-modsec.alias). They have been put together there with a few additional aliases that we will be defining in subsequent tutorials. If you often work with Apache and its log files, then it is advisable to place these alias definitions in the home directory and to load them when logging in. By using the following entry in the _.bashrc_ file or via another related mechanism.
 
 ```bash
 test -e ~/.apache-modsec.alias && . ~/.apache-modsec.alias
@@ -519,14 +519,14 @@ This is now a simple command that is easy to remember and easy to write. We now 
 
 ###Step 10: Analyses using percentages and simple statistics
 
-What we are lacking is a command that works similar to the _sucs_ alias, but converts the number values into percentages in the same pass: _sucspercent_.
+What we are lacking is a command that works similar to the _sucs_ alias, but converts the number values into percentages in the same pass: _sucspercent_. It’s important to know that this script is based on an expanded *awk* implementation (yes, there are several). The package is normally named *gawk* and it makes sure that the `awk` command uses the Gnu awk implementation.
 
 ```bash
 $> alias sucspercent='sort | uniq -c | sort -n | $HOME/bin/percent.awk'
 ```
 
 Traditionally, _awk_ is used for quick calculations in Linux. In addition to the above linked _alias_ file, which also includes the _sucspercent_, the _awk_ script _percent.awk_ is also available. It is ideally placed in the _bin_ directory of your home directory.
-The _sucspercent_ alias above then assumes this setup. The _awk_ script is available [here](https://github.com/Apache-Labor/labor/blob/master/bin/percent.awk).
+The _sucspercent_ alias above then assumes this setup. The _awk_ script is available [here](https://raw.githubusercontent.com/Apache-Labor/labor/master/bin/percent.awk).
 
 ```bash
 $> cat tutorial-5-example-access.log | alsslprotocol | sucspercent 
@@ -595,14 +595,14 @@ An additional _grep_ is used here. We can narrow down the "alias field extractio
 
 With the different aliases for the extraction of values from the log file and the two _sucs_ and _sucspercent_ aliases we have come up with a handy tool enabling us to simply answer questions about the relative frequency of repeating values using the same pattern of commands.
 
-For measurements that no longer repeat, such as the duration of a request or the size of the response, these percentages are not very useful. What we need is a simple statistical analysis. What are needed are the average, perhaps the median, information about the outliers and, for logical reasons, the standard deviation.
+For measurements that no longer repeat, such as the duration of a request or the size of the response, these percentages are not very useful. What we need is a simple statistical analysis. What are needed are the mean, perhaps the median, information about the outliers and, for logical reasons, the standard deviation.
 
-Such a script is also available for download: [basicstats.awk](https://github.com/Apache-Labor/labor/blob/master/bin/basicstats.awk). Similar to percent.awk, it is advisable to place this script in your private _bin_ directory. It’s important to know that this script consists of an expanded *awk* implementation (yes, there are several). The package is normally named *gawk* and it makes sure that the `awk` command uses the Gnu awk implementation.
+Such a script is also available for download: [basicstats.awk](https://raw.githubusercontent.com/Apache-Labor/labor/master/bin/basicstats.awk). Similar to percent.awk, it is advisable to place this script in your private _bin_ directory. 
 
 ```bash
 $> cat tutorial-5-example-access.log | alioout | basicstats.awk
 Num of values:          10'000.00
-      Average:          15'375.98
+         Mean:          15'375.98
        Median:           6'646.00
           Min:               0.00
           Max:         340'179.00
@@ -617,7 +617,7 @@ How does the duration of the requests look? Do we have a similar homogeneous pic
 ```bash
 $> cat tutorial-5-example-access.log | alduration | basicstats.awk
 Num of values:          10'000.00
-      Average:          91'306.41
+         Mean:          91'306.41
        Median:           2'431.50
           Min:              18.00
           Max:     301'455'050.00
@@ -625,12 +625,12 @@ Num of values:          10'000.00
 Std deviation:       3'023'884.17
 ```
 
-It’s important to remember that we are dealing in microseconds here. The median was 2400 microseconds, which is just over 2 milliseconds. At 91 milliseconds, the average is much larger. We obviously have a lot of outliers which have pushed up the average. In fact, we have a maximum value of 301 seconds and less surprisingly a standard deviation of 3 seconds. The picture is thus less homogenous and we have at least some requests that should be investigated. But this is now getting a bit more complicated. The suggested method is only one of many possible and is included here as a suggestion and inspiration for further work with the log file:
+It’s important to remember that we are dealing in microseconds here. The median was 2400 microseconds, which is just over 2 milliseconds. At 91 milliseconds, the mean is much larger. We obviously have a lot of outliers which have pushed up the mean. In fact, we have a maximum value of 301 seconds and less surprisingly a standard deviation of 3 seconds. The picture is thus less homogeneous and we have at least some requests that should be investigated. But this is now getting a bit more complicated. The suggested method is only one of many possible and is included here as a suggestion and inspiration for further work with the log file:
 
 ```bash
 $> cat tutorial-5-example-access.log | grep "\"GET " | aluri | cut -d\/ -f1,2,3 | sort | uniq \
-| while read P; do AVG=$(grep "GET $P" tutorial-5-example-access.log | alduration | basicstats.awk \
-| grep Average | sed 's/.*: //'); echo "$AVG $P"; done \
+| while read P; do MEAN=$(grep "GET $P" tutorial-5-example-access.log | alduration | basicstats.awk \
+| grep Mean | sed 's/.*: //'); echo "$MEAN $P"; done \
 | sort -n
 ...
        97459 /cms/
@@ -645,7 +645,7 @@ $> cat tutorial-5-example-access.log | grep "\"GET " | aluri | cut -d\/ -f1,2,3 
 
 What happens here in order? We use _grep_ to filter _GET_ requests. We extract the _URI_ and use _cut_ to cut it. We are only interested in the first part of the path. We limit ourselves here in order to get a reasonable grouping, because too many different paths will add little value. The path list we get is then sorted alphabetically and reduced by using _uniq_. This is half the work.
 
-We now sequentially place the paths into variable _P_ and use _while_ to make a loop. In the loop we calculate the basic statistics for the path saved in _P_ and filter the output for the average. In doing so, we use _sed_ to filter in such a way that the _AVG_ variable includes only a number and not the _Average_ name itself. We now output this average value and the path names. End of the loop. Last, but not least, we sort everything numerically and get an overview of which paths resulted in requests with longer response times. A path named _/cms/download-softfiles_ apparently comes out on top. The keyword _download_ makes this appear plausible.
+We now sequentially place the paths into variable _P_ and use _while_ to make a loop. In the loop we calculate the basic statistics for the path saved in _P_ and filter the output for the mean. In doing so, we use _sed_ to filter in such a way that the _MEAN variable includes only a number and not the _Mean_ name itself. We now output this average value and the path names. End of the loop. Last, but not least, we sort everything numerically and get an overview of which paths resulted in requests with longer response times. A path named _/cms/download-softfiles_ apparently comes out on top. The keyword _download_ makes this appear plausible.
 
 This brings us to the end of this tutorial. The goal was to introduce an expanded log format and to demonstrate working with the log files. In doing so, repeatedly used were a series of aliases and two _awk_ scripts, which can be very flexibly arranged in sequence. With these tools and the necessary experience in their handling you will be able to quickly get at the information available in the log files.
 
@@ -654,10 +654,10 @@ This brings us to the end of this tutorial. The goal was to introduce an expande
 
 * [Apache Module mod_log_config documentation](http://httpd.apache.org/docs/current/mod/mod_log_config.html)
 * [Apache Module mod_ssl documentation](http://httpd.apache.org/docs/current/mod/mod_ssl.html)
-* [tutorial-5-example-access.log](./tutorial-5-example-access.log)
-* [.apache-modsec.alias](https://github.com/Apache-Labor/labor/blob/master/bin/.apache-modsec.alias)
-* [percent.awk](https://github.com/Apache-Labor/labor/blob/master/bin/percent.awk)
-* [basicstats.awk](https://github.com/Apache-Labor/labor/blob/master/bin/basicstats.awk)
+* [tutorial-5-example-access.log](https://www.netnea.com/files/tutorial-5-example-access.log)
+* [.apache-modsec.alias](https://raw.githubusercontent.com/Apache-Labor/labor/master/bin/.apache-modsec.alias)
+* [percent.awk](https://raw.githubusercontent.com/Apache-Labor/labor/master/bin/percent.awk)
+* [basicstats.awk](https://raw.githubusercontent.com/Apache-Labor/labor/master/bin/basicstats.awk)
 
 ### License / Copying / Further use
 
