@@ -1,5 +1,6 @@
 ##### Changelog
 
+* 2017-12-17: Added STS header, renumbered 200004->200005
 * 2017-03-05: MaxClients -> MaxRequestWorkers; changed order of ModSec data folders
 * 2017-03-04: Updated stdout of curl calls
 * 2017-02-25: Getting rid of AllowOverride completely

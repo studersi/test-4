@@ -1,5 +1,6 @@
 ##### Changelog
 
+* 2017-12-17: Renumbered 200004->200005
 * 2017-07-26: Upgrade CRS 3.0.0 -> 3.0.2
 * 2017-03-05: MaxClients -> MaxRequestWorkers; changed order of ModSec tmp data folders
 * 2017-02-25: Getting rid of AllowOverride completely, mentioning ruby package
