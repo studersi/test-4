@@ -647,7 +647,7 @@ What happens here in order? We use _grep_ to filter _GET_ requests. We extract t
 
 We now sequentially place the paths into variable _P_ and use _while_ to make a loop. In the loop we calculate the basic statistics for the path saved in _P_ and filter the output for the mean. In doing so, we use _sed_ to filter in such a way that the _MEAN variable includes only a number and not the _Mean_ name itself. We now output this average value and the path names. End of the loop. Last, but not least, we sort everything numerically and get an overview of which paths resulted in requests with longer response times. A path named _/cms/download-softfiles_ apparently comes out on top. The keyword _download_ makes this appear plausible.
 
-This brings us to the end of this tutorial. The goal was to introduce an expanded log format and to demonstrate working with the log files. In doing so, repeatedly used were a series of aliases and two _awk_ scripts, which can be very flexibly arranged in sequence. With these tools and the necessary experience in their handling you will be able to quickly get at the information available in the log files.
+This brings us to the end of this tutorial. The goal was to introduce an expanded log format and to demonstrate working with the log files. In doing so, we repeatedly used a series of aliases and two _awk_ scripts, which can be chained in different ways. With these tools and the necessary experience in their handling you will be able to quickly get at the information available in the log files.
 
 
 ###References
