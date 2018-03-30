@@ -150,7 +150,7 @@ $> sudo chown www-data:www-data /apache/logs/fcgidsock
 
 ###Step 4: Installing and preconfiguring PHP
 
-Up till now we have been compiling all of the software piece by piece. But for the entire PHP stack a limit has been reached. No one should be prevented from compiling PHP on his own, but we are concentrating on the web server here and for this reason will be using this piece of software from the Linux distribution. In Debian/Ubuntu the package we need is _php5-cgi_, which comes along with _php5-common_.
+Up till now we have been compiling all of the software piece by piece. But for the entire PHP stack a limit has been reached. No one should be prevented from compiling PHP on his own, but we are concentrating on the web server here and for this reason will be using this piece of software from the Linux distribution. In Debian/Ubuntu the package we need is _php7.0-cgi_, which comes along with _php7.0-common_.
 
 Properly configuring _PHP_ is a broad topic and I recommend consulting the relevant pages, because an improperly configured installation of _PHP_ may pose a serious security problem. I don’t wish to give you any more information at this point, because it takes us away from our actual topic, which is a simple application server. For operation on the internet, i.e. no longer in a lab-like setup, it is highly recommended to become familiar with the relevant PHP security settings.
 
@@ -181,7 +181,7 @@ We now have to put a starter script in this directory. Since we have already ass
 ```bash
 $> sudo sh -c "cat > php-fcgi-starter/php-fcgi-starter"
 #!/bin/sh
-export PHPRC=/etc/php5/cgi/
+export PHPRC=/etc/php/7.0/cgi/
 export PHP_FCGI_MAX_REQUESTS=5000
 export PHP_FCGI_CHILDREN=5
 exec /usr/lib/cgi-bin/php
