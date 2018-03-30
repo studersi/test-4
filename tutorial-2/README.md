@@ -78,7 +78,7 @@ DocumentRoot            /apache/htdocs
 
 Let’s go through this configuration step-by-step.
 
-We are defining _ServerName_ as _localhost_, because we are still working in a lab-like setup. In production the fully qualified domain name of the service has to be entered here. The fully qualified domain name usually consists of the domain part of the URL that is used to access resources on this host.
+We are defining _ServerName_ as _localhost_, because we are still working in a lab-like setup. In production the fully qualified domain name of the service has to be entered here. The fully qualified host name usually consists of the domain part of the URL that is used to access resources on this host.
 
 The server requires an administrator e-mail address, primarily for display on error pages. This is defined in _ServerAdmin_.
 
