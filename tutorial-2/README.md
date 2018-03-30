@@ -15,7 +15,7 @@ Starting with a minimal system is also helpful in debugging. If the error is not
 
 ###Step 1: Creating a minimal configuration
 
-Our web server is stored in `/apache` on the file system. It’s default configuration is located in `/apache/conf/httpd.conf`. It is very extensive and rather difficult to understand. It’s a problem that even the default configurations in common Linux distributions are contributing to at an ever higher degree.
+Our web server is stored in `/apache` on the file system. Its default configuration is located in `/apache/conf/httpd.conf`. It is very extensive and rather difficult to understand. It’s a problem that even the default configurations in common Linux distributions are contributing to at an ever higher degree.
 We will be replacing this configuration file with the following greatly simplified configuration.
 
 ```bash
