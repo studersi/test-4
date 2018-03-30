@@ -93,7 +93,7 @@ _FastCGI_ is a method for executing dynamic program code from a web server. It i
 
 We now have to compile two missing modules and deploy other components for the _FCGI daemon_. Let’s start with the _suEXEC module_.
 
-An Apache web server was compiled in Tutorial 1. However, although the _--enable-mods-shared=all_ option was used, _suexec_ has not been compiled yet. Hence, the module is so special that it can’t be compiled as a default module, although it is present in the source code.
+An Apache web server was compiled in Tutorial 1. However, although the _--enable-mods-shared=all_ option was used, _suexec_ has not been compiled yet. It seems, the module is so special that it can’t be compiled as a default module, although it is present in the source code.
 
 The web server configured in Tutorial 2 runs as user _www-data_ or, depending on configuration, as any other dedicated user. We would like to further restrict our dynamic application to have the separate daemon run as an additional, separate user. The _suEXEC_ module makes this possible for us. It is not absolutely required. But it adds a bit more security with little extra effort.
 
