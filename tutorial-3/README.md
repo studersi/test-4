@@ -74,7 +74,7 @@ DocumentRoot            /apache/htdocs
 
         Options          ExecCGI
 
-        FCGIWrapper      /apache/bin/php-fcgi-starter/php-fcgi-starter.php
+        FCGIWrapper      /apache/bin/php-fcgi-starter/php-fcgi-starter
 
       </Directory>
 
