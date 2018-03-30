@@ -438,7 +438,7 @@ $> cat tutorial-5-example-access.log | cut -d\" -f9 | cut -d\  -f3 | sort | uniq
    8150 TLSv1.2
 ```
 
-It appears that Apache is not always recording an encryption protocol. This is a bit strange, but because it is a very rare case, we won’t be pursuing it for the moment. What’s more important are the numerical ratios between the TLS protocols. After disabling _SSLv3_, the _TLSv1.2_ protocol is dominant, in addition to a substantial percentage of _TLSv1.0_. _TLSv1.1_ can be disregarded.
+It appears that Apache is not always recording an encryption protocol. This is a bit strange, but because it is a very rare case, we won’t be pursuing it for the moment. What’s more important are the numerical ratios between the TLS protocols. After disabling SSLv3, the TLSv1.2 protocol is dominant, in addition to a substantial percentage of TLSv1.0. The protocol TLSv1.1 can be disregarded because it is only used in very few requests.
 
 We again got to the desired result by a series of _cut_ commands. It would actually be advisable to take note of these commands, because will be needing them again and again. It would then be an alias list as follows:
 
