@@ -668,7 +668,7 @@ SSLSessionCache         nonenotnull
 SSLSessionTickets       Off
 ```
 
-Of course, this adjustment will have consequences in terms of performance. You will see a small drop of throughput on the server, but the clients will encounter bigger latency, as the SSL/TLS handshake has to be performed anew and from scratch. So it is again a trade off between reducing your attack surface and performance: Most people leave the caching in place and I think this is generally the best advice which you should follow.
+Of course, this adjustment will have consequences in terms of performance. You will see a small drop of throughput on the server, but the clients will encounter bigger latency, as the SSL/TLS handshake has to be performed anew and from scratch. So it is again a trade off between reducing your attack surface and performance: Most people leave the caching in place and I think this is generally a good practice.
 
 
 ###Step 7: Trying it out
