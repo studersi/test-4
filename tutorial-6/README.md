@@ -489,7 +489,7 @@ We will also find more details about this information in the _audit log_ discuss
 
 ###Step 8: Writing simple whitelist rules
 
-Using the rules described in Step 7, we were able to prevent access to a specific URL. We will now be using the opposite approach: We want to make sure that only one specific URL can be accessed. In addition, we will we only be accepting previously known _POST parameters_ in a specified format. This is a very tight security technique which is also called positive security: It is no longer us trying to find known attacks in user submitted content, it is now the user who has to proof that his request meets all our criteria.
+Using the rules described in Step 7, we were able to prevent access to a specific URL. We will now be using the opposite approach: We want to make sure that only one specific URL can be accessed. In addition, we will only be accepting previously known _POST parameters_ in a specified format. This is a very tight security technique which is also called positive security: It is no longer us trying to find known attacks in user submitted content, it is now the user who has to proof that his request meets all our criteria.
 
 Our example is a whitelist for a login with display of the form, submission of the credentials and the logout. We do not have the said login in place, but this does not stop us from defining the ruleset to protect this hypothetical service in our lab. And if you have a login or any other simple application you want to protect, you can take the code as a template and adopt as suitable.
 
