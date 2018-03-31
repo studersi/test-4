@@ -87,7 +87,7 @@ One typical example would be a request that causes an error on the server (Statu
 %<s %>s
 ```
 
-_%b_ is the last element of the _common_ log format. It shows the number of bytes announced in the content-length response headers. In a request for _http://www.example.com/index.html_ this value is the size of the _index.html_ file. The _response headers_ also transmitted are not counted. In addition, this number shows only an announcement of the number and is no guarantee that these data were actually transferred.
+_%b_ is the last element of the _common_ log format. It shows the number of bytes announced in the content-length response headers. In a request for _http://www.example.com/index.html_ this value is the size of the _index.html_ file. The _response headers_ also transmitted are not counted. And there is an additional problem with this number: It is a calculation by the webserver and not an account of the bytes that have actually been sent in the response.
 
 
 ###Step 2: Understanding the combined log format
