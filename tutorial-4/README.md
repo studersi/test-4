@@ -695,7 +695,7 @@ It is important to weigh the various risks and to come to a conclusion for the s
 * Define the variable `RELOAD_CMD`
 * Create the cron job
 
-The following entry in the _crontab_ calls `getssl` daily. The script will then decide if the renewal is due. The path to `getssl` might have to be adopted, depending on the location of the script and the config files (the `--no-check` option will tell the script it should not contact _github_ to look for a new version of itself):
+The following entry in the _crontab_ calls `getssl` daily. The script will then decide if the renewal is due. The path to `getssl` might have to be adapted, depending on the location of the script and the config files (the `--no-check` option will tell the script it should not contact _github_ to look for a new version of itself):
 
 ```bash
 30 4 * * * getssl --all --quiet --nocheck
