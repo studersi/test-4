@@ -180,7 +180,7 @@ tcpdump: listening on lo, link-type EN10MB (Ethernet), capture size 65535 bytes
 Let’s try to decrypt the `PCAP` file. We’ll again be using `tshark` from the `Wireshark` suite. The `GUI` also works, but is less comfortable. What’s important now is to pass the key we used on the server to the tool.
 
 ```bash
-$> sudo tshark -r /tmp/localhost-port443.pcap -o "ssl.desegment_ssl_records: TRUE"\
+$> sudo tshark -r /tmp/localhost-port443.pcap -o "ssl.desegment_ssl_records: TRUE" \
 -o "ssl.desegment_ssl_application_data: TRUE" \
 -o "ssl.keys_list: 0.0.0.0,443,http,/etc/ssl/private/ssl-cert-snakeoil.key" \
 -o "ssl.debug_file: /tmp/ssl-debug.log"
