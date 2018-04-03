@@ -10,7 +10,7 @@ In professional use of the web server it’s very often the case that special re
 
 ###Step 1: Preparing the directory tree for the source code
 
-It’s not all that important where the source code is located. The following is a recommendation based on the [File Hierarchy Standard](http://www.pathname.com/fhs/). The FHS defines the path structure of a Unix system; the structure for all stored files.
+It’s not all that important where the source code is located. The following is a recommendation based on the [File Hierarchy Standard](http://www.pathname.com/fhs/). The FHS defines the path structure of a Unix system; the structure for all stored files. Note that in the second command `` `whoami` `` evaluates to the username and not root (despite `sudo`).
 
 ```bash
 $> sudo mkdir /usr/src/apache
@@ -46,7 +46,7 @@ $> ./configure --prefix=/usr/local/apr/
 ```
 
 After unpacking, we now change to the new directory containing the source code and start _configure_. This configures the compiler. We specify the installation path and _configure_ gathers a variety of information and settings about our system.
-Sometimes, a warning about `libtoolT` is printed but it can safely be ignored.
+Sometimes, a warning about `libtoolT` is printed but it can be ignored.
 The configure command frequently complains about missing components. One thing is certain: Without a working compiler we will be unable to compile and it’s configure’s task to check whether everything is assembled correctly.
 
 Things typically missing:

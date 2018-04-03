@@ -87,7 +87,7 @@ One typical example would be a request that causes an error on the server (Statu
 %<s %>s
 ```
 
-_%b_ is the last element of the _common_ log format. It shows the number of bytes announced in the content-length response headers. In a request for _http://www.example.com/index.html_ this value is the size of the _index.html_ file. The _response headers_ also transmitted are not counted. In addition, this number shows only an announcement of the number and is no guarantee that these data were actually transferred.
+_%b_ is the last element of the _common_ log format. It shows the number of bytes announced in the content-length response headers. In a request for _http://www.example.com/index.html_ this value is the size of the _index.html_ file. The _response headers_ also transmitted are not counted. And there is an additional problem with this number: It is a calculation by the webserver and not an account of the bytes that have actually been sent in the response.
 
 
 ###Step 2: Understanding the combined log format
@@ -100,7 +100,7 @@ LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combine
 CustomLog logs/access.log combined
 ```
 
-_"%{Referer}i"_ is used for the referrer. It is output in quotes. The referrer means any resource from which the request that just occurred was originally initiated. This complicated paraphrasing can best be illustrated by an example. If you click a link at a search engine to get to _www.example.com_ and once there are automatically redirected to _shop.example.com_, then the log entry for _shop.example.com_ will include the search engine as the referrer and not the link to _www.example.com_. If however a CSS file dependent on _shop.example.com_ is loaded, the referer would normally be attributed to _shop.example.com_. However, despite all of this, the referrer is part of the client's request. The client is required to follow the protocol and conventions, but can in fact send any kind of information, which is why you cannot rely on headers like these when security is an issue.
+_"%{Referer}i"_ is used for the referrer. It is output in quotes. The referrer means any resource from which the request that just occurred was originally initiated. This complicated paraphrasing can best be illustrated by an example. Suppose you click a link at a search engine to get to _www.example.com_. But when you send your request, you are automatically redirected to _shop.example.com_. The log entry for _shop.example.com_ will include the search engine as the referrer and not the link to _www.example.com_. If however a CSS file dependent on _shop.example.com_ is loaded, the referer would normally be attributed to _shop.example.com_. However, despite all of this, the referrer is part of the client's request. The client is required to follow the protocol and conventions, but can in fact send any kind of information, which is why you cannot rely on headers like these when security is an issue.
 
 Finally, _"%{User-Agent}i"_ means the client user agent, which is also placed in quotes. This is also a value controlled by the client and which we should not rely on too much. The user agent is the client browser software, normally including the version, the rendering engine, information about compatibility with other browsers and various installed plugins. This results in very long user agent entries which can in some cases include so much information that an individual client can be uniquely identified, because they feature a particular combination of different add-ons of specific versions.
 
@@ -174,7 +174,7 @@ _"%{cookie}n"_ is a value employed by user tracking. This enables us to use a co
 
 *%{UNIQUE_ID}e* is a very helpful value. A unique ID is created on the server for every request. When we output this value on an error page for instance, then a request in the log file can be easily identified using a screenshot, and ideally the entire session can be reproduced on the basis of the user tracking cookies.
 
-Now come two values made available by *mod_ssl*. The encryption module provides the log module values in its own name space, indicated by _x_. The individual values are explained in the *mod_ssl* documentation. For the operation of a server the protocol and encryption used are of primary interest. These two values, referenced by *%{SSL_PROTOCOL}x* and *%{SSL_CIPHER}x* help us get an overview of encryption use. Sooner or later there will come a time when we have to disable the _TLSv1_ protocol. But first we want to be certain that is it no longer playing a significant role in practice. The log file will help us do that. It is similar to the encryption algorithm that tells us about the _ciphers_ actually being used and helps us make a statement about which ciphers are no longer being used. The information is important. If, for example, vulnerabilities in individual versions of protocols or individual encryption methods become known, then we can assess the effect of our measures by referring to the log file. The following statement in spring 2015 was worth its weight in gold: “Immediately disabling the SSLv3 protocol as a reaction to the POODLE vulnerability will cause an error in approx. 0.8% of requests. Extrapolated to our customer base, xx number of customers will be impacted." Based on these numbers, the risk and the effect of the measures were predictable.
+Now come two values made available by *mod_ssl*. The encryption module provides the log module values in its own name space, indicated by _x_. The individual values are explained in the *mod_ssl* documentation. For the operation of a server the protocol and encryption used are of primary interest. These two values, referenced by *%{SSL_PROTOCOL}x* and *%{SSL_CIPHER}x* help us get an overview of encryption use. Sooner or later there will come a time when we have to disable the _TLSv1_ protocol. But first we want to be certain that is it no longer playing a significant role in practice. The log file will help us do that. It is similar to the encryption algorithm that tells us about the _ciphers_ actually being used and helps us make a statement about which ciphers are no longer being used. The information is important. If, for example, vulnerabilities in individual versions of protocols or individual encryption methods become known, then we can assess the effect of our measures by referring to the log file. In spring 2015, these log files proved to be extremely valuable and allowed us to quickly assess the impact of disabling SSLv3 as follows: “Immediately disabling the SSLv3 protocol as a reaction to the POODLE vulnerability will cause an error in approx. 0.8% of requests. Extrapolated to our customer base, xx number of customers will be impacted." Based on these numbers, the risk and the effect of the measures were predictable.
 
 _%I_ and _%O_ are used to define the values used by the _Logio_ module. It is the total number of bytes in the request and the total number of bytes in the response. We are already familiar with _%b_ for the total number of bytes in the response body. _%O_ is a bit more precise here and helps us recognize when the request or its response violates size limits.
 
@@ -233,7 +233,7 @@ On the first line we simply make one hundred requests, numbered in the _query st
 Stringed together, we get a lot of data. (If there is an error message, this could be because the _uuidgen_ command is not present. In this case, the _uuid_ package should be installed).
 
 
-It may take a moment to process this line. As a result we see the following the log file:
+It may take a moment to process this line. As a result we see the following entries in the log file:
 
 ```bash
 127.0.0.1 - - [2015-10-03 05:54:09.090117] "GET /index.html?n=1a HTTP/1.1" 200 45 "-" "curl/7.35.0" … 
@@ -297,7 +297,7 @@ As predicted above, a lot of values are still empty or indicated by _-_. But we 
 
 ###Step 8: Performing simple analyses using the extended log format
 
-If you take a close look at the example log file you will see that the duration of the requests are not evenly distributed. There are two outliers. We can identify them as follows:
+If you take a close look at the example log file you will see that the duration of the requests are not evenly distributed and that there is a single outlier. We can identify the outlier as follows:
 
 ```bash
 $> egrep -o "\% [0-9]+ " logs/access.log | cut -b3- | tr -d " " | sort -n
@@ -438,7 +438,7 @@ $> cat tutorial-5-example-access.log | cut -d\" -f9 | cut -d\  -f3 | sort | uniq
    8150 TLSv1.2
 ```
 
-It appears that Apache is not always recording an encryption protocol. This is a bit strange, but because it is a very rare case, we won’t be pursuing it for the moment. What’s more important are the numerical ratios between the TLS protocols. After disabling _SSLv3_, the _TLSv1.2_ protocol is dominant, in addition to a substantial percentage of _TLSv1.0_. _TLSv1.1_ can be disregarded.
+It appears that Apache is not always recording an encryption protocol. This is a bit strange, but because it is a very rare case, we won’t be pursuing it for the moment. What’s more important are the numerical ratios between the TLS protocols. After disabling _SSLv3_, the _TLSv1.2_ protocol is dominant, in addition to a substantial percentage of _TLSv1.0_. The protocol _TLSv1.1_ can be disregarded because it is only used in very few requests.
 
 We again got to the desired result by a series of _cut_ commands. It would actually be advisable to take note of these commands, because will be needing them again and again. It would then be an alias list as follows:
 
@@ -647,7 +647,7 @@ What happens here in order? We use _grep_ to filter _GET_ requests. We extract t
 
 We now sequentially place the paths into variable _P_ and use _while_ to make a loop. In the loop we calculate the basic statistics for the path saved in _P_ and filter the output for the mean. In doing so, we use _sed_ to filter in such a way that the _MEAN variable includes only a number and not the _Mean_ name itself. We now output this average value and the path names. End of the loop. Last, but not least, we sort everything numerically and get an overview of which paths resulted in requests with longer response times. A path named _/cms/download-softfiles_ apparently comes out on top. The keyword _download_ makes this appear plausible.
 
-This brings us to the end of this tutorial. The goal was to introduce an expanded log format and to demonstrate working with the log files. In doing so, repeatedly used were a series of aliases and two _awk_ scripts, which can be very flexibly arranged in sequence. With these tools and the necessary experience in their handling you will be able to quickly get at the information available in the log files.
+This brings us to the end of this tutorial. The goal was to introduce an expanded log format and to demonstrate working with the log files. In doing so, we repeatedly used a series of aliases and two _awk_ scripts, which can be chained in different ways. With these tools and the necessary experience in their handling you will be able to quickly get at the information available in the log files.
 
 
 ###References
