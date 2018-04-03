@@ -483,7 +483,7 @@ $> grep -F -f ids tutorial-8-example-error.log  | grep 921180 | modsec-rulerepor
                "phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=921180;TX:paramcounter_ARGS_NAMES:ids[]"
 ```
 
-This is a special case. It's caused by submitting a single parameter multiple times. The rule works with a separate counter introduced for every parameter which will then check the counter in rule 921180. If we want to suppress the alarm, we'd best suppress the examination of this counter as the script proposes. We are facing the same URI again, but I have that feeling that this rule will be triggered by other parameters as well. We will see.
+This is a special case. It's caused by submitting a single parameter multiple times. The rule works with a separate counter introduced for every parameter which will then check the counter in rule 921180. If we want to suppress the alarm, we'd best suppress the examination of this counter as the script proposes. We are facing the same URI again, but I have the feeling that this rule will be triggered by other parameters as well. We will see.
 
 In fact, this brings us to an organizational problem. How do we best organize the rule exclusions? Especially the complicated run-time exclusions. We can order by rule ID, by URI or by parameter. There is no easy answer. For large sites with multiple services or many different application paths, I use the URI to group the exclusion rules by branches of the service. But with small services, sorting by rule ID seems like a reasonable approach.
 
