@@ -350,7 +350,7 @@ In a subsequent tutorial we will be seeing that the proxy balancer can also be u
 
 ###Step 9: RewriteMap [proxy]
 
-RewriteMaps come in a number of different variations. They works by assigning a value to a key parameter at every request. A hash table is a simple example. But it is then also possible to configure external scripts as a programmable RewriteMap. The following types of maps are possible:
+RewriteMaps come in a number of different variations. They work by assigning a value to a key parameter at every request. A hash table is a simple example. But it is then also possible to configure external scripts as a programmable RewriteMap. The following types of maps are possible:
 
 * txt : A key value pair in a text file is searched for here.
 * rnd : Several values can be specified for each key here. They are then selected at random.
