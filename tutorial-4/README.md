@@ -218,7 +218,7 @@ HTTPS adds an SSL layer to the familiar HTTP protocol. Technically, SSL (_Secure
 
 Server certificates exist in a variety of forms, validations and scopes of application. Not every feature is really of a technical nature and marketing also plays a role. The price differences are very large, which is why a comparison is worthwhile. For our test setup we’ll be using a free certificate that we will nonetheless have officially certified. This is being done with the help of _Let's Encrypt_. This new certificate authority was born in 2015. It hands out official certificates for free and it has simplified the signing process in a very elegant way if you compare it to the traditional commercial certificate authorities.
 
-Before _Let's Encrypt_ will give us a validated certificate for our server, the certificate authority has to be sure, we are really the owners of the domain for which we've requested a certificate. This is done as follows: We prove our control over the said domain by placing a security nonce, provided by _Let's Encrypt_, on the webserver at a predefined location. We then tell _Let's Encrypt_ to come and check the none. It will thus make a request to our server and compare the contents of the test file with the nonce it gave us. If the two values are identical, then we have proven that we do in fact control the domain in question and _Let's Encrypt_ will accept us as the owner of said domain. This will be followed by signing a certificate for the domain in question on our behalf. We will then take this certificate and install it on the server.
+Before _Let's Encrypt_ will give us a validated certificate for our server, the certificate authority has to be sure, we are really the owners of the domain for which we've requested a certificate. This is done as follows: We prove our control over the said domain by placing a security nonce, provided by _Let's Encrypt_, on the webserver at a predefined location. We then tell _Let's Encrypt_ to come and check the nonce. It will thus make a request to our server and compare the contents of the test file with the nonce it gave us. If the two values are identical, then we have proven that we do in fact control the domain in question and _Let's Encrypt_ will accept us as the owner of said domain. This will be followed by signing a certificate for the domain in question on our behalf. We will then take this certificate and install it on the server.
 
 There are multiple clients to work with _Let's Encrypt_. My colleague Luca Käser has mentioned `getssl` which features simple command line use and maximum of control. It is also fit for production use, as it has the option to deploy the token file not only on the local host, but also on a remote server via `ssh`. This is an advantage if you have blocked the server from sending requests to the internet and the server is thus not allowed to call _Let's Encrypt_ itself.
 
@@ -668,7 +668,7 @@ SSLSessionCache         nonenotnull
 SSLSessionTickets       Off
 ```
 
-Of course, this adjustment will have consequences in terms of performance. You will see a small drop of throughput on the server, but the clients will encounter bigger latency, as the SSL/TLS handshake has to be performed anew and from scratch. So it is again a trade off between reducing your attack surface and performance: Most people leave the caching in place and I think this is generally the best advice which you should follow.
+Of course, this adjustment will have consequences in terms of performance. You will see a small drop of throughput on the server, but the clients will encounter bigger latency, as the SSL/TLS handshake has to be performed anew and from scratch. So it is again a trade off between reducing your attack surface and performance: Most people leave the caching in place and I think this is generally a good practice.
 
 
 ###Step 7: Trying it out
@@ -695,7 +695,7 @@ It is important to weigh the various risks and to come to a conclusion for the s
 * Define the variable `RELOAD_CMD`
 * Create the cron job
 
-The following entry in the _crontab_ calls `getssl` daily. The script will then decide if the renewal is due. The path to `getssl` might have to be adopted, depending on the location of the script and the config files (the `--no-check` option will tell the script it should not contact _github_ to look for a new version of itself):
+The following entry in the _crontab_ calls `getssl` daily. The script will then decide if the renewal is due. The path to `getssl` might have to be adapted, depending on the location of the script and the config files (the `--no-check` option will tell the script it should not contact _github_ to look for a new version of itself):
 
 ```bash
 30 4 * * * getssl --all --quiet --nocheck
