@@ -233,7 +233,7 @@ On the first line we simply make one hundred requests, numbered in the _query st
 Stringed together, we get a lot of data. (If there is an error message, this could be because the _uuidgen_ command is not present. In this case, the _uuid_ package should be installed).
 
 
-It may take a moment to process this line. As a result we see the following in the log file:
+It may take a moment to process this line. As a result we see the following entries in the log file:
 
 ```bash
 127.0.0.1 - - [2015-10-03 05:54:09.090117] "GET /index.html?n=1a HTTP/1.1" 200 45 "-" "curl/7.35.0" … 
