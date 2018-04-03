@@ -36,7 +36,7 @@ The problem with false positives is that if you are unlucky, they flood you like
 * Highest scoring requests go first
 * Work in several iterations
 
-What does that mean? The default installation come in blocking mode and with an anomaly threshold of 5 for the requests. In fact, this is a very good goal for our work, but it's an overambitious start on an existing production server. The risk is that a false positive raises an alarm, the wrong customer's browser is blocked, a phone call to the manager ensues and you are forced to switch off the Web Application Firewall. In many installations I have seen, this was the end of the story.
+What does that mean? The default installation comes in blocking mode and with an anomaly threshold of 5 for the requests. In fact, this is a very good goal for our work, but it's an overambitious start on an existing production server. The risk is that a false positive raises an alarm, the wrong customer's browser is blocked, a phone call to the manager ensues and you are forced to switch off the Web Application Firewall. In many installations I have seen, this was the end of the story.
 
 Don't let a badly tuned system catch you like this. Instead, start with a high threshold for the anomaly score. Let's say 1,000 for the requests and also 1,000 for the responses for symmetry's sake (in practice, the responses do not score very high). That way you know that no customer is ever going to be blocked, you get reports of false alarms and you gain time to weed them out.
 
