@@ -297,7 +297,7 @@ As predicted above, a lot of values are still empty or indicated by _-_. But we 
 
 ###Step 8: Performing simple analyses using the extended log format
 
-If you take a close look at the example log file you will see that the duration of the requests are not evenly distributed and  that there is a single otlier. We can identify the outlier as follows:
+If you take a close look at the example log file you will see that the duration of the requests are not evenly distributed and  that there is a single outlier. We can identify the outlier as follows:
 
 ```bash
 $> egrep -o "\% [0-9]+ " logs/access.log | cut -b3- | tr -d " " | sort -n
