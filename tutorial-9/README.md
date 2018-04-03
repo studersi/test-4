@@ -52,7 +52,7 @@ Server response, port 8000
 * Closing connection 0
 ```
 
-We have set up a backend system with the simplest of means. So easy, that in the future we will might again be happy to know about this method, when we want to verify that a proxy server is working before the real application server is running.
+We have set up a backend system with the simplest of means. So easy, that in the future we might come back to this method to verify that a proxy server is working before the real application server is running.
 
 ###Step 2: Enabling the proxy module
 
