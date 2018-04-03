@@ -232,7 +232,7 @@ localhost 127.0.0.1 80 - - + "-" VqkfSH8AAQEAAHjqe40AAAAC - - 125 256 -% 4294 56
 
 On the third line we see the timestamp of the request, the HTTP status, the ModSecurity core rules incoming anomaly score, the outgoing anomaly score, method, path and finally in brackets, the unique request ID. The other lines are self-explanatory and are simply an illustration of what can be done with such a script.
 
-The trick is using `watch` to regularly call this script at short intervals. A separate shortcut script named `watch-lastrequestsummary` can used for this ([watch-lastrequestsummary](https://github.com/Apache-Labor/labor/blob/master/bin/watch-lastrequestsummary)):
+The trick is using `watch` to regularly call this script at short intervals. A separate shortcut script named `watch-lastrequestsummary` can be used for this ([watch-lastrequestsummary](https://github.com/Apache-Labor/labor/blob/master/bin/watch-lastrequestsummary)):
 
 ```bash
 $>cat watch-lastrequestsummary 
