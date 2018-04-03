@@ -678,7 +678,7 @@ SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" \
     "phase:2,nolog,pass,id:10002,ctl:ruleRemoveTargetById=921180;TX:paramcounter_ARGS_NAMES:keys"
 ```
 
-With 942100, the case it quite clear. But let's look at the alert message itself. There we see that ModSecurity used a special library to identify what it thought an SQL injection attempt. So instead of a regular expression, a dedicated injection parser was used.
+With 942100, the case is quite clear. But let's look at the alert message itself. There we see that ModSecurity used a special library to identify what it thought an SQL injection attempt. So instead of a regular expression, a dedicated injection parser was used.
 
 ```bash
 $> grep -F -f ids tutorial-8-example-error-round-2.log | grep 942100 | head -1
