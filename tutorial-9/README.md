@@ -434,7 +434,7 @@ The reverse proxy server shields the application server from direct client acces
 
 If multiple reverse proxies are staggered behind one another then the additional IP addresses and server names are comma separated. In addition to this information about the connection, it is also a good idea to pass along yet more information. This would of course include the unique ID, uniquely identifying the request. A well-configured backend server will create a key value similar to our reverse proxy in the log file. Being able to easily correlate the different log file entries simplifies debugging in the future.
 
-A reverse proxy is frequently uses to perform authentication. Although we haven’t set that up yet, it is still wise to add this value to an expanding basic configuration. If authentication is not defined, this value simply remains empty. And finally, we want to tell the backend system about the type of encryption the client and reverse proxy agreed upon. The entire block looks like this:
+A reverse proxy is frequently used to perform authentication. Although we haven’t set that up yet, it is still wise to add this value to an expanding basic configuration. If authentication is not defined, this value simply remains empty. And finally, we want to tell the backend system about the type of encryption the client and reverse proxy agreed upon. The entire block looks like this:
 
 ```bash
 RequestHeader set "X-RP-UNIQUE-ID" 	"%{UNIQUE_ID}e"
