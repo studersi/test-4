@@ -186,7 +186,7 @@ The server now responds with HTTP status code `302 Found`, corresponding to the 
 
 In the body part of the response the redirect is included as a link in HTML text. This is provided for users to click manually, if the browser does not initiate the redirect. However, this is very unlikely and is probably only included for historical reasons.
 
-You could now ask yourself why we are opening a rewrite engine in the server context and not dealing with everything on the VirtualHost level. In the example I chose you see that this would result in redundancy, because the redirect from "/" to "index.html" should take place on port 80 and also on encrypted port 443. This is the rule of thumb: It’s best for us to define and inherit everything being used on all VirtualHosts in the server context. We also deal with individual rules for a single VirtualHost on this level. Typical is the following rule we can use to redirect all requests from port 80 to port 443, where encryption is enabled:
+You could now ask yourself why we are opening a rewrite engine in the server context and not dealing with everything on the VirtualHost level. In the example I chose you see that this would result in redundancy, because the redirect from "/" to "index.html" should take place on port 80 and also on encrypted port 443. This is the rule of thumb: It’s best for us to define and inherit everything being used on all VirtualHosts in the server context. We also deal with individual rules for a single VirtualHost on this level. Typically, the following rule is used to redirect all requests from port 80 to port 443, where encryption is enabled:
 
 ```bash
 <VirtualHost 127.0.0.1:80>
