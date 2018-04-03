@@ -46,6 +46,7 @@ $> ./configure --prefix=/usr/local/apr/
 ```
 
 After unpacking, we now change to the new directory containing the source code and start _configure_. This configures the compiler. We specify the installation path and _configure_ gathers a variety of information and settings about our system.
+Sometimes, a warning about `libtoolT` is printed but it can be ignored.
 The configure command frequently complains about missing components. One thing is certain: Without a working compiler we will be unable to compile and it’s configure’s task to check whether everything is assembled correctly.
 
 Things typically missing:
