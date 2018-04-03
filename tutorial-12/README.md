@@ -43,7 +43,7 @@ SecAuditLogParts        ABEFHIJKZ
 We have defined a very comprehensive log. This is the right approach in a lab-like setup. However, in a production environment this is only useful in exceptional cases. A typical variation of this directive in a production environment would thus be:
 
 ```bash
-SecAuditLogParts            "ABFHKZ"
+SecAuditLogParts            ABFHKZ
 ```
 
 The request and response bodies are no longer being captured. This saves a lot of storage space, which is important on badly tuned systems. The parts of the body that violate individual rules are nonetheless written to the error log and in Part K. This is sufficient in most cases. However, from case to case, you will still want to capture the entire body. In cases such as these you can use a `ctl` directive for the action part of the `SecRule`. Multiple, additional parts can be selected via `auditLogParts`:
