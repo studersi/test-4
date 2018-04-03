@@ -202,7 +202,7 @@ Running as user "root" and group "root". This could be dangerous.
  15   0.037417    127.0.0.1 -> 127.0.0.1    TCP 54 33517 > https [RST] Seq=625 Win=0 Len=0
 ```
 
-Not much is legible here yet. But when we apply the `debug file`, then we see the traffic in it.
+Not much is legible here yet. But when we look into the `debug file`, then we see the traffic in it.
 
 ```bash
 $> cat /tmp/ssl-debug.log
