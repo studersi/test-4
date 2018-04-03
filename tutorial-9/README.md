@@ -200,7 +200,7 @@ You could now ask yourself why we are opening a rewrite engine in the server con
 </VirtualHost>
 ```
 
-The schema we want is now clear. But to the left of it comes a new item. We don’t suppress the path as quickly as above. We instead put it in brackets and use `$1` to reference the content of the brackets again in the redirect. This means that we are forwarding the request on port 80 using the same URL on port 443.
+The schema we want is now clear. But to the left of it comes a new item. We don’t suppress the path as quickly as above. We instead put it in parenthesis and use `$1` to reference the content of the parenthesis again in the redirect. This means that we are forwarding the request on port 80 using the same URL on port 443.
 
 ModRewrite has been introduced. For further examples refer to the documentation or the sections of this tutorial below where it will become familiar with yet more recipes.
 
@@ -368,7 +368,7 @@ SecRule REMOTE_ADDR	"^(.)" \
 	"phase:1,id:50001,capture,nolog,t:sha1,t:hexEncode,setenv:IPHashChar=%{TX.1}"
 ```
 
-We have used hexEncode to convert the binary hash value we generated using sha1 into readable characters. We then apply the regular expression to this value. "^(.)" means that we want to find a match on the first character. Of the ModSecurity flags that follow `capture` is of interest. It indicates that we want to capture the value in the brackets in the previous regex condition. We then put it into the IPHashChar environment variable.
+We have used hexEncode to convert the binary hash value we generated using sha1 into readable characters. We then apply the regular expression to this value. "^(.)" means that we want to find a match on the first character. Of the ModSecurity flags that follow `capture` is of interest. It indicates that we want to capture the value in the parenthesis in the previous regex condition. We then put it into the IPHashChar environment variable.
 
 If there is any uncertainty as to whether this will really work, then the content of the variable `IPHashChar` can be printed and checked using `%{IPHashChar}e` in the server’s access log. This brings us to RewriteMap and the request itself:
 
@@ -396,7 +396,7 @@ RewriteRule     ^/service1/(.*) \
 </Proxy>
 ```
 
-We introduce the map by using the RewriteMap command. We assign it a name, define its type and the path to the file. RewriteMap is invoked in a RewriteRule. Before we really access the map, we enable a rewrite condition. This is done using the RewriteCond directive. There we reference the IPHashChar environment variable and determine the first byte of the variable. We know that only a single byte is included in the variation, but this won’t put a stop to our plans. On the next line then the typical start of the Proxy directive. But instead of now specifying the backend, we reference RewriteMap by the name previously assigned. After the colon comes the parameter for the request. Interestingly, we use `%1` to communicate with the rewrite conditions captured in brackets. The RewriteRule variable is not affected by this and continues to be referenced via `$1`. After the `%1` comes the default value separated by a pipe character. Should anything go wrong when accessing the map, then communication with localhost takes place over port 8000.
+We introduce the map by using the RewriteMap command. We assign it a name, define its type and the path to the file. RewriteMap is invoked in a RewriteRule. Before we really access the map, we enable a rewrite condition. This is done using the RewriteCond directive. There we reference the IPHashChar environment variable and determine the first byte of the variable. We know that only a single byte is included in the variation, but this won’t put a stop to our plans. On the next line then the typical start of the Proxy directive. But instead of now specifying the backend, we reference RewriteMap by the name previously assigned. After the colon comes the parameter for the request. Interestingly, we use `%1` to communicate with the rewrite conditions captured in parenthesis. The RewriteRule variable is not affected by this and continues to be referenced via `$1`. After the `%1` comes the default value separated by a pipe character. Should anything go wrong when accessing the map, then communication with localhost takes place over port 8000.
 
 All we need now is the RewriteMap. In the code sample we specified a text file. Better performance is provided by a hash file, but this is not the focus at present. Here’s the `/apache/conf/hashchar2backend.txt` map file:
 
