@@ -366,7 +366,7 @@ _Click to get to the download of the large version_
 Let's start with a simple case: 920273. We could look at this in great detail and check out all the different parameters triggering this rule. Depending on the security level we want to provide for our application, this would be the right approach. But then this is an exercise, so we will keep it simple: Let's kick this rule out completely. We'll opt for a startup rule (to be placed after the CRS include).
 
 ```bash
-# === ModSec Core Rules: Startup Time Rules Exclusions
+# === ModSec Core Rules: Config Time Exclusion Rules (no ids)
 
 # ModSec Rule Exclusion: 920273 : Invalid character in request (outside of very strict set)
 SecRuleRemoveById 920273
