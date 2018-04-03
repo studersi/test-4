@@ -15,8 +15,8 @@ Starting with a minimal system is also helpful in debugging. If the error is not
 
 ###Step 1: Creating a minimal configuration
 
-Our web server is stored in `/apache` on the file system. It’s default configuration is located in `/apache/conf/httpd.conf`. It is very extensive and rather difficult to understand. It’s a problem that even the default configurations in common Linux distributions are contributing to at an ever higher degree.
-We will be replacing this configuration file with the following greatly simplified configuration.
+Our web server is stored in `/apache` on the file system. Its default configuration is located in `/apache/conf/httpd.conf`. It is very extensive and contains many comments and commented out configuration lines. This makes it rather difficult to understand but at least everything is still in a single file. For packaged versions of Apache, on many Linux distributions, the default configuration is not only very complicated, it is also fragmented into a handful of separate files that are spread across multiple directories. This can make it hard to get a good overview of what is actually going on.
+To simplify things, we will be replacing this extensive configuration file with the following, greatly simplified configuration.
 
 ```bash
 ServerName              localhost
@@ -252,8 +252,7 @@ $> curl   http://localhost/index.html --trace-ascii -
 
 _--trace-ascii_ requires a file as a parameter in order to make an _ASCII dump_ of communication in it. "-" works as a shortcut for _STDOUT_, enabling us to easily see what is being logged.
 
-Compared to _verbose_, _trace-ascii_ provides more details about the length of transferred bytes in the _request_ and _response_ phase. The request headers in the example above are thus 83 bytes. The bytes are then listed for each header in the response and overall for the body in the response: 45 bytes. This may seem like we are splitting hairs. But in fact, it can be crucial when something is missing and it is not quite certain what or where in the sequence it was delivered. Thus, it’s worth noting that 2 bytes are added to each header line. These are the CR (carriage returns) and NL (new lines) in the header lines included in the HTTP protocol. This is unlike in the response body, which returns only what is actually in the file. This is obviously only one NL without CR here. On the third to last line (_000: <html ..._) a point comes after the greater than character This is code for the NL character in the response, which like other escape sequences is output in the form of a point.
-
+Compared to _verbose_, _trace-ascii_ provides more details about the number of transferred bytes in the _request_ and _response_ phase. The request headers in the example above are thus 83 bytes. The bytes are then listed for each header in the response and overall for the body in the response: 45 bytes. This may seem like we are splitting hairs. But in fact, it can be crucial when something is missing and it is not quite certain what or where in the sequence it was delivered. Thus, it’s worth noting that 2 bytes are added to each header line. These are the CR (carriage returns) and NL (new lines) in the header lines included in the HTTP protocol. In the response body, on the other hand, only the actual content of the file is returned. This is obviously only one NL without CR here. On the third to last line (_000: <html ..._) a point comes after the greater than character This is code for the NL character in the response, which like other escape sequences is output in the form of a point.
 
 ###Step 7: Working with the trace method
 
