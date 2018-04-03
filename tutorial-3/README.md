@@ -74,7 +74,7 @@ DocumentRoot            /apache/htdocs
 
         Options          ExecCGI
 
-        FCGIWrapper      /apache/bin/php-fcgi-starter/php-fcgi-starter.php
+        FCGIWrapper      /apache/bin/php-fcgi-starter/php-fcgi-starter
 
       </Directory>
 
@@ -85,7 +85,7 @@ DocumentRoot            /apache/htdocs
 I will no longer be discussing the overall configuration, but will instead only be focusing on the differences from Tutorial 2. There are three new modules:
 Added to the _suEXEC_ and _FCGI_ modules is the _Mime module_, which enables us to assign the _.php_ file suffix to the _FCGI daemon_. It is assigned using the _AddHandler directive_. 
 
-The _/apache/htdocs_ directory now needs the additional _ExecGGI_ option. And finally, the _FCGIWrapper_. This is the connection between the web server and the _FCGI daemon_ yet to be configured. Once the first request using the _.php_ suffix is received by the web server, the server calls a _wrapper script_, starting the _FCGI daemon_, which from this time on handles the _PHP requests_.
+The _/apache/htdocs_ directory now needs the additional _ExecCGI_ option. And finally, the _FCGIWrapper_. This is the connection between the web server and the _FCGI daemon_ yet to be configured. Once the first request using the _.php_ suffix is received by the web server, the server calls a _wrapper script_, starting the _FCGI daemon_, which from this time on handles the _PHP requests_.
 
 _FastCGI_ is a method for executing dynamic program code from a web server. It is a very fast method which for the most part leaves the server untouched and runs the application on a separate daemon. To increase the speed, _FastCGI_ provides multiple instances of this daemon, allowing requests to be processed without having to wait. In practice, this is a promising gain in performance and, more importantly, an architecture that saves memory, as will be discussed in more detail below.
 
@@ -93,7 +93,7 @@ _FastCGI_ is a method for executing dynamic program code from a web server. It i
 
 We now have to compile two missing modules and deploy other components for the _FCGI daemon_. Let’s start with the _suEXEC module_.
 
-An Apache web server was compiled in Tutorial 1. However, although the _--enable-mods-shared=all_ option was used, _suexec_ has not been compiled yet. Hence, the module is so special that it can’t be compiled as a default module, although it is present in the source code.
+An Apache web server was compiled in Tutorial 1. However, although the _--enable-mods-shared=all_ option was used, _suexec_ has not been compiled yet. It seems, the module is so special that it can’t be compiled as a default module, although it is present in the source code.
 
 The web server configured in Tutorial 2 runs as user _www-data_ or, depending on configuration, as any other dedicated user. We would like to further restrict our dynamic application to have the separate daemon run as an additional, separate user. The _suEXEC_ module makes this possible for us. It is not absolutely required. But it adds a bit more security with little extra effort.
 
@@ -103,7 +103,7 @@ Let’s enter the directory with the Apache source code and compile the server o
 $> cd /usr/src/apache/httpd-2.4.29
 $> ./configure --prefix=/opt/apache-2.4.29 --enable-mods-shared=all \
    --with-apr=/usr/local/apr/bin/apr-1-config \
-   --with-apr-util=/usr/local/apr/bin/apu-1-config --enable-mpms-shared="event worker" \
+   --with-apr-util=/usr/local/apr/bin/apu-1-config --enable-mpms-shared="event" \
    --enable-nonportable-atomics=yes --enable-suexec --with-suexec-caller=www-data \
    --with-suexec-docroot=/opt/apache-2.4.29/bin && make && sudo make install
 ```
@@ -150,7 +150,7 @@ $> sudo chown www-data:www-data /apache/logs/fcgidsock
 
 ###Step 4: Installing and preconfiguring PHP
 
-Up till now we have been compiling all of the software piece by piece. But for the entire PHP stack a limit has been reached. No one should be prevented from compiling PHP on his own, but we are concentrating on the web server here and for this reason will be using this piece of software from the Linux distribution. In Debian/Ubuntu the package we need is _php5-cgi_, which comes along with _php5-common_.
+Up till now we have been compiling all of the software piece by piece. But for the entire PHP stack a limit has been reached. No one should be prevented from compiling PHP on his own, but we are concentrating on the web server here and for this reason will be using this piece of software from the Linux distribution. In Debian/Ubuntu the package we need is _php7.0-cgi_, which comes along with _php7.0-common_.
 
 Properly configuring _PHP_ is a broad topic and I recommend consulting the relevant pages, because an improperly configured installation of _PHP_ may pose a serious security problem. I don’t wish to give you any more information at this point, because it takes us away from our actual topic, which is a simple application server. For operation on the internet, i.e. no longer in a lab-like setup, it is highly recommended to become familiar with the relevant PHP security settings.
 
@@ -181,7 +181,7 @@ We now have to put a starter script in this directory. Since we have already ass
 ```bash
 $> sudo sh -c "cat > php-fcgi-starter/php-fcgi-starter"
 #!/bin/sh
-export PHPRC=/etc/php5/cgi/
+export PHPRC=/etc/php/7.0/cgi/
 export PHP_FCGI_MAX_REQUESTS=5000
 export PHP_FCGI_CHILDREN=5
 exec /usr/lib/cgi-bin/php
