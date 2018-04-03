@@ -415,7 +415,7 @@ $> tail -1 /apache/logs/access.log
 
 It looks like a standard `GET` request with a status 200. The interesting bit is the second field from the end. In the log file tutorial, we defined a lengthy Apache access log format with two items reserved for the anomaly score. So far, these values have been empty; now they are being filled. The first of the two numbers at the end is the request's inbound anomaly score. Our submission of `/bin/bash` as parameter got us a score of 5. This is considered a critical rule violation by the Core Rules. An error level violation is set at 4, a warning at 3 and a notice at 2. However, if you look over the rules in all the files, most of them score as critical violations with a score of 5.
 
-But now we want to know what rule triggered the alert. We could simply tail the error log, but let's use the unique ID to get all the messages associated with our request. The unique ID was displayed in the access log, so this is very simple:
+But now we want to know what rule triggered the alert. This information can be found in the error log. We could simply tail the error log and look at the last entry but in a real world scenario, this entry might be buried somewhere in the middle of the error log. Therefore we find the request ID in the access log entry and then search for all entries in the error log that are related to that request ID.
 
 ```bash
 [2016-10-25 08:40:01.881938] [authz_core:debug] 127.0.0.1:42732 WA7@QX8AAQEAABC4maIAAAAV AH01626: …
