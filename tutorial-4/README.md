@@ -1,14 +1,14 @@
-##Enabling Encryption with SSL/TLS
+## Enabling Encryption with SSL/TLS
 
-###What are we doing?
+### What are we doing?
 
 We are setting up an Apache web server secured by a server certificate.
 
-###Why are we doing this?
+### Why are we doing this?
 
 The HTTP protocol uses plain text, which can easily be spied on. The HTTPS extension surrounds HTTP traffic in a protective SSL/TLS layer, preventing snooping and ensuring that we are really talking to the server we entered in the URL. All data is sent encrypted. This still doesn’t mean that the web server is secure, but it is the basis for secure HTTP traffic.
 
-###Requirements
+### Requirements
 
 * An Apache web server, ideally one created using the file structure shown in [Tutorial 1 (Compiling an Apache web server)](https://www.netnea.com/cms/apache-tutorial-1_compiling-apache/).
 * Understanding of the minimal configuration in [Tutorial 2 (Configuring a minimal Apache server)](http://www.netnea.com/cms/apache-tutorial-2_minimal-apache-configuration).
@@ -17,7 +17,7 @@ First, we are going to enable the server to use SSL with a self-signed certifica
 
 This whole series of tutorials is meant as a guide to a successful lab setup. The idea is to really, really understand Apache. This tutorial is a bit of an exception, as we need to be accessible from the internet in order to get the signed certificate. Later tutorials will return to the lab setup though.
 
-###Step 1: Configuring a server using SSL/TLS, but without an officially signed certificate
+### Step 1: Configuring a server using SSL/TLS, but without an officially signed certificate
 
 The inner working of the _SSL-/TLS_-protocol is complex. The free _OpenSSL Cookbook_ by Ivan Ristić (see links below) explains this topic. His bigger work _Bulletproof SSL and TLS_, which explains the trust relationships in great detail, is another good introduction. The minimal knowledge required can be found in this tutorial though.
 
@@ -142,7 +142,7 @@ The _STS_-header is the most prominent from a group of newer security related he
 That's all the changes to our configuration. Time to start the server!
 
 
-###Step 2: Trying it out
+### Step 2: Trying it out
 
 ```bash
 $> curl -v https://127.0.0.1/index.html
@@ -212,7 +212,7 @@ Below we will be discussing how to obtain an official certificate, how to instal
 
 
 
-###Step 3: Preparing to get an SSL key and certificate
+### Step 3: Preparing to get an SSL key and certificate
 
 HTTPS adds an SSL layer to the familiar HTTP protocol. Technically, SSL (_Secure Socket Layer_) has been replaced by TLS (_Transport Security Layer_), but people still refer to it as SSL. The protocol guarantees encryption and thus data traffic is secured from eavesdropping. Traffic is encrypted symmetrically, guaranteeing greater performance, but in the case of HTTPS requires a public/private key setup for the exchange of symmetric keys by previously unknown communication partners. This public/private key handshake is done by using a server certificate which must be signed by an official authority. The handshake is thus meant to extend browser's trust in the signing authority to the webserver being contacted. This is being done with the help of a chain of trust over multiple certificates.
 
@@ -261,7 +261,7 @@ This defines the path of the token, that `getssl` will place in the file system 
 
 Outside of our domain name, we have entered an alternate name in the variable `SANS`. _Let's Encrypt_ will check both names and it will place an individual token for both names. We can handle this by entering the same path twice under `acl`, or we can enable the variable `USE_SINGLE_ACL`, which is much more elegant.
 
-###Step 4: Getting the SSL key and certificate
+### Step 4: Getting the SSL key and certificate
 
 Let's start our call to _Let's Encrypt_:
 
@@ -471,7 +471,7 @@ SSLCertificateFile      /etc/ssl/certs/christian-folini.ch.crt
 SSLCertificateChainFile /etc/ssl/certs/lets-encrypt-chain.crt
 ```
 
-###Step 5: Examining the chain of trust
+### Step 5: Examining the chain of trust
 
 Before we can start using the browser or curl to call our server, it is a good practice to check the chain of trust and to make sure the encryption is properly configured. Let's start the server and check it out. We will use the command line tool `openssl` again. It really shines with all the options it has. However, _OpenSSL_ does not have a list of known and trusted certificate authorities. We have to tell the tool about the _Let's Encrypt_ certificate authority and its root certificate respectively. We will fetch it from _Let's Encrypt_ and we will then call `openssl` with the root CA as a parameter:
 
@@ -610,7 +610,7 @@ The first few lines are very important as they list the chain. Of equal importan
 
 If we examine the chain on top carefully, we will see that _Let's Encrypt_ is depending on an additional  certificate authority. This is necessary as _Let's Encrypt_ is a very young certificate authority and it has not yet found its way into all browsers. This forces _Let's Encrypt_ to have it's certificate signed by a different certificate authority known to the browser.
 
-###Step 6: Enhancing the Apache configuration a bit
+### Step 6: Enhancing the Apache configuration a bit
 
 All of the preparations are now completed and we can do the final configuration of the web server. I won’t be giving you the complete configuration here, but only the specific server name and the tweaked SSL section:
 
@@ -671,7 +671,7 @@ SSLSessionTickets       Off
 Of course, this adjustment will have consequences in terms of performance. You will see a small drop of throughput on the server, but the clients will encounter bigger latency, as the SSL/TLS handshake has to be performed anew and from scratch. So it is again a trade off between reducing your attack surface and performance: Most people leave the caching in place and I think this is generally a good practice.
 
 
-###Step 7: Trying it out
+### Step 7: Trying it out
 
 Now that we are sure to own an officially signed certificate with a valid chain of trust and now that we understand all the other configuration options in detail, we can turn to the browser and call the domain we configured. In my case, this is [https://www.christian-folini.ch](https://www.christian-folini.ch).
 
@@ -680,7 +680,7 @@ Now that we are sure to own an officially signed certificate with a valid chain 
 The browser confirms, this is a secure connection.
 
 
-###Step 8: Fetching the certificate via Cron from Let's Encrypt
+### Step 8: Fetching the certificate via Cron from Let's Encrypt
 
 _Let's Encrypt_ creates the certificates for a period of 90 days per default. This means we will have to perform the manual call as outlined above every three months. This can be automated, though. As the `getssl` process needs to access the certificate key, the process has to operate as the `root` user. Additionally, the certificate authority _Let's Encrypt_ has to be called via the internet. As a matter of fact, this means that we have to tell `root` to access the internet. This is not without risks and has to be considered carefully.
 
@@ -705,7 +705,7 @@ With this, the signing and renewal of the certificate is fully automated and we 
 
 Interestingly, there is something like a checking instance in the internet, where you can have your _HTTPS_-server examined. Let's try this out as a goodie.
 
-###Step 9 (Goodie): Checking the quality of SSL externally
+### Step 9 (Goodie): Checking the quality of SSL externally
 
 Ivan Ristić, mentioned above as the author of several books on Apache and SSL, launched an analysis service that checks _SSL web servers_. He has sold the site to Qualys in the meantime, but it is still being maintained and actively expanded. It is available at [www.ssllabs.com](https://www.ssllabs.com/ssldb/index.html). A web server configured like the one above earned me the highest grade of _A+_ on the test.
 
@@ -713,7 +713,7 @@ Ivan Ristić, mentioned above as the author of several books on Apache and SSL, 
 
 The highest grade is attainable by following these instructions.
 
-###References
+### References
 
 * [Wikipedia OpenSSL](http://de.wikipedia.org/wiki/Openssl)
 * [OpenSSL Cookbook](https://www.feistyduck.com/books/openssl-cookbook/)

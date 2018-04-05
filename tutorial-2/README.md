@@ -1,19 +1,19 @@
-##Configuring a minimal Apache server
+## Configuring a minimal Apache server
 
-###What are we doing?
+### What are we doing?
 
 We are configuring a minimal Apache web server and will occasionally be talking to it with curl, the TRACE method and ab.
 
-###Why are we doing this?
+### Why are we doing this?
 
 A secure server is one that permits only as much as what is really needed. Ideally, you would build a server based on a minimal system by enabling additional features individually. This is also preferable in terms of understanding what’s going on, because this is the only way of knowing what is really configured.
 Starting with a minimal system is also helpful in debugging. If the error is not present in the minimal system, features are added individually and the search for the error goes on. When the error occurs, it is identified to be related to the last configuration directive added.
 
-###Requirements
+### Requirements
 
 * An Apache web server, ideally one created using the file structure shown in [Tutorial 1 (Compiling an Apache web server)](https://www.netnea.com/cms/apache-tutorial-1_compiling-apache).
 
-###Step 1: Creating a minimal configuration
+### Step 1: Creating a minimal configuration
 
 Our web server is stored in `/apache` on the file system. Its default configuration is located in `/apache/conf/httpd.conf`. It is very extensive and contains many comments and commented out configuration lines. This makes it rather difficult to understand but at least everything is still in a single file. For packaged versions of Apache, on many Linux distributions, the default configuration is not only very complicated, it is also fragmented into a handful of separate files that are spread across multiple directories. This can make it hard to get a good overview of what is actually going on.
 To simplify things, we will be replacing this extensive configuration file with the following, greatly simplified configuration.
@@ -74,7 +74,7 @@ DocumentRoot            /apache/htdocs
 </VirtualHost>
 ```
 
-###Step 2: Understanding the configuration
+### Step 2: Understanding the configuration
 
 Let’s go through this configuration step-by-step.
 
@@ -136,7 +136,7 @@ Let’s now open up a _VirtualHost_. It corresponds to the _Listen_ directive de
 
 Specifically, we permit access to our _DocumentRoot_. The final instruction here is _Require all granted_, where unlike the _/_ directory we permit full access. Unlike above, from this path on no provision is made for symlinks or any special capabilities: _Options None_.
 
-###Step 3: Starting the server
+### Step 3: Starting the server
 
 Our minimal server has thus been described. It would be possible to define a server that is even more bare bones. It would however not be as comfortable to work with as ours and it wouldn’t be any more secure. A certain amount of basic security is however advisable. This is because in the lab we are building a service which should then with specific adjustments be able to be put into a production environment. Wanting to secure a service from top to bottom right before entering a production environment is illusory.
 
@@ -150,7 +150,7 @@ $> cd /apache
 $> sudo ./bin/httpd -X
 ```
 
-###Step 4: Talking to the server using curl
+### Step 4: Talking to the server using curl
 
 Now we can again communicate with the server from a web browser. But working in the shell at first can be more effective, making it easier to understand what is going on.
 
@@ -166,7 +166,7 @@ Returns the following:
 
 We have thus sent an HTTP request and have received a response from our minimally configured server, meeting our expectations.
 
-###Step 5: Examining requests and responses
+### Step 5: Examining requests and responses
 
 This is what happens during an HTTP request. But what exactly is the server saying to us? To find out, let’s start _curl_. This time with the _verbose_ option.
 
@@ -212,7 +212,7 @@ The server will then tell us when the file the response is based on was last cha
 
 Incidentally, the order of these headers is characteristic for web servers. _NginX_ uses a different order and, for instance, puts the _server header_ in front of the date. Apache can still be identified even if the server line is intended to be misleading.
 
-###Step 6: Examining the response a bit more closely
+### Step 6: Examining the response a bit more closely
 
 During communication it is possible to get a somewhat more detailed view in _curl_. We use the _--trace-ascii_ command line parameter to do this:
 
@@ -254,7 +254,7 @@ _--trace-ascii_ requires a file as a parameter in order to make an _ASCII dump_ 
 
 Compared to _verbose_, _trace-ascii_ provides more details about the number of transferred bytes in the _request_ and _response_ phase. The request headers in the example above are thus 83 bytes. The bytes are then listed for each header in the response and overall for the body in the response: 45 bytes. This may seem like we are splitting hairs. But in fact, it can be crucial when something is missing and it is not quite certain what or where in the sequence it was delivered. Thus, it’s worth noting that 2 bytes are added to each header line. These are the CR (carriage returns) and NL (new lines) in the header lines included in the HTTP protocol. In the response body, on the other hand, only the actual content of the file is returned. This is obviously only one NL without CR here. On the third to last line (_000: <html ..._) a point comes after the greater than character This is code for the NL character in the response, which like other escape sequences is output in the form of a point.
 
-###Step 7: Working with the trace method
+### Step 7: Working with the trace method
 
 The _TraceEnable_ directive was described above. We have turned it _off_ as a precaution. It can however be very useful in debugging. So, let’s give it a try. Let’s set the option to on:
 
@@ -298,7 +298,7 @@ In the _body_ the server repeats the information about the request sent to it as
 
 Don’t forget to turn _TraceEnable_ off again.
 
-###Step 8: Using "ab" to test the server
+### Step 8: Using "ab" to test the server
 
 So much for the simple server. But just for fun we can put it to the test. We’ll perform a small performance test using _ab_, short for _ApacheBench_. This is a very simple benchmarking program that is always at hand and able to quickly give you initial performance results. I like to run it before and after a configuration change to get an idea about whether anything in terms of performance has changed. _ab_ is very powerful and calling it locally does not give you clean results. But you can get an initial impression using this tool.
 
@@ -368,7 +368,7 @@ Percentage of the requests served within a certain time (ms)
 
 What’s of primary interest to us is the number of errors (_Failed requests_) and the number of requests per second (_Requests per second_). A value above one thousand is a good start. Especially considering that we are still working with a single process and not a parallelized daemon (which is also why the _concurrency level_ is set to 1).
 
-###Step 9 (Goodie): Viewing directives and modules
+### Step 9 (Goodie): Viewing directives and modules
 
 At the end of this tutorial we are going to be looking at a variety of directives, which an Apache web server started with our configuration file is familiar with, The different loaded modules extend the server’s set of commands. The available configuration parameters are well documented on the Apache Project’s website. In fact, in special cases it can however be helpful to get an overview of the directives made available from the loaded modules. You can get the directives by using the command line flag _-L_.
 
@@ -421,7 +421,7 @@ The _authn_core_ module is thus not being used. This is correct, we described it
 So much for this tutorial. You now have a capable server you can work with. We will continue to extend it in subsequent tutorials.
 
 
-###References
+### References
 
 * Apache: http://httpd.apache.org
 * Apache directives: http://httpd.apache.org/docs/current/mod/directives.html
