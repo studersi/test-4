@@ -29,7 +29,7 @@ The appearance of entries in log files follows a chronological sequence. However
 
 `gnuplot` can be demanding to use and control and if you only use it occasionally you face the same learning curve again and again. For this reason, I have developed a wrapper script called `arbigraph` that uses gnuplot to display simple graphs: [arbigraph](https://raw.githubusercontent.com/Apache-Labor/labor/master/bin/arbigraph) We will be using this script in different situations in this tutorial and become familiar with a large number of command line options. So, let’s start off with a simple case:
 
-Let’s generate a simple graph in which the number of requests per hour is presented on a time line. As an example, to do this we are using the access log that we became familiar with while fine tuning ModSecurity false positives in one of the preceding tutorials: [tutorial-8-example-access.log](https://raw.githubusercontent.com/Apache-Labor/labor/master/tutorial-8/tutorial-8-example-access.log).
+Let’s generate a simple graph in which the number of requests per hour is presented on a time line. As an example, to do this we are using the access log that we became familiar with while fine tuning ModSecurity false positives in one of the preceding tutorials: [tutorial-8-example-access.log](https://www.netnea.com/files/tutorial-8-example-access.log).
 
 Let’s concentrate on the entries from May 20 to 29 and extract the timestamps from them:
 

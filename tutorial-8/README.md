@@ -36,7 +36,7 @@ The problem with false positives is that if you are unlucky, they flood you like
 * Highest scoring requests go first
 * Work in several iterations
 
-What does that mean? The default installation come in blocking mode and with an anomaly threshold of 5 for the requests. In fact, this is a very good goal for our work, but it's an overambitious start on an existing production server. The risk is that a false positive raises an alarm, the wrong customer's browser is blocked, a phone call to the manager ensues and you are forced to switch off the Web Application Firewall. In many installations I have seen, this was the end of the story.
+What does that mean? The default installation comes in blocking mode and with an anomaly threshold of 5 for the requests. In fact, this is a very good goal for our work, but it's an overambitious start on an existing production server. The risk is that a false positive raises an alarm, the wrong customer's browser is blocked, a phone call to the manager ensues and you are forced to switch off the Web Application Firewall. In many installations I have seen, this was the end of the story.
 
 Don't let a badly tuned system catch you like this. Instead, start with a high threshold for the anomaly score. Let's say 1,000 for the requests and also 1,000 for the responses for symmetry's sake (in practice, the responses do not score very high). That way you know that no customer is ever going to be blocked, you get reports of false alarms and you gain time to weed them out.
 
@@ -366,7 +366,7 @@ _Click to get to the download of the large version_
 Let's start with a simple case: 920273. We could look at this in great detail and check out all the different parameters triggering this rule. Depending on the security level we want to provide for our application, this would be the right approach. But then this is an exercise, so we will keep it simple: Let's kick this rule out completely. We'll opt for a startup rule (to be placed after the CRS include).
 
 ```bash
-# === ModSec Core Rules: Startup Time Rules Exclusions
+# === ModSec Core Rules: Config Time Exclusion Rules (no ids)
 
 # ModSec Rule Exclusion: 920273 : Invalid character in request (outside of very strict set)
 SecRuleRemoveById 920273
@@ -483,7 +483,7 @@ $> grep -F -f ids tutorial-8-example-error.log  | grep 921180 | modsec-rulerepor
                "phase:2,nolog,pass,id:10000,ctl:ruleRemoveTargetById=921180;TX:paramcounter_ARGS_NAMES:ids[]"
 ```
 
-This is a special case. It's caused by submitting a single parameter multiple times. The rule works with a separate counter introduced for every parameter which will then check the counter in rule 921180. If we want to suppress the alarm, we'd best suppress the examination of this counter as the script proposes. We are facing the same URI again, but I have that feeling that this rule will be triggered by other parameters as well. We will see.
+This is a special case. It's caused by submitting a single parameter multiple times. The rule works with a separate counter introduced for every parameter which will then check the counter in rule 921180. If we want to suppress the alarm, we'd best suppress the examination of this counter as the script proposes. We are facing the same URI again, but I have the feeling that this rule will be triggered by other parameters as well. We will see.
 
 In fact, this brings us to an organizational problem. How do we best organize the rule exclusions? Especially the complicated run-time exclusions. We can order by rule ID, by URI or by parameter. There is no easy answer. For large sites with multiple services or many different application paths, I use the URI to group the exclusion rules by branches of the service. But with small services, sorting by rule ID seems like a reasonable approach.
 
@@ -678,7 +678,7 @@ SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" \
     "phase:2,nolog,pass,id:10002,ctl:ruleRemoveTargetById=921180;TX:paramcounter_ARGS_NAMES:keys"
 ```
 
-With 942100, the case it quite clear. But let's look at the alert message itself. There we see that ModSecurity used a special library to identify what it thought an SQL injection attempt. So instead of a regular expression, a dedicated injection parser was used.
+With 942100, the case is quite clear. But let's look at the alert message itself. There we see that ModSecurity used a special library to identify what it thought an SQL injection attempt. So instead of a regular expression, a dedicated injection parser was used.
 
 ```bash
 $> grep -F -f ids tutorial-8-example-error-round-2.log | grep 942100 | head -1
