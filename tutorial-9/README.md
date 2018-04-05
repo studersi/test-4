@@ -138,7 +138,6 @@ ModRewrite defines its own rewrite engine used to manipulate, or change, HTTP re
 
 ```bash
 LoadModule              rewrite_module          modules/mod_rewrite.so
-LoadModule              headers_module          modules/mod_headers.so
 
 ...
 
@@ -492,7 +491,6 @@ LoadModule        unixd_module            modules/mod_unixd.so
 LoadModule        log_config_module       modules/mod_log_config.so
 LoadModule        logio_module            modules/mod_logio.so
 LoadModule        rewrite_module          modules/mod_rewrite.so
-LoadModule        headers_module          modules/mod_headers.so
 
 LoadModule        authn_core_module       modules/mod_authn_core.so
 LoadModule        authz_core_module       modules/mod_authz_core.so
