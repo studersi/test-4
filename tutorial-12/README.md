@@ -1,15 +1,15 @@
-##Capturing and decrypting the entire traffic
+## Capturing and decrypting the entire traffic
 
-###What are we doing?
+### What are we doing?
 
 We are capturing the entire HTTP traffic. We will also be decrypting traffic where necessary.
 
-###Why are we doing this?
+### Why are we doing this?
 
 
 In daily life, when operating a web or reverse proxy server errors occur that can only be handled with difficultly come up again and again. In numerous cases there is a lack of clarity about what has just passed over the line or there is disagreement about exactly which end of communication was responsible for the error. In cases such as these it is important to be able to capture the entire traffic in order to narrow down the error to this basis.
 
-###Requirements
+### Requirements
 
 * An Apache web server, ideally one created using the file structure shown in [Tutorial 1 (Compiling an Apache web server)](https://www.netnea.com/cms/apache_tutorial_1_apache_compilieren/).
 * Understanding of the minimal configuration in [Tutorial 2 (Configuring a minimal Apache server)](https://www.netnea.com/cms/apache_tutorial_2_apache_minimal_konfigurieren/).
@@ -19,7 +19,7 @@ In daily life, when operating a web or reverse proxy server errors occur that ca
 * An OWASP ModSecurity Core Rules installation as in [Tutorial 7 (Embedding ModSecurity Core Rules](https://www.netnea.com/cms/apache-tutorial-7-modsecurity-core-rules-einbinden/)
 * A reverse proxy as in [Tutorial 9 (Setting up a reverse proxy)](https://www.netnea.com/cms/apache-tutorial-9-reverse-proxy-einrichten/)
 
-###Step 1: Using ModSecurity to capture the entire traffic
+### Step 1: Using ModSecurity to capture the entire traffic
 
 In Tutorial 6 we saw how we are able to configure ModSecurity to capture the entire traffic from a single client IP address. However, depending on the settings of the `SecAuditLogParts` directive, not all parts of the requests are recorded. Let’s have a look at the different options in this directive: The ModSecurity audit engine labels different parts of the audit log using different letter abbreviations. They are as follows:
 
@@ -53,7 +53,7 @@ SecRule REMOTE_ADDR  "@streq 127.0.0.1"   \
 	"id:10000,phase:1,pass,log,auditlog,msg:'Initializing full traffic log',ctl:auditLogParts=+EIJ"
 ```
 
-###Step 2: Using ModSecurity to write the entire traffic of a single session
+### Step 2: Using ModSecurity to write the entire traffic of a single session
 
 The first step enables the dynamic modification of audit log parts for a known IP address. But what if we want to permanently enable dynamic logging for selected sessions and, as shown in the example above, expand it to the entire request?
 
@@ -83,7 +83,7 @@ Forcing the audit log, which we have not yet become familiar with, is required, 
 
 Altogether, these three rules enable us to precisely monitor a conspicuous client beyond an individual suspicious request and to capture the entire client traffic in the audit log once suspicion has been aroused.
 
-###Step 3: Sniffing client traffic with the server/reverse proxy
+### Step 3: Sniffing client traffic with the server/reverse proxy
 
 Traffic between the client and the reverse proxy can normally be well documented using the methods described. In addition, we have the option of documenting traffic on the client. Modern browsers provide options for this and they all seem adequate to me. In practice however there are complications that can make capturing traffic difficult or impossible. Be it a fat client being used outside a browser, the client being used only on a mobile device with an interposed proxy modifying traffic in one direction or the other in such a way that traffic is being modified once more by another module after leaving ModSecurity or that ModSecurity has no access to traffic whatsoever. In individual cases the latter is actually a problem, because an Apache module can abort the processing of a request and suppress access from ModSecurity by doing so.
 
@@ -112,7 +112,7 @@ In the fourth tutorial we operated the local Laboratory Service using the local 
 
 ```
 
-###Step 4: Capturing encrypted traffic between the client and the server/reverse proxy
+### Step 4: Capturing encrypted traffic between the client and the server/reverse proxy
 
 
 The explanations above set the stage for capturing and then decrypting traffic. We’ll be doing it in two steps, first logging the traffic and then decrypting the log. Capturing is also called `pulling a PCAP`. This means we are providing a `PCAP` file, or a network traffic log in `PCAP` format. `PCAP` means `packet capture`. For this we'll either be using the most widespread tool, `tcpdump`, or `tshark` from the `Wireshark` suite. It is also possible to work right away in the `Wireshark` graphical interface.
@@ -175,7 +175,7 @@ tcpdump: listening on lo, link-type EN10MB (Ethernet), capture size 65535 bytes
 0 packets dropped by kernel
 ```
 
-###Step 5: Decrypting traffic
+### Step 5: Decrypting traffic
 
 Let’s try to decrypt the `PCAP` file. We’ll again be using `tshark` from the `Wireshark` suite. The `GUI` also works, but is less comfortable. What’s important now is to pass the key we used on the server to the tool.
 
@@ -282,7 +282,7 @@ ssl_decrypt_record found padding 8 final len 247
 The HTTP traffic is now legible, even if in a somewhat difficult format.
 
 
-###Step 6: Sniffing traffic between the reverse proxy and the application server
+### Step 6: Sniffing traffic between the reverse proxy and the application server
 
 The ModSecurity audit log is written after the response to a request is sent. This already makes it clear that the audit log is primarily interesting for what may possibly be the final version of the response. On a reverse proxy this version of the request and above all the response do not necessarily match what the backend system actually sent, because the different Apache modules may have already intervened in the traffic. In order to capture this traffic we will be needing something else. The `mod_firehose` module is present in the development branch of the Apache web server.  It can be used to capture and log virtually any place in the traffic. However, the developer community has decided not to include the module in Apache 2.4, but to wait until a later version.
 
@@ -569,7 +569,7 @@ E..4..@.@.\............@...........^.(.....
 
 We’ve done it! We are capturing the connection to the backend and are now sure about the traffic being exchanged between the two servers. In practice it is often unclear whether an error is actually being caused on the application server or perhaps on the reverse proxy after all. Using this construct that does not touch the SSL configuration of the backend server, we have a tool giving us a final answer in these relatively frequent cases.
 
-###References
+### References
 
 * [Ivan Ristić: ModSecurity Handbook](https://www.feistyduck.com/books/modsecurity-handbook/)
 * [Mod_firehose](http://httpd.apache.org/docs/trunk/de/mod/mod_firehose.html)

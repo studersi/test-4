@@ -1,14 +1,14 @@
-##Compiling an Apache web server
+## Compiling an Apache web server
 
-###What are we doing?
+### What are we doing?
 
 We're compiling an Apache web server for a test system.
 
-###Why are we doing this?
+### Why are we doing this?
 
 In professional use of the web server it’s very often the case that special requirements (security, additional debugging messages, special features from a new patch, etc.) force you to leave behind the distribution packages and quickly create some binaries on your own. In this case it’s important for the infrastructure to be prepared and to already have experience compiling and running your own binaries on production systems. It’s also easier to work with self-compiled Apache in a laboratory-like setup, which is also beneficial in terms of debugging.
 
-###Step 1: Preparing the directory tree for the source code
+### Step 1: Preparing the directory tree for the source code
 
 It’s not all that important where the source code is located. The following is a recommendation based on the [File Hierarchy Standard](http://www.pathname.com/fhs/). The FHS defines the path structure of a Unix system; the structure for all stored files. Note that in the second command `` `whoami` `` evaluates to the username and not root (despite `sudo`).
 
@@ -18,7 +18,7 @@ $> sudo chown `whoami` /usr/src/apache
 $> cd /usr/src/apache
 ```
 
-###Step 2: Meeting the requirements for apr and apr-util
+### Step 2: Meeting the requirements for apr and apr-util
 
 Since the release of version 2.4, the Apache web server comes without two important libraries that used to be part of the distribution. We now have to install `apr` and `apr-util` ourselves before being able to compile Apache. `apr` is the Apache Portable Runtime library. It adds additional features to the normal set of C libraries typically needed by server software. They include features for managing hash tables and arrays. These libraries aren’t used by the Apache web server alone, but also by other Apache Software Foundation projects, which is why they were removed from Apache’s source code. Like `apr`, `apr-util` is part of the Portable Runtime libraries supplemented by `apr-util`.
 
@@ -99,7 +99,7 @@ $> sudo make install
 
 Once this works in both cases we're ready for the web server itself.
 
-###Step 3: Downloading the source code and verifying the checksum
+### Step 3: Downloading the source code and verifying the checksum
 
 We’ll now download the program code from the internet. This can be done by downloading it directly from [Apache](https://httpd.apache.org/) in a browser or, to save the Apache Project’s bandwidth, by using wget to get it from a mirror.
 
@@ -118,7 +118,7 @@ $> sha1sum --check httpd-2.4.29.tar.bz2.sha1
 httpd-2.4.29.tar.bz2: OK
 ```
 
-###Step 4: Unpacking and configuring the compiler
+### Step 4: Unpacking and configuring the compiler
 
 After verification we can unpack the package.
 
@@ -145,7 +145,7 @@ We then define that we want all (_all_) modules to be compiled. Of note here is 
 
 When executing the _configure_ command for the web server, it may be necessary to install additional packages. However, if you have installed all those named in the second step, you should be covered.
 
-###Step 5: Compiling
+### Step 5: Compiling
 
 Once _configure_ is completed, we are ready for the compiler. Nothing should go wrong any longer at this point.
 
@@ -155,7 +155,7 @@ $> make
 
 This takes some time and 38 MB becomes just under 100 MB.
 
-###Step 6: Installing
+### Step 6: Installing
 
 When compiling is successful, we then install the Apache web server we built ourselves. Installation must be performed by the super user. But right afterwards we’ll see how we can again take ownership of the web server. This is much more practical for a test system.
 
@@ -179,7 +179,7 @@ $> cd /apache
 
 Our web server now has a pathname clearly describing it by version number. We will however simply use `/apache` for access. This makes work easier.
 
-###Step 7: Starting
+### Step 7: Starting
 
 Now let’s see if our server will start up. For the moment, this again has to be done by the super user:
 
@@ -198,7 +198,7 @@ AH00558: httpd: Could not reliably determine the server's fully qualified domain
 
 This is unimportant and we can ignore the warning for the time being.
 
-###Step 8: Trying it out
+### Step 8: Trying it out
 
 The engine is running. But is it also working? Time for the function test: We access Apache by entering the following URL in our browser:
 
@@ -214,7 +214,7 @@ Fantastic! Goal achieved: The self-compiled Apache is running.
 
 Return to the shell and stop the server via CTRL-C.
 
-###Step 9 (Goodie): Inspecting the binaries and the modules
+### Step 9 (Goodie): Inspecting the binaries and the modules
 
 Before completing the tutorial, we’d like to take a closer look at the server. Let’s open the engine compartment and take a peek inside. We can get information about our binary as follows:
 
@@ -386,7 +386,7 @@ total 8.8M
 
 These are all of the modules distributed along with the server by Apache and we are well aware that we selected the _all_ option for the modules to compile. Additional modules are available from third parties. We don’t need all of these modules, but there are some you'll almost always want to have: They are ready to be included.
 
-###References
+### References
 - Apache: [https://httpd.apache.org](https://httpd.apache.org)
 - File Hierarchy Standard: [http://www.pathname.com/fhs/](http://www.pathname.com/fhs/)
 - Apache ./configure documentation: [https://httpd.apache.org/docs/trunk/programs/configure.html](https://httpd.apache.org/docs/trunk/programs/configure.html)

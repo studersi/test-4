@@ -1,16 +1,16 @@
-##Extending and analyzing the access log
+## Extending and analyzing the access log
 
-###What are we doing?
+### What are we doing?
 
 We are defining a greatly extended log format in order to better monitor traffic.
 
 
-###Why are we doing this?
+### Why are we doing this?
 
 In the usual configuration of the Apache web server a log format is used that logs only the most necessary information about access from different clients. In practice, additional information is often required, which can easily be recorded in the server's access log. 
 
 
-###Requirements
+### Requirements
 
 * An Apache web server, ideally one created using the file structure shown in [Tutorial 1 (Compiling Apache)](https://www.netnea.com/cms/apache-tutorial-1_compiling-apache/).
 * Understanding of the minimal configuration in [Tutorial 2 (Configuring a Minimal Apache Web Server)](https://www.netnea.com/cms/apache-tutorial-2_minimal-apache-configuration/).
@@ -18,7 +18,7 @@ In the usual configuration of the Apache web server a log format is used that lo
 
 
 
-###Step 1: Understanding the common log format
+### Step 1: Understanding the common log format
 
 The _common_ log format is a very simple format that is hardly ever used any more. It has the advantage of being space-saving and hardly ever writing unnecessary information.
 
@@ -90,7 +90,7 @@ One typical example would be a request that causes an error on the server (Statu
 _%b_ is the last element of the _common_ log format. It shows the number of bytes announced in the content-length response headers. In a request for _http://www.example.com/index.html_ this value is the size of the _index.html_ file. The _response headers_ also transmitted are not counted. And there is an additional problem with this number: It is a calculation by the webserver and not an account of the bytes that have actually been sent in the response.
 
 
-###Step 2: Understanding the combined log format
+### Step 2: Understanding the combined log format
 
 The most widespread log format, _combined_, is based on the _common_ log format, extending it by two items.
 
@@ -105,7 +105,7 @@ _"%{Referer}i"_ is used for the referrer. It is output in quotes. The referrer m
 Finally, _"%{User-Agent}i"_ means the client user agent, which is also placed in quotes. This is also a value controlled by the client and which we should not rely on too much. The user agent is the client browser software, normally including the version, the rendering engine, information about compatibility with other browsers and various installed plugins. This results in very long user agent entries which can in some cases include so much information that an individual client can be uniquely identified, because they feature a particular combination of different add-ons of specific versions.
 
 
-###Step 3: Enabling the Logio and Unique-ID modules
+### Step 3: Enabling the Logio and Unique-ID modules
 
 We have become familiar with the _combined_ format, the most widespread Apache log format. However, to simplify day-to-day work, the information shown is just not enough. Additional useful information has to be included in the log file.
 
@@ -123,7 +123,7 @@ LoadModule              unique_id_module        modules/mod_unique_id.so
 We need this module to be able to write two values. _IO In_ and _IO Out_. This means the total number of bytes of the HTTP request including header lines and the total number of bytes in the response, also including header lines. The Unique-ID module is calculating a unique identifier for every request. We'll return to this later on.
 
 
-###Step 4: Configuring the new, extended log format
+### Step 4: Configuring the new, extended log format
 
 We are now ready for a new, comprehensive log format. The format also includes values that the server is as of yet unaware of with the modules defined up to now. It will leave them empty or show them as a hyphen _"-"_. Only with the _Logio_ module just enabled this won’t work. The server will crash if we request these values without them being present.
 
@@ -148,7 +148,7 @@ CustomLog		logs/access.log extended
 ```
 
 
-###Step 5: Understanding the new, extended log format
+### Step 5: Understanding the new, extended log format
 
 The new log format adds 19 values to the access log. This may seem excessive at first glance, but there are in fact good reasons for all of them and having these values available in day-to-day work makes it a lot easier to track down errors.
 
@@ -187,7 +187,7 @@ We’ll continue with performance data. In the future we will be using a stopwat
 And, last but not least, there are other values provided to us by the _OWASP ModSecurity Core Rule Set_ (to be handled in a subsequent tutorial), specifically the anomaly score of the request and the response. For the moment it's not important to know all of this. What’s important is that this highly extended log format gives us a foundation upon which we can build without having to adjust the log format again.
 
 
-###Step 6: Writing other request and response headers to an additional log file
+### Step 6: Writing other request and response headers to an additional log file
 
 In day-to-day work you are often looking for specific requests or you are unsure of which requests are causing an error. It has often been shown to be useful to have specific additional values written to the log file. Any request and response headers or environment variables can be easily written. Our log format makes extensive use of it.
 
@@ -216,7 +216,7 @@ $> cat logs/access-debug.log
 This is how log files can be very freely defined in Apache. What’s more interesting is analyzing the data. But we’ll need some data first.
 
 
-###Step 7: Trying it out and filling the log file
+### Step 7: Trying it out and filling the log file
 
 Let’s configure the extended access log in the _extended_ format as described above and work a bit with the server.
 
@@ -295,7 +295,7 @@ It may take a moment to process this line. As a result we see the following entr
 As predicted above, a lot of values are still empty or indicated by _-_. But we see that we talked to server _www.example.com_ on port 443 and that the size of the request increased with every _POST_ request, with it being almost 4K, or 4096 bytes, in the end. Simple analyses can already be performed with this simple log file.
 
 
-###Step 8: Performing simple analyses using the extended log format
+### Step 8: Performing simple analyses using the extended log format
 
 If you take a close look at the example log file you will see that the duration of the requests are not evenly distributed and that there is a single outlier. We can identify the outlier as follows:
 
@@ -517,7 +517,7 @@ $> cat tutorial-5-example-access.log | alsslprotocol | sucs
 This is now a simple command that is easy to remember and easy to write. We now have a look at the numerical ratio of 1764 to 8150. We have a total of exactly 10,000 requests; the percentage values can be derived by looking at it. In practice however log files may not counted so easily, we will thus be needing help calculating the percentages.
 
 
-###Step 10: Analyses using percentages and simple statistics
+### Step 10: Analyses using percentages and simple statistics
 
 What we are lacking is a command that works similar to the _sucs_ alias, but converts the number values into percentages in the same pass: _sucspercent_. It’s important to know that this script is based on an expanded *awk* implementation (yes, there are several). The package is normally named *gawk* and it makes sure that the `awk` command uses the Gnu awk implementation.
 
@@ -650,7 +650,7 @@ We now sequentially place the paths into variable _P_ and use _while_ to make a 
 This brings us to the end of this tutorial. The goal was to introduce an expanded log format and to demonstrate working with the log files. In doing so, we repeatedly used a series of aliases and two _awk_ scripts, which can be chained in different ways. With these tools and the necessary experience in their handling you will be able to quickly get at the information available in the log files.
 
 
-###References
+### References
 
 * [Apache Module mod_log_config documentation](http://httpd.apache.org/docs/current/mod/mod_log_config.html)
 * [Apache Module mod_ssl documentation](http://httpd.apache.org/docs/current/mod/mod_ssl.html)

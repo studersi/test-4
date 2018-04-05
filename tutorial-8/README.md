@@ -1,14 +1,14 @@
-##Handling False Positives with the OWASP ModSecurity Core Rule Set
+## Handling False Positives with the OWASP ModSecurity Core Rule Set
 
-###What are we doing?
+### What are we doing?
 
 To successfully ward off attackers, we are reducing the number of *false positives* for a fresh installation of *OWASP ModSecurity Core Rules* and set the anomaly limits to a stricter level step by step.
 
-###Why are we doing this?
+### Why are we doing this?
 
 A fresh installation of *core rules* will typically have some false alarms. In some special cases, namely at higher paranoia levels, there can be thousands of them. In the last tutorial, we saw a number of approaches for suppressing individual false alarms. It's always hard at the beginning. What we're missing is a strategy for coping with different kinds of false alarms. Reducing the number of false alarms is the prerequisite for lowering the *Core Rule Set* (CRS) anomaly threshold and this, in turn, is required in order to use *ModSecurity* to actually ward off attackers. And only after the false alarms really are disabled, or at least curtailed to a large extent, do we get a picture of the real attackers.
 
-###Requirements
+### Requirements
 
 * An Apache web server, ideally one created using the file structure shown in [Tutorial 1 (Compiling an Apache web server)](https://www.netnea.com/cms/apache-tutorial-1_compiling-apache/).
 * Understanding of the minimal configuration from [Tutorial 2 (Configuring a minimal Apache server)](https://www.netnea.com/cms/apache-tutorial-2_minimal-apache-configuration/).
@@ -28,7 +28,7 @@ Drupal and the core rules are not really in a loving relationship. Whenever the 
 
 But things look completely different when you do not use these exclusion rules and if you raise the Paranoia Level to 4, you will get plenty of false positives. For the 10,000 requests in my test run, I received over 27,000 false alarms. That should do for a training session.
 
-###Step 1: Defining a Policy to Fight False Positives
+### Step 1: Defining a Policy to Fight False Positives
 
 The problem with false positives is that if you are unlucky, they flood you like an avalanche and you do not know where to start the clean up. What you need is a plan and there is no official documentation proposing one. So here we go: This is my recommended approach to fighting false alarms:
 
@@ -47,7 +47,7 @@ The problem with integrating ModSecurity in production is the fact that false po
 There is another question that we need to get out of the way: Doesn't disabling rules actually lower the security of the site? Yes it does, but we need to keep things in perspective. In an ideal setup, all rules would be intact, the paranoia level would be very high (thus a total of 200 rules in place) and the anomaly limit very low; but the application would run without any problems or false alarms. But in practice, this won't work outside of the rarest of cases. If we raise the anomaly threshold, then the alerts are still there, but the attackers are no longer affected. If we reduce the paranoia level, we disable dozens of rules with one setting. If we talk to the developers about changing their software so that the false positives go away, we spend a lot of time arguing without much chance of success (at least in my experience). So disabling a single rule from a set of 200 rules is the best of all the bad solutions. The worst of all the bad solutions would be to disable ModSecurity altogether. And as this is very real in many organizations, I would rather disable individual rules based on a false positive than run the risk of being forced to kill the WAF.
 
 
-###Step 2: Getting an Overview
+### Step 2: Getting an Overview
 
 The character of the application, the paranoia level and the amount of traffic all influence the amount of false positives you get in your logs. In the first run, a couple of thousand or one hundred thousand requests max will do. Once you have that in your access log, it's time to take a look. Let's get an overview of the situation: Let's look at the example logs!
 
@@ -322,7 +322,7 @@ We start with the request returning the highest anomaly score, we start on the r
 
 
 
-###Step 3: The first batch of rule exclusions
+### Step 3: The first batch of rule exclusions
 
 In order to find out what rules stand behind the anomaly scores 231 and 189, we need to link the access log to the error log. The unique request ID is this link:
 
@@ -498,7 +498,7 @@ SecRule REQUEST_URI "@beginsWith /drupal/index.php/contextual/render" \
 With this, we have covered these seven highly scoring requests (189 and 231). Writing these six rule exclusions was a bit cumbersome, but the script seems to be a real improvement to the process. The rest will be faster. Promise.
 
 
-###Step 4: Reducing the anomaly score threshold
+### Step 4: Reducing the anomaly score threshold
 
 We have tuned away the alerts leading to the highest anomaly scores. Actually, anything above 100 is now gone. In a production setup, I would deploy the updated configuration and observe the behaviour a bit. If the high scores are really gone, then it is time to reduce the anomaly limit. A typical first step is from 1,000 to 100. Then we do more rules exclusions, reduce to 50 or so, then to 20, 10 and 5. In fact, a limit of 5 is really strong (first critical alert blocks a request), but for sites with less security needs, a limit of 10 might just be good enough. Anything above does not really block attackers.
 
@@ -506,7 +506,7 @@ But before we get there, we need to add few more rule exclusions.
 
 
 
-###Step 5: The second batch of rule exclusions
+### Step 5: The second batch of rule exclusions
 
 After the first batch of rule exclusions, we would observe the service and end up with the following new logs:
 
@@ -747,7 +747,7 @@ SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" "phase:2,nolog,p
 And done. This time, we cleaned out all the scores above 50. Time to reduce the anomaly threshold to 50, let it rest a bit and then examine the logs for the third batch.
 
 
-###Step 6: The third batch of rule exclusions
+### Step 6: The third batch of rule exclusions
 
 Here are the new exercise files. It's still the same traffic, but with fewer alerts again thanks to the rule exclusions.
 
@@ -870,7 +870,7 @@ SecRule REQUEST_URI "@beginsWith /drupal/index.php/quickedit/attachments" \
 
 Time to reduce the limit once more (down to 10 this time) and see what happens.
 
-###Step 7: The fourth batch of rule exclusions
+### Step 7: The fourth batch of rule exclusions
 
 We have a new pair of logs: 
 
@@ -942,7 +942,7 @@ SecRuleUpdateTargetById 930000-943999 "!ARGS:pass"
 
 And with this, we are done. We have successfully fought all the false positives of a content management system with peculiar parameter formats and a ModSecurity rule set pushed to insanely paranoid levels. 
 
-###Step 8: Summarizing all rule exclusions
+### Step 8: Summarizing all rule exclusions
 
 Time to look back and rearrange the configuration file with all the rule exclusions. I have regrouped them a bit, I added some comments and reassigned rule IDs. As outlined before, it is not obvious how to arrange the rules. Here, I ordered them by ID, but also included a block where I cover the search form separately.
 
@@ -1013,7 +1013,7 @@ SecRuleUpdateTargetById 930000-943999 "!ARGS:pass"
 ```
 
 
-###Step 9 (Goodie): Getting a quicker overview
+### Step 9 (Goodie): Getting a quicker overview
 
 If you do this the first time, it all looks a bit overwhelming. But then it's only been an hour of work or so, which seems reasonable - even more so if you stretch it out over multiple iterations. One thing to help you get up to speed is getting an overview of all the alerts standing behind the scores. It’s a good idea to have a look at the distribution of the scores as described above. A good next step is to get a report of how exactly the *anomaly scores* occurred, such as an overview of the rule violations for each anomaly score. The following construct generates a report like this. On the first line, we extract a list of anomaly scores from the incoming requests which actually appear in the log file. We then build a loop around these *scores*, read the *request ID* for each *score*, save it in the file `ids` and perform a short analysis for these *IDs* in the *error log*.
 
@@ -1111,7 +1111,7 @@ When you grow more proficient, you can reduce the number of iterations and tackl
 
 We have now reached the end of the block consisting of three *ModSecurity tutorials*. The next one will look into setting up a *reverse proxy*.
 
-###References
+### References
 - [Spider Labs Blog Post: Exception Handling](http://blog.spiderlabs.com/2011/08/modsecurity-advanced-topic-of-the-week-exception-handling.html)
 - [ModSecurity Reference Manual](https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual)
 

@@ -1,17 +1,17 @@
-##Efficiently configuring and debugging Apache and ModSec in the shell
+## Efficiently configuring and debugging Apache and ModSec in the shell
 
-###What are we doing?
+### What are we doing?
 
 We are setting up shell tools and a method enabling us to efficiently edit Apache configurations and test them in just a few seconds without using a browser or having to constantly search through files by hand.
 
-###Why are we doing this?
+### Why are we doing this?
 
 Successfully configuring the Apache web server requires a lot of know-how and experience. When ModSecurity is added and intervenes in processing this make configuration even more complicated. That’s why it’s necessary to set up the right tools and a systematic workflow. This is the objective of this tutorial.
 
 The tutorial is a bit pedantic, since it takes optimizing individual key presses in all seriousness. Since dozens, if not hundreds of actions have to be initiated in sequence in the configuration of a web server, there is plenty of room for optimizing the workflow, as ridiculous as it may seem. The advantage of this is that we can remove unnecessary ballast, clearing the view to the actual configuration problem. To this end this tutorial will be presenting some tricks and ideas that promise to be of benefit.
 
 
-###Requirements
+### Requirements
 
 * An Apache web server, ideally one created using the file structure shown in [Tutorial 1 (Compiling an Apache web server)](https://www.netnea.com/cms/apache_tutorial_1_apache_compilieren/).
 * Understanding of the minimal configuration in [Tutorial 2 (Configuring a minimal Apache server)](https://www.netnea.com/cms/apache_tutorial_2_apache_minimal_konfigurieren/).
@@ -21,7 +21,7 @@ The tutorial is a bit pedantic, since it takes optimizing individual key presses
 * An Apache web server with Core Rules installation as in [Tutorial 7 (Embedding Core Rules)](http://www.netnea.com/cms/modsecurity-core-rules-einbinden/)
 
 
-###Step 1: Curl
+### Step 1: Curl
 
 Curl is the right tool for making HTTP requests. HTTP must of course first work in the browser or the application. But when debugging or configuring new features the browser normally proves to be very cumbersome. Cooking handling, the size of the window, automatically following redirects, etc. all contribute towards making work in the browser very time consuming. That’s why when you have identified a problem in the browser it’s better to reproduce it using `curl`, find the bug, fix it in the server configuration and finally, verify it in the browser.
 
@@ -39,7 +39,7 @@ $> curl http://localhost/login.html --next --cookie-jar /tmp/cookies.txt --cooki
 The first example works with a cookie file, writes the cookies received and reads new requests from the cookies. In the second example, which works only with a relatively new version of `curl`, multiple requests are put together on a single line. What’s interesting is the `--next` option dividing the command line arguments. The parameters following `--next` apply only to the right. This means that the rules above initially made a GET request, and then followed with a POST request on the same TCP connection and afterwards stored the session cookie in the cookie jar.
 
 
-###Step 2: Single Apache configuration file
+### Step 2: Single Apache configuration file
 
 The Apache configuration used in this series of tutorials is intended for the lab. By this I mean a test environment in which you can quickly try out the configuration or perform debugging regardless of productive HTTP traffic. One essential feature of the Apache configuration being used was the method for accommodating the entire configuration (with the exception of the OWASP ModSecurity Core Rules) in one file. The advantage of this is that we are able to quickly find our way around in the file and get to specific passages via standard search commands. However, this principle is not only beneficial in a lab-like setting. Working this way is also useful in a production environment for eliminating most conflicts and redundancies. This however runs counter to the widespread trend towards modularization of the web server configuration into a variety of files and induces errors. Indeed, I have many times been confronted by setups that configured the VirturalHosts multiple times, set up conflicting access restrictions and whose administrators seemed surprised to learn that the directives configured were being overridden in other places. This is the reason why whenever possible I try to work on one configuration in a single file.
 
@@ -54,7 +54,7 @@ $> vim httpd.conf_problem-of-the-day
 
 `Vim` is perfectly suited for editing Apache configurations, but the editor does not play such a key role so long as it supports syntax highlighting, which in my opinion is an invaluable feature.
 
-###Step 3: Apachex
+### Step 3: Apachex
 
 `curl` and a single Apache file provide us a good foundation for quickly customizing configurations and testing them just as fast. This usually involves a somewhat annoying step between these often repeated steps: restarting the web server. In the first two tutorials we started the sever each time using the `-X` command line flag. I often work with `-X`, because it does not put the server into daemon mode and instead allows it to run as a single process in the foreground. Any server crash shows up immediately in the shell. If we start the web server as usual and run it as a daemon, we then have to watch the error log and make sure that we don’t miss a crash, which can involve all kinds of strange effects. Although it's possible to monitor for crashes this way, in my experience it is a surprisingly serious drawback. So I work with `-X`.
 
@@ -114,7 +114,7 @@ Press [enter] to restart apache, enter [q] to stop apache and exit: q
 Bailing out ... ok
 
 ``` 
-###Step 4: lastrequestsummary
+### Step 4: lastrequestsummary
 
 We still lack intelligent access to the log files. `curl -v` does provide us feedback about the results of a request, but with ModSecurity rules it’s important to be able to follow processing on the server side. And with its chatty and unclear log file entries, ModSecurity poses a challenge, especially since a single request can quickly generate more logging that can fit in a window and most of this information is of no interest. What we are missing is a summary of a request including information from both the `access log` and the `error log`. The `lastrequestsummary` adds just such an analysis ([lastrequestsummary](https://github.com/Apache-Labor/labor/blob/master/bin/lastrequestsummary)):
 
@@ -246,7 +246,7 @@ watch --interval 1 --no-title "lastrequestsummary /apache/logs/access.log /apach
 ```  
 Particularly for production use, it is also advisable to adjust the file names here, or to have an intelligent search process set them automatically.
 
-###Step 5: Dividing the screen into 4 sections
+### Step 5: Dividing the screen into 4 sections
 
 In the preceding four steps we have seen how to configure Apache, easily start it, talk to it as efficiently as possible and finally, to check its behavior in the log files. It’s time to assign each of these steps to its own shell window. This brings us to a classic four-window setup which has proven to be very efficient in practice. Provided enough screen space is available, there’s nothing against trying a 6 or 9-window setup, unless you’d lose track of things by doing so.
 
@@ -265,7 +265,7 @@ Here’s a screenshot of my desktop:
 
 ![Screenshot: 4 Shells](https://www.netnea.com/files/4-shells-screenshot.png)
 
-###References
+### References
 
 * [apachex](https://raw.githubusercontent.com/Apache-Labor/labor/master/bin/apachex)
 * [lastrequestsummary](https://raw.githubusercontent.com/Apache-Labor/labor/master/bin/lastrequestsummary)

@@ -1,10 +1,10 @@
-##Visualizing Apache and ModSecurity Log Files
+## Visualizing Apache and ModSecurity Log Files
 
-###What are we doing?
+### What are we doing?
 
 We are interpreting the log files visually.
 
-###Why are we doing this?
+### Why are we doing this?
 
 In the preceding tutorials we have customized the Apache log format and performed a variety of statistical analyses. But we have yet to graphically display the numbers obtained. The visualization of data does in fact provide a big help in identifying problems. In particular, time series are very informative and even performance problems can be better quantified and narrowed down visually. But graphical display can also provide interesting information about false positives among the volumes of ModSecurity alarms.
 
@@ -12,7 +12,7 @@ The benefit of visualization is readily apparent and is a good reason why graphs
 
 For this reason, we will be using a little-known feature of `gnuplot`.
 
-###Requirements
+### Requirements
 
 * An Apache web server, ideally one created using the file structure shown in [Tutorial 1 (Compiling an Apache web server)](https://www.netnea.com/cms/apache_tutorial_1_apache_compilieren/).
 * Understanding of the minimal configuration in [Tutorial 2 (Configuring a minimal Apache server)](https://www.netnea.com/cms/apache_tutorial_2_apache_minimal_konfigurieren/).
@@ -22,7 +22,7 @@ For this reason, we will be using a little-known feature of `gnuplot`.
 * An Apache web server with Core Rules installation as in [Tutorial 7 (Embedding Core Rules)](http://www.netnea.com/cms/modsecurity-core-rules-einbinden/)
 * The `gnuplot` package; e.g. as present in the `Ubuntu` distribution.
 
-###Step 1: Graphically displaying time series in the shell
+### Step 1: Graphically displaying time series in the shell
 
 The appearance of entries in log files follows a chronological sequence. However, it is actually relatively difficult to follow this chronological sequence in the text file. Visualization of the log files is the answer. Dashboards have already been mentioned and a variety of commercial products and open source projects have become established in the past few years. These tools are very useful. But they are not always easily accessible or the log data must first be imported and sometimes even converted or indexed. There is thus a big gap in displaying graphs in the shell. The graphical tool `gnuplot` can in fact do this in ASCII and be controlled completely from the command line.
 
@@ -105,7 +105,7 @@ A serious drawback is the useless labeling on the x-axis, since the numbers from
 
 But because we had gaps in the dataset our data is based on, we can no longer infer the time of a value from the number of lines and hence the x-axis in the graph. We’ll first have to close these gaps, then have a closer look at the x-axis problem.
 
-###Step 2: Filling in the gaps on the timeline
+### Step 2: Filling in the gaps on the timeline
 
 The problem with the gaps is that for some hours we don’t have a single request in the log file. The log file comes from a server with relatively little traffic. But filtering the log file after an error on a server with significantly more traffic results in gaps appearing in the timeline. We have to close them for good. Up to now we have extracted the date and time from the log file. The approach has proven to be inadequate:
 Instead of deriving the sequence of dates and hours from the log file, we will be rebuilding it ourselves and looking for the number of requests in the log file for every date and hour combination. A repetitive `grep` on the same log file would be a bit inefficient, but entirely suitable for the size of the log file in this case. The approach must be optimized for larger files.
@@ -194,7 +194,7 @@ echo "$COUNT $STRING "; done | arbigraph
 There now appears to be a degree of regularity, because every 24 values is an entire day. Knowing this, we see the daily rhythm, can surmise Saturday and Sunday and may even see indications of a specific lunch break.
 
 
-###Step 3: X-axis label
+### Step 3: X-axis label
 
 The gaps are closed. Let’s get to the specific labeling of the x-axis. `arbigraph` is able to read labels from the input. It identifies the labels on its own; but for this purpose they must be separated by a tab from the actual data. `echo` does this for us when we set the `escape flag`
 
@@ -390,7 +390,7 @@ This gives use the desired graph. One detail are the many plus signs in the top 
 
 
 
-###Step 4: Additional labels
+### Step 4: Additional labels
 
 `arbigraph` provides some options for influencing graphs. Let’s have a look at the options:
 
@@ -545,7 +545,7 @@ $> cat gnuplot-script.gp | gnuplot
 Provided you have sufficient expertise in using gnuplot, you can now carry on and generate a "report-ready" graph.
 
 
-###Step 5: Graphically displaying a value distribution in the shell
+### Step 5: Graphically displaying a value distribution in the shell
 
 Besides time series, our `arbigraph` combined with `gnuplot` can also visually render the distribution of values. Let’s look for example at the duration value documented in the different requests.
 
@@ -760,7 +760,7 @@ $> paste  /tmp/tmp.get /tmp/tmp.post | awk '{ print $1 "\t"  $2 " " $4 }' \
 
 We are now working with two separate data files, which we separate via the `paste` Unix command. Afterwards we use `awk` and tab to get the labels into the data and to remove the label repeated in the third column of data. The display of two values no longer works in blocking mode, which is why we are again relying on lines. The two lines are drawn over each over on differing scales. This enables a good comparison. Less surprisingly, POST requests take a bit longer. What is surprising is that they last so little longer that the GET requests.
 
-###Step 6 (Goodie): Output at different widths and as a PNG
+### Step 6 (Goodie): Output at different widths and as a PNG
 
 `arbigraph` adapts to the width of the terminal for output. If it should be narrower, this can be controlled via the `--width` option. Similarly, the height can be adjusted via `--height`. Export as a PNG image is also included in the script. Export is still rather rudimentary, but the resulting images may be good enough to use in a report.
 
@@ -774,7 +774,7 @@ Plot written to file /tmp/duration-get-vs-post.png.
 ![Graph: Gnuplot with PNG Terminal](https://www.netnea.com/files/duration-get-vs-post.png)
 
 
-###References
+### References
 
 * [gnuplot](http://www.gnuplot.info)
 * [arbigraph](https://raw.githubusercontent.com/Apache-Labor/labor/master/bin/arbigraph)
