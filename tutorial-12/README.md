@@ -43,7 +43,7 @@ SecAuditLogParts        ABEFHIJKZ
 We have defined a very comprehensive log. This is the right approach in a lab-like setup. However, in a production environment this is only useful in exceptional cases. A typical variation of this directive in a production environment would thus be:
 
 ```bash
-SecAuditLogParts            "ABFHKZ"
+SecAuditLogParts            ABFHKZ
 ```
 
 The request and response bodies are no longer being captured. This saves a lot of storage space, which is important on badly tuned systems. The parts of the body that violate individual rules are nonetheless written to the error log and in Part K. This is sufficient in most cases. However, from case to case, you will still want to capture the entire body. In cases such as these you can use a `ctl` directive for the action part of the `SecRule`. Multiple, additional parts can be selected via `auditLogParts`:
@@ -89,7 +89,7 @@ Traffic between the client and the reverse proxy can normally be well documented
 
 In these cases one option is to interpose a separate proxy to capture the traffic. A number of tools are available. `mitmproxy`, in particular, appears to have some very interesting features and I use it to great effect. But because the development of this software is still very dynamic, installation of the current version can be quite demanding, which is why I won’t be going into any of the details here. We'll select a somewhat rougher method.
 
-It is therefore possible for entries in the audit log to not match what was received by the client or no longer match what the client originally sent. In these cases it is preferable to selectively capture the actual traffic and decrypt the encrypted data. This suggestion, however, runs up against the strong encryption we configured in the fourth tutorial to secure it from snooping. The ciphers we prefer rely on `forward secrecy` for this. This means that a snooper is foiled in such a way that even possession of the encryption key no longer permits snooping. The means no capturing of the traffic of any kind is permitted between the client and the server. Unless we position a process in between that terminates the connection and presents a separate certificate to the client.
+It is therefore possible for entries in the audit log to not match what was received by the client or no longer match what the client originally sent. In these cases it is preferable to selectively capture the actual traffic and decrypt the encrypted data. This suggestion, however, runs up against the strong encryption we configured in the fourth tutorial to secure it from snooping. The ciphers we prefer rely on `forward secrecy` for this. This means that a snooper is foiled in such a way that even possession of the long-term asymmetric SSL key pair no longer permits snooping. But this also means that no capturing of the traffic of any kind is possible between the client and the server unless we position a process in between that terminates the connection and presents a separate certificate to the client.
 
 In all other cases in which we want to force decryption, but are unable to reconfigure the client, we have to employ a different, weaker type of encryption which is unaware of `forward secrecy`. Something like the `AES256-SHA` cipher which we defined as the only cipher on the client and use to connect to the server. If we are unable to use the cipher on the client side, then we have to weaken encryption on the entire server. It’s immediately obvious that this is not desired and is only useful in a few instances. Be it us binding the client to a separate system or putting a time limit on reconfiguration.
 
@@ -180,7 +180,7 @@ tcpdump: listening on lo, link-type EN10MB (Ethernet), capture size 65535 bytes
 Let’s try to decrypt the `PCAP` file. We’ll again be using `tshark` from the `Wireshark` suite. The `GUI` also works, but is less comfortable. What’s important now is to pass the key we used on the server to the tool.
 
 ```bash
-$> sudo tshark -r /tmp/localhost-port443.pcap -o "ssl.desegment_ssl_records: TRUE"\
+$> sudo tshark -r /tmp/localhost-port443.pcap -o "ssl.desegment_ssl_records: TRUE" \
 -o "ssl.desegment_ssl_application_data: TRUE" \
 -o "ssl.keys_list: 0.0.0.0,443,http,/etc/ssl/private/ssl-cert-snakeoil.key" \
 -o "ssl.debug_file: /tmp/ssl-debug.log"
@@ -202,7 +202,7 @@ Running as user "root" and group "root". This could be dangerous.
  15   0.037417    127.0.0.1 -> 127.0.0.1    TCP 54 33517 > https [RST] Seq=625 Win=0 Len=0
 ```
 
-Not much is legible here yet. But when we apply the `debug file`, then we see the traffic in it.
+Not much is legible here yet. But when we look into the `debug file`, then we see the traffic in it.
 
 ```bash
 $> cat /tmp/ssl-debug.log

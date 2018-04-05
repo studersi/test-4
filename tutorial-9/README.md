@@ -52,7 +52,7 @@ Server response, port 8000
 * Closing connection 0
 ```
 
-We have set up a backend system with the simplest of means. So easy, that in the future we will might again be happy to know about this method, when we want to verify that a proxy server is working before the real application server is running.
+We have set up a backend system with the simplest of means. So easy, that in the future we might come back to this method to verify that a proxy server is working before the real application server is running.
 
 ###Step 2: Enabling the proxy module
 
@@ -98,7 +98,7 @@ On the next line comes a related directive that despite having a similar name pe
 
 Continuing on in the configuration: now comes the Proxy block where the connection to the backend is more precisely defined. Specifically, this is where requests are authenticated and authorized. Further below in the tutorial we will also be adding a load balancer to this block.
 
-The proxy bock is similar to the location and the directory block we have previously become familiar with in our configuration. These are called containers. Containers specify to the web server how to structure the work. When a container appears in the configuration, it prepares a processing structure for it. In the case of `mod_proxy` the backend can also be accessed without a Proxy container. However, access protection is not taken into account and other directives no longer have any place where it can be inserted. Without the Proxy block the processing of complex servers remains a bit haphazard and it would do us well to configure this part as well. Using the ProxySet directive enables us to intervene even more here and specify things like the connection behavior. Min, max and smax can be used to specify the number of threads assigned to the proxy connection pool. This can impact performance from case to case. The keep-alive behavior of the proxy connection can be influenced and a variety of different timeouts defined for it. Additional information is available in the Apache Project documentation.
+The proxy bock is similar to the location and the directory block we have previously become familiar with in our configuration. These are called containers. Containers specify to the web server how to structure the work. When a container appears in the configuration, it prepares a processing structure for it. In the case of `mod_proxy` the backend can also be accessed without a Proxy container. However, access protection is not taken into account and other directives no longer have any place where it can be inserted. Without the Proxy block the processing of complex servers remains a bit haphazard and it would do us well to configure this part as well. Using the ProxySet directive, we could intervene even more here and specify things like the connection behavior. Min, max and smax can be used to specify the number of threads assigned to the proxy connection pool. This can impact performance from case to case. The keep-alive behavior of the proxy connection can be influenced and a variety of different timeouts defined for it. Additional information is available in the Apache Project documentation.
 
 ###Step 5: Defining exceptions when proxying and making other settings
 
@@ -184,9 +184,9 @@ $> curl -v http://localhost/
 
 The server now responds with HTTP status code `302 Found`, corresponding to the typical redirect status code. Alternatively, 301, 303, 307 or very rarely 308 also appear. The differences are subtle, but influence the behavior of the browser. What's important then is the location header. It tells the client to make a new request, specifically for the fully qualified URL with a schema specified here. This is required for the location header. Only returning the path here, assuming that the client would then correctly conclude that it’s the same server name, would be incorrect and prohibited according to the specification (even if it works with most browsers).
 
-In the body part of the response the redirect is included as a link in HTML text. This is provided for users to click manually, if the browser does not initiate the redirect. This is however very unlikely and in my opinion, is for historical reasons only.
+In the body part of the response the redirect is included as a link in HTML text. This is provided for users to click manually, if the browser does not initiate the redirect. However, this is very unlikely and is probably only included for historical reasons.
 
-You could now ask yourself why we are opening a rewrite engine in the server context and not dealing with everything on the VirtualHost level. In the example I chose you see that this would result in redundancy, because the redirect from "/" to "index.html" should take place on port 80 and also on encrypted port 443. This is the rule of thumb: It’s best for us to define and inherit everything being used on all VirtualHosts in the server context. We also deal with individual rules for a single VirtualHost on this level. Typical is the following rule we can use to redirect all requests from port 80 to port 443, where encryption is enabled:
+You could now ask yourself why we are opening a rewrite engine in the server context and not dealing with everything on the VirtualHost level. In the example I chose you see that this would result in redundancy, because the redirect from "/" to "index.html" should take place on port 80 and also on encrypted port 443. This is the rule of thumb: It’s best for us to define and inherit everything being used on all VirtualHosts in the server context. We also deal with individual rules for a single VirtualHost on this level. Typically, the following rule is used to redirect all requests from port 80 to port 443, where encryption is enabled:
 
 ```bash
 <VirtualHost 127.0.0.1:80>
@@ -200,7 +200,7 @@ You could now ask yourself why we are opening a rewrite engine in the server con
 </VirtualHost>
 ```
 
-The schema we want is now clear. But to the left of it comes a new item. We don’t suppress the path as quickly as above. We instead put it in brackets and use `$1` to reference the content of the brackets again in the redirect. This means that we are forwarding the request on port 80 using the same URL on port 443.
+The schema we want is now clear. But to the left of it comes a new item. We don’t suppress the path as quickly as above. We instead put it in parenthesis and use `$1` to reference the content of the parenthesis again in the redirect. This means that we are forwarding the request on port 80 using the same URL on port 443.
 
 ModRewrite has been introduced. For further examples refer to the documentation or the sections of this tutorial below where it will become familiar with yet more recipes.
 
@@ -368,7 +368,7 @@ SecRule REMOTE_ADDR	"^(.)" \
 	"phase:1,id:50001,capture,nolog,t:sha1,t:hexEncode,setenv:IPHashChar=%{TX.1}"
 ```
 
-We have used hexEncode to convert the binary hash value we generated using sha1 into readable characters. We then apply the regular expression to this value. "^(.)" means that we want to find a match on the first character. Of the ModSecurity flags that follow `capture` is of interest. It indicates that we want to capture the value in the brackets in the previous regex condition. We then put it into the IPHashChar environment variable.
+We have used hexEncode to convert the binary hash value we generated using sha1 into readable characters. We then apply the regular expression to this value. "^(.)" means that we want to find a match on the first character. Of the ModSecurity flags that follow `capture` is of interest. It indicates that we want to capture the value in the parenthesis in the previous regex condition. We then put it into the IPHashChar environment variable.
 
 If there is any uncertainty as to whether this will really work, then the content of the variable `IPHashChar` can be printed and checked using `%{IPHashChar}e` in the server’s access log. This brings us to RewriteMap and the request itself:
 
@@ -396,7 +396,7 @@ RewriteRule     ^/service1/(.*) \
 </Proxy>
 ```
 
-We introduce the map by using the RewriteMap command. We assign it a name, define its type and the path to the file. RewriteMap is invoked in a RewriteRule. Before we really access the map, we enable a rewrite condition. This is done using the RewriteCond directive. There we reference the IPHashChar environment variable and determine the first byte of the variable. We know that only a single byte is included in the variation, but this won’t put a stop to our plans. On the next line then the typical start of the Proxy directive. But instead of now specifying the backend, we reference RewriteMap by the name previously assigned. After the colon comes the parameter for the request. Interestingly, we use `%1` to communicate with the rewrite conditions captured in brackets. The RewriteRule variable is not affected by this and continues to be referenced via `$1`. After the `%1` comes the default value separated by a pipe character. Should anything go wrong when accessing the map, then communication with localhost takes place over port 8000.
+We introduce the map by using the RewriteMap command. We assign it a name, define its type and the path to the file. RewriteMap is invoked in a RewriteRule. Before we really access the map, we enable a rewrite condition. This is done using the RewriteCond directive. There we reference the IPHashChar environment variable and determine the first byte of the variable. We know that only a single byte is included in the variation, but this won’t put a stop to our plans. On the next line then the typical start of the Proxy directive. But instead of now specifying the backend, we reference RewriteMap by the name previously assigned. After the colon comes the parameter for the request. Interestingly, we use `%1` to communicate with the rewrite conditions captured in parenthesis. The RewriteRule variable is not affected by this and continues to be referenced via `$1`. After the `%1` comes the default value separated by a pipe character. Should anything go wrong when accessing the map, then communication with localhost takes place over port 8000.
 
 All we need now is the RewriteMap. In the code sample we specified a text file. Better performance is provided by a hash file, but this is not the focus at present. Here’s the `/apache/conf/hashchar2backend.txt` map file:
 
@@ -434,7 +434,7 @@ The reverse proxy server shields the application server from direct client acces
 
 If multiple reverse proxies are staggered behind one another then the additional IP addresses and server names are comma separated. In addition to this information about the connection, it is also a good idea to pass along yet more information. This would of course include the unique ID, uniquely identifying the request. A well-configured backend server will create a key value similar to our reverse proxy in the log file. Being able to easily correlate the different log file entries simplifies debugging in the future.
 
-A reverse proxy is frequently uses to perform authentication. Although we haven’t set that up yet, it is still wise to add this value to an expanding basic configuration. If authentication is not defined, this value simply remains empty. And finally, we want to tell the backend system about the type of encryption the client and reverse proxy agreed upon. The entire block looks like this:
+A reverse proxy is frequently used to perform authentication. Although we haven’t set that up yet, it is still wise to add this value to an expanding basic configuration. If authentication is not defined, this value simply remains empty. And finally, we want to tell the backend system about the type of encryption the client and reverse proxy agreed upon. The entire block looks like this:
 
 ```bash
 RequestHeader set "X-RP-UNIQUE-ID" 	"%{UNIQUE_ID}e"
