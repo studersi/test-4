@@ -138,7 +138,7 @@ ModRewrite defines its own rewrite engine used to manipulate, or change, HTTP re
 
 ```bash
 LoadModule              rewrite_module          modules/mod_rewrite.so
-LoadModule              headers_module          modules/mod_headers.so
+# LoadModule              headers_module          modules/mod_headers.so
 
 ...
 
@@ -147,6 +147,8 @@ RewriteOptions          InheritDownBefore
 
 RewriteRule   		^/$	%{REQUEST_SCHEME}://%{HTTP_HOST}/index.html  [redirect,last]
 ```
+
+The rewrite engine needs the headers module to function properly. Since the headers module is already being loaded in our existing configuration, we do not need to load it again.
 
 We initialize the engine on the server level. We then instruct the engine to pass on our rules to other rewrite engines. Specifically, so that our rules are performed before the rules further down. Then comes the actual rule. We tell the server to instruct the client to send a new request to `/index.html` for a request without a path or a request for "/" respectively. This is a redirect. What’s important is for the redirect to indicate the schema of the request, http or https as well as the host name. Relatives paths won’t work. But because we are outside the VirtualHost, we don’t see the type. And we don’t want to hard code the host name, but prefer to take the host names from client requests. Both of these values are available as variables as you can see in the example above.
 
@@ -492,7 +494,6 @@ LoadModule        unixd_module            modules/mod_unixd.so
 LoadModule        log_config_module       modules/mod_log_config.so
 LoadModule        logio_module            modules/mod_logio.so
 LoadModule        rewrite_module          modules/mod_rewrite.so
-LoadModule        headers_module          modules/mod_headers.so
 
 LoadModule        authn_core_module       modules/mod_authn_core.so
 LoadModule        authz_core_module       modules/mod_authz_core.so
