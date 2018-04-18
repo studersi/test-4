@@ -275,7 +275,7 @@ SecRule REQBODY_ERROR "!@eq 0" \
   logdata:'%{reqbody_error_msg}',severity:2"
 
 SecRule MULTIPART_STRICT_ERROR "!@eq 0" \
-"id:200002,phase:2,t:none,log,deny,status:403, \
+"id:200003,phase:2,t:none,log,deny,status:403, \
 msg:'Multipart request body failed strict validation: \
 PE %{REQBODY_PROCESSOR_ERROR}, \
 BQ %{MULTIPART_BOUNDARY_QUOTED}, \
