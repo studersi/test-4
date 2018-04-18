@@ -839,7 +839,7 @@ SecRule REQUEST_HEADERS:Referer "@streq http://localhost/login/displayLogin.do" 
 
 This section was very important. Therefore, to summarize once again: We define a rule to suppress another rule. We use a pattern for this which lets us define a path as a condition. This enables us to disable rules for individual parts of an application but only in places where false alarms occur. And at the same time, it prevents us from disabling rules on the entire server.
 
-With this, we have seen all basic methods to handle false positives via rule exclusions. You now use the patterns for *excusion rules* described above to work through the various *false positives*. 
+With this, we have seen all basic methods to handle false positives via rule exclusions. You now use the patterns for *exclusion rules* described above to work through the various *false positives*. 
 
 ### Step 9: Readjusting the anomaly threshold
 
