@@ -69,6 +69,36 @@ function wait_process_disappears() {
 	fi
 }
 
+function start_apache() {
+	echo
+	if [ -f $AP_PID_FILE ]; then
+		
+		ps ax | grep -v " grep " | grep -q $(cat $AP_PID_FILE) 
+		
+		if [ $? -eq 0 ]; then
+
+			echo -n "Stopping active apache process ... "
+
+			sudo kill -TERM $(cat $AP_PID_FILE)
+
+			wait_process_disappears
+		else
+			sudo rm $AP_PID_FILE
+		fi
+	fi
+
+	# clean up semaphores
+	sudo ipcs -s | grep $AP_USER | awk '{ print $2 }' | xargs -n 1 sudo ipcrm sem 2>/dev/null >/dev/null
+
+	echo -n "Launching apache on config file $AP_CONF_FILE ... "
+
+	sudo $AP_BIN -X -f $AP_CONF_FILE &
+
+	wait_pid_exists
+	
+	echo
+}
+
 
 # -----------------------------------------------------------------------
 # INIT
@@ -157,55 +187,25 @@ fi
 # -----------------------------------------------------------------------
 # MAIN LOOP
 # -----------------------------------------------------------------------
-
-while [ 1 ]; do
-	echo
-	if [ -f $AP_PID_FILE ]; then
-		
-		ps ax | grep -v " grep " | grep -q $(cat $AP_PID_FILE) 
-		
-		if [ $? -eq 0 ]; then
-
-			echo -n "Stopping active apache process ... "
-
-			sudo kill -TERM $(cat $AP_PID_FILE)
-
-			wait_process_disappears
-		else
-			sudo rm $AP_PID_FILE
-		fi
-	fi
-
-	# clean up semaphores
-	sudo ipcs -s | grep $AP_USER | awk '{ print $2 }' | xargs -n 1 sudo ipcrm sem 2>/dev/null >/dev/null
-
-	echo -n "Launching apache on config file $AP_CONF_FILE ... "
-
-	sudo $AP_BIN -X -f $AP_CONF_FILE &
-
-	wait_pid_exists
-	
-	echo
-	read -r -p 'Press [enter] to restart apache, enter [q] to stop apache and exit: ' var
-
-	if [ "$var" == "q" ]; then
-		break
-
-	fi
+start_apache
+inotifywait -m -e close_write,moved_to --format %w%f $(dirname $AP_CONF_FILE) |
+while read -r file; do
+  if [ "$file" = $AP_CONF_FILE ]; then
+	start_apache
+	echo "Edit and save '$AP_CONF_FILE' to restart apache, press [Ctrl+C] to exit: "
+  fi
 done
-
 
 # -----------------------------------------------------------------------
 # SHUT-DOWN
 # -----------------------------------------------------------------------
 
-echo
-echo -n "Bailing out ... "
-
-if [ -f $AP_PID_FILE ]; then
-	sudo kill -TERM $(cat $AP_PID_FILE)
-	wait_process_disappears
-fi
-
-echo
-
+#echo
+#echo -n "Bailing out ... "
+#
+#if [ -f $AP_PID_FILE ]; then
+#	sudo kill -TERM $(cat $AP_PID_FILE)
+#	wait_process_disappears
+#fi
+#
+#echo
