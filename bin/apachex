@@ -100,7 +100,11 @@ function start_apache() {
 }
 
 function print_instructions() {
-	echo "Edit and save '$AP_CONF_FILE' to restart apache, press [Ctrl+C] to exit: "
+	if [ "$MANUAL_MODE" -eq 1 ]; then
+		echo "Press [Enter] to restart apache, press [Ctrl+C] to exit: "
+	else
+		echo "Edit and save '$AP_CONF_FILE' to restart apache, press [Ctrl+C] to exit: "
+	fi
 }
 
 function clean_exit() {
@@ -113,6 +117,7 @@ function clean_exit() {
 	fi
 	
 	echo
+	exit 0
 }
 
 # -----------------------------------------------------------------------
@@ -120,16 +125,43 @@ function clean_exit() {
 # -----------------------------------------------------------------------
 
 VERBOSE=0
+MANUAL_MODE=0
+
+# param checking loop
+while [ 1 ]
+do
+        if [ -n "$1" ]; then
+                ARG="$1"
+                export FC="`echo $ARG | sed -e 's/^\(.\).*/\1/'`"   # first char of $ARG
+                if [ "-" = $FC ]; then
+                        case $1 in
+                        -h) usage; exit;;
+                        --help) usage; exit;;
+                        -v) export VERBOSE=1;;
+                        --verbose) export VERBOSE=1;;
+                        -m) export MANUAL_MODE=1;;
+                        --manual-mode) export MANUAL_MODE=1;;
+                        esac
+                        shift
+                else
+                        break
+                fi
+        else
+                break
+        fi
+done
 
 # trap Ctrl+c
 trap clean_exit INT
 
-# check if inotifywait command available
-which inotifywait > /dev/null 2> /dev/null
-rc=$?
-if [ ${rc} != 0 ]; then
-	echo "The command 'inotifywait' is not available. This is fatal. Aborting."
-	exit 1
+# check if inotifywait command available (not in manual mode)
+if [ "$MANUAL_MODE" -eq 0 ]; then
+	which inotifywait > /dev/null 2> /dev/null
+	rc=$?
+	if [ ${rc} != 0 ]; then
+		echo "The command 'inotifywait' is not available. Install it or use manual mode (-m). This is fatal. Aborting."
+		exit 1
+	fi
 fi
 
 AP_CONFS_PATTERN="/etc/apache2/apache2.conf /apache/conf/httpd.conf_* /opt/apache*/conf/httpd.conf_*"
@@ -179,28 +211,6 @@ if [ -z "AP_USER" -o "$AP_USER" == "${APACHE_RUN_USER}" ]; then
 	AP_USER="www-data"
 fi
 
-# param checking loop
-while [ 1 ]
-do
-        if [ -n "$1" ]; then
-                ARG="$1"
-                export FC="`echo $ARG | sed -e 's/^\(.\).*/\1/'`"   # first char of $ARG
-                if [ "-" = $FC ]; then
-                        case $1 in
-                        -h) usage; exit;;
-                        --help) usage; exit;;
-                        -v) export VERBOSE=1;;
-                        --verbose) export VERBOSE=1;;
-                        esac
-                        shift
-                else
-                        break
-                fi
-        else
-                break
-        fi
-done
-
 if [ "$VERBOSE" -eq 1 ]; then
 	echo "Apache Root:    $AP_ROOT"
 	echo "Apache Binary:  $AP_BIN"
@@ -213,12 +223,20 @@ fi
 # -----------------------------------------------------------------------
 # MAIN LOOP
 # -----------------------------------------------------------------------
-start_apache
-print_instructions
-inotifywait -m -e close_write,moved_to --format %w%f $(dirname $AP_CONF_FILE) 2> /dev/null |
-while read -r file; do
-  if [ "$file" = $AP_CONF_FILE ]; then
+if [ "$MANUAL_MODE" -eq 1 ]; then
+	while [ 1 ]; do
+		start_apache
+		print_instructions
+		read -r
+	done
+else
 	start_apache
 	print_instructions
-  fi
-done
+	inotifywait -m -e close_write,moved_to --format %w%f $(dirname $AP_CONF_FILE) 2> /dev/null |
+	while read -r file; do
+	  if [ "$file" = $AP_CONF_FILE ]; then
+		start_apache
+		print_instructions
+	  fi
+	done
+fi
