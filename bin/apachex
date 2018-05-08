@@ -106,6 +106,14 @@ function start_apache() {
 
 VERBOSE=0
 
+# check if inotifywait command available
+which inotifywait > /dev/null 2> /dev/null
+rc=$?
+if [ ${rc} != 0 ]; then
+	echo "The command inotifywait is not available. This is fatal. Aborting."
+	exit 1
+fi
+
 AP_CONFS_PATTERN="/etc/apache2/apache2.conf /apache/conf/httpd.conf_* /opt/apache*/conf/httpd.conf_*"
 AP_CONF_FILE=$(ls -tr $AP_CONFS_PATTERN 2>/dev/null | tail -1)
 
