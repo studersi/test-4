@@ -103,11 +103,26 @@ function print_instructions() {
 	echo "Edit and save '$AP_CONF_FILE' to restart apache, press [Ctrl+C] to exit: "
 }
 
+function clean_exit() {
+	echo
+	echo -n "Bailing out ... "
+	
+	if [ -f $AP_PID_FILE ]; then
+		sudo kill -TERM $(cat $AP_PID_FILE)
+		wait_process_disappears
+	fi
+	
+	echo
+}
+
 # -----------------------------------------------------------------------
 # INIT
 # -----------------------------------------------------------------------
 
 VERBOSE=0
+
+# trap Ctrl+c
+trap clean_exit INT
 
 # check if inotifywait command available
 which inotifywait > /dev/null 2> /dev/null
@@ -207,17 +222,3 @@ while read -r file; do
 	print_instructions
   fi
 done
-
-# -----------------------------------------------------------------------
-# SHUT-DOWN
-# -----------------------------------------------------------------------
-
-#echo
-#echo -n "Bailing out ... "
-#
-#if [ -f $AP_PID_FILE ]; then
-#	sudo kill -TERM $(cat $AP_PID_FILE)
-#	wait_process_disappears
-#fi
-#
-#echo
