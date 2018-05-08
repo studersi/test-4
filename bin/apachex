@@ -13,10 +13,6 @@
 # -----------------------------------------------------------------------
 
 function usage() {
-
-echo
-echo "$0"
-
 cat <<'EOF'
 
 Script to launch apache repeatedly via httpd -X.
@@ -25,9 +21,18 @@ The script guesses the desired apache config and handles
  - sudo
  - pidfile
  - semaphore cleanup
-
+ 
 EOF
 
+echo "Usage: $0 [-h] [-v] [-m] [-c <config>]"
+cat <<'EOF'
+Options:
+	-h | --help			: print this help text
+	-v | --verbose			: increase verbosity level
+	-m | --manual-mode		: manually restart apache by pressing enter
+					  (does not require inotify-tools)
+	-c | --config-file <config>	: use specific config file
+EOF
 }
 
 function wait_pid_exists() {
@@ -149,29 +154,19 @@ function timestamp() {
 
 VERBOSITY=0
 MANUAL_MODE=0
+AP_CONF_FILE=""
 
-# param checking loop
-while [ 1 ]
-do
-        if [ -n "$1" ]; then
-                ARG="$1"
-                export FC="`echo $ARG | sed -e 's/^\(.\).*/\1/'`"   # first char of $ARG
-                if [ "-" = $FC ]; then
-                        case $1 in
-                        -h) usage; exit;;
-                        --help) usage; exit;;
-                        -v) export VERBOSITY=$((VERBOSITY+1));;
-                        --verbose) export VERBOSITY=$((VERBOSITY+1));;
-                        -m) export MANUAL_MODE=1;;
-                        --manual-mode) export MANUAL_MODE=1;;
-                        esac
-                        shift
-                else
-                        break
-                fi
-        else
-                break
-        fi
+# parse command line arguments
+while test $# -gt 0; do
+        case "$1" in
+                -h|--help) usage; exit 0 ;;
+                -v*) VERBOSITY=$(( $(echo -n $1 | wc -m)-1 )) ;;
+                --verbose) VERBOSITY=$((VERBOSITY+1)) ;;
+                -m|--manual-mode) MANUAL_MODE=1 ;;
+                -c|--config-file) shift; AP_CONF_FILE=$1 ;;
+                *) usage; exit 1 ;;
+        esac
+        shift
 done
 
 # trap Ctrl+c
@@ -187,12 +182,14 @@ if [ "$MANUAL_MODE" -eq 0 ]; then
 	fi
 fi
 
-AP_CONFS_PATTERN="/etc/apache2/apache2.conf /apache/conf/httpd.conf_* /opt/apache*/conf/httpd.conf_*"
-AP_CONF_FILE=$(ls -tr $AP_CONFS_PATTERN 2>/dev/null | tail -1)
-
-if [ ! -f $AP_CONF_FILE ]; then
-	echo "`timestamp`Apache config file can not be determined. This is fatal. Aborting."
-	exit 1
+if [ "$AP_CONF_FILE" == "" ]; then
+	AP_CONFS_PATTERN="/etc/apache2/apache2.conf /apache/conf/httpd.conf* /opt/apache*/conf/httpd.conf*"
+	AP_CONF_FILE=$(ls -tr $AP_CONFS_PATTERN 2>/dev/null | tail -1)
+	
+	if [ ! -f $AP_CONF_FILE ]; then
+		echo "`timestamp`Apache config file can not be determined. This is fatal. Aborting."
+		exit 1
+	fi
 fi
 
 AP_ROOT=$(grep ServerRoot $AP_CONF_FILE | sed -e "s/.*ServerRoot\s*//" | tr -d "'" | tr -d '"')
