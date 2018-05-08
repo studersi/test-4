@@ -177,8 +177,8 @@ if [ "$MANUAL_MODE" -eq 0 ]; then
 	which inotifywait > /dev/null 2> /dev/null
 	rc=$?
 	if [ ${rc} != 0 ]; then
-		echo "`timestamp`The command 'inotifywait' is not available. Install it or use manual mode (-m). This is fatal. Aborting."
-		exit 1
+		echo "`timestamp`The command 'inotifywait' is not available, switching to manual mode."
+		MANUAL_MODE=1
 	fi
 fi
 
