@@ -99,6 +99,9 @@ function start_apache() {
 	echo
 }
 
+function print_instructions() {
+	echo "Edit and save '$AP_CONF_FILE' to restart apache, press [Ctrl+C] to exit: "
+}
 
 # -----------------------------------------------------------------------
 # INIT
@@ -196,11 +199,12 @@ fi
 # MAIN LOOP
 # -----------------------------------------------------------------------
 start_apache
+print_instructions
 inotifywait -m -e close_write,moved_to --format %w%f $(dirname $AP_CONF_FILE) |
 while read -r file; do
   if [ "$file" = $AP_CONF_FILE ]; then
 	start_apache
-	echo "Edit and save '$AP_CONF_FILE' to restart apache, press [Ctrl+C] to exit: "
+	print_instructions
   fi
 done
 
