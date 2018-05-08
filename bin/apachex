@@ -200,7 +200,7 @@ fi
 # -----------------------------------------------------------------------
 start_apache
 print_instructions
-inotifywait -m -e close_write,moved_to --format %w%f $(dirname $AP_CONF_FILE) |
+inotifywait -m -e close_write,moved_to --format %w%f $(dirname $AP_CONF_FILE) 2> /dev/null |
 while read -r file; do
   if [ "$file" = $AP_CONF_FILE ]; then
 	start_apache
