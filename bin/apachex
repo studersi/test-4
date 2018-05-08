@@ -110,7 +110,7 @@ VERBOSE=0
 which inotifywait > /dev/null 2> /dev/null
 rc=$?
 if [ ${rc} != 0 ]; then
-	echo "The command inotifywait is not available. This is fatal. Aborting."
+	echo "The command 'inotifywait' is not available. This is fatal. Aborting."
 	exit 1
 fi
 
