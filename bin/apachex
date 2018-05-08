@@ -24,7 +24,7 @@ The script guesses the desired apache config and handles
  
 EOF
 
-echo "Usage: $0 [-h] [-v] [-m] [-c <config>]"
+echo "Usage: $0 [-h] [-v[v]] [-m] [-c <config>]"
 cat <<'EOF'
 Options:
 	-h | --help			: print this help text
