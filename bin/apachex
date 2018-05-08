@@ -72,22 +72,23 @@ function wait_process_disappears() {
 function start_apache() {
 	# check config files
 	echo
-	echo -n "Checking config file ... "
+	if [ "$VERBOSITY" -ge 1 ]; then echo -n "`timestamp`Checking config file ... "; fi
+	
 	sudo $AP_BIN -t -f $AP_CONF_FILE 2> /dev/null
 	rc=$?
 	if [ ${rc} != 0 ]; then
 		echo "fail"
 		echo
-		echo "Errors in config file detected"
-		echo "-------------------------------------------------------------"
+		echo "`timestamp`Errors in config file detected"
+		echo "`timestamp`----------------------------------------------------------------------"
 		sudo $AP_BIN -t -f $AP_CONF_FILE
-		echo "-------------------------------------------------------------"
+		echo "`timestamp`----------------------------------------------------------------------"
 		echo
-		echo "Not restarting apache because of syntax errors in config file"
+		echo "`timestamp`Not restarting apache because of syntax errors in config file"
 		echo
 		return ${rc}
 	fi
-	echo "ok"
+	if [ "$VERBOSITY" -ge 1 ]; then echo "ok"; fi
 	
 	if [ -f $AP_PID_FILE ]; then
 		
@@ -95,7 +96,7 @@ function start_apache() {
 		
 		if [ $? -eq 0 ]; then
 
-			echo -n "Stopping active apache process ... "
+			echo -n "`timestamp`Stopping active apache process ... "
 
 			sudo kill -TERM $(cat $AP_PID_FILE)
 
@@ -108,7 +109,7 @@ function start_apache() {
 	# clean up semaphores
 	sudo ipcs -s | grep $AP_USER | awk '{ print $2 }' | xargs -n 1 sudo ipcrm sem 2>/dev/null >/dev/null
 
-	echo -n "Launching apache on config file $AP_CONF_FILE ... "
+	echo -n "`timestamp`Launching apache on config file $AP_CONF_FILE ... "
 
 	sudo $AP_BIN -X -f $AP_CONF_FILE &
 
@@ -119,15 +120,15 @@ function start_apache() {
 
 function print_instructions() {
 	if [ "$MANUAL_MODE" -eq 1 ]; then
-		echo "Press [Enter] to restart apache, press [Ctrl+C] to exit: "
+		echo "`timestamp`Press [Enter] to restart apache, press [Ctrl+C] to exit: "
 	else
-		echo "Edit and save '$AP_CONF_FILE' to restart apache, press [Ctrl+C] to exit: "
+		echo "`timestamp`Edit and save '$AP_CONF_FILE' to restart apache, press [Ctrl+C] to exit: "
 	fi
 }
 
 function clean_exit() {
 	echo
-	echo -n "Bailing out ... "
+	echo -n "`timestamp`Bailing out ... "
 	
 	if [ -f $AP_PID_FILE ]; then
 		sudo kill -TERM $(cat $AP_PID_FILE)
@@ -138,11 +139,15 @@ function clean_exit() {
 	exit 0
 }
 
+function timestamp() {
+	if [ "$VERBOSITY" -ge 2 ]; then echo -n "$(date +"%T") "; fi
+}
+
 # -----------------------------------------------------------------------
 # INIT
 # -----------------------------------------------------------------------
 
-VERBOSE=0
+VERBOSITY=0
 MANUAL_MODE=0
 
 # param checking loop
@@ -155,8 +160,8 @@ do
                         case $1 in
                         -h) usage; exit;;
                         --help) usage; exit;;
-                        -v) export VERBOSE=1;;
-                        --verbose) export VERBOSE=1;;
+                        -v) export VERBOSITY=$((VERBOSITY+1));;
+                        --verbose) export VERBOSITY=$((VERBOSITY+1));;
                         -m) export MANUAL_MODE=1;;
                         --manual-mode) export MANUAL_MODE=1;;
                         esac
@@ -177,7 +182,7 @@ if [ "$MANUAL_MODE" -eq 0 ]; then
 	which inotifywait > /dev/null 2> /dev/null
 	rc=$?
 	if [ ${rc} != 0 ]; then
-		echo "The command 'inotifywait' is not available. Install it or use manual mode (-m). This is fatal. Aborting."
+		echo "`timestamp`The command 'inotifywait' is not available. Install it or use manual mode (-m). This is fatal. Aborting."
 		exit 1
 	fi
 fi
@@ -186,7 +191,7 @@ AP_CONFS_PATTERN="/etc/apache2/apache2.conf /apache/conf/httpd.conf_* /opt/apach
 AP_CONF_FILE=$(ls -tr $AP_CONFS_PATTERN 2>/dev/null | tail -1)
 
 if [ ! -f $AP_CONF_FILE ]; then
-	echo "Apache config file can not be determined. This is fatal. Aborting."
+	echo "`timestamp`Apache config file can not be determined. This is fatal. Aborting."
 	exit 1
 fi
 
@@ -195,7 +200,7 @@ if [ ! -d $AP_ROOT ]; then
 	if [ -d "/usr/local/apache" ]; then
 		AP_ROOT="/usr/local/apache"
 	else
-		echo "Apache server root can not be determined. This is fatal. Aborting."
+		echo "`timestamp`Apache server root can not be determined. This is fatal. Aborting."
 		exit 1
 	fi
 fi
@@ -206,7 +211,7 @@ if [ ! -f $AP_BIN ]; then
 	if [ -f "/usr/sbin/apache2" ]; then
 		AP_BIN="/usr/sbin/apache2"
 	else
-		echo "Apache binary can not be determined. This is fatal. Aborting."
+		echo "`timestamp`Apache binary can not be determined. This is fatal. Aborting."
 		exit 1
 	fi
 fi
@@ -229,12 +234,12 @@ if [ -z "AP_USER" -o "$AP_USER" == "${APACHE_RUN_USER}" ]; then
 	AP_USER="www-data"
 fi
 
-if [ "$VERBOSE" -eq 1 ]; then
-	echo "Apache Root:    $AP_ROOT"
-	echo "Apache Binary:  $AP_BIN"
-	echo "Apache Config:  $AP_CONF_FILE"
-	echo "Apache PidFile: $AP_PID_FILE"
-	echo "Apache User:    $AP_USER"
+if [ "$VERBOSITY" -ge 1 ]; then
+	echo "`timestamp`Apache Root:    $AP_ROOT"
+	echo "`timestamp`Apache Binary:  $AP_BIN"
+	echo "`timestamp`Apache Config:  $AP_CONF_FILE"
+	echo "`timestamp`Apache PidFile: $AP_PID_FILE"
+	echo "`timestamp`Apache User:    $AP_USER"
 fi
 
 
@@ -249,10 +254,12 @@ if [ "$MANUAL_MODE" -eq 1 ]; then
 	done
 else
 	start_apache
+	if [ "$VERBOSITY" -ge 1 ]; then echo "`timestamp`Starting to watch inode for changes"; echo; fi
 	print_instructions
 	inotifywait -m -e close_write,moved_to --format %w%f $(dirname $AP_CONF_FILE) 2> /dev/null |
 	while read -r file; do
 	  if [ "$file" = $AP_CONF_FILE ]; then
+		if [ "$VERBOSITY" -ge 1 ]; then echo; echo "`timestamp`Config file changed"; fi
 		start_apache
 		print_instructions
 	  fi
