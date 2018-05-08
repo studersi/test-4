@@ -70,7 +70,25 @@ function wait_process_disappears() {
 }
 
 function start_apache() {
+	# check config files
 	echo
+	echo -n "Checking config file ... "
+	sudo $AP_BIN -t -f $AP_CONF_FILE 2> /dev/null
+	rc=$?
+	if [ ${rc} != 0 ]; then
+		echo "fail"
+		echo
+		echo "Errors in config file detected"
+		echo "-------------------------------------------------------------"
+		sudo $AP_BIN -t -f $AP_CONF_FILE
+		echo "-------------------------------------------------------------"
+		echo
+		echo "Not restarting apache because of syntax errors in config file"
+		echo
+		return ${rc}
+	fi
+	echo "ok"
+	
 	if [ -f $AP_PID_FILE ]; then
 		
 		ps ax | grep -v " grep " | grep -q $(cat $AP_PID_FILE) 
