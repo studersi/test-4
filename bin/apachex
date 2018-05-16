@@ -107,6 +107,7 @@ function start_apache() {
 
 			wait_process_disappears
 		else
+			echo "`timestamp`Could not determine process pid"
 			sudo rm $AP_PID_FILE
 		fi
 	fi
@@ -213,15 +214,18 @@ if [ ! -f $AP_BIN ]; then
 	fi
 fi
 
+# fetch pid file from config 
 AP_PID_FILE=$(grep PidFile $AP_CONF_FILE | sed -e "s/.*PidFile\s*//" | tr -d "'" | tr -d '"')
 
+# if pid file not configured
+if [ -z "AP_PID_FILE" -o "$AP_PID_FILE" == "" ]; then
+	AP_PID_FILE="$AP_ROOT/logs/httpd.pid"
+fi
+
+# if not absolute path to pid file
 echo "$AP_PID_FILE" | egrep -q "^\/"
 if [ $? -eq 1 ]; then
 	AP_PID_FILE="$AP_ROOT/$AP_PID_FILE"
-fi
-
-if [ -z "AP_PID_FILE" -o "$AP_PID_FILE" == "" ]; then
-	AP_PID_FILE="$AP_ROOT/logs/httpd.pid"
 fi
 
 
