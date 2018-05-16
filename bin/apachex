@@ -107,7 +107,7 @@ function start_apache() {
 
 			wait_process_disappears
 		else
-			echo "`timestamp`Could not determine process pid"
+			echo "`timestamp`No running process found"
 			sudo rm $AP_PID_FILE
 		fi
 	fi
